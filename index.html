@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v21.0 | Depth Master</title>
+  <title>MR Studio Diamond v21.5 | Stable Features</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
     /* =========================================
-       ESTILO "AMBER GLASS" (v20 UI)
+       ESTILO "AMBER GLASS" (Base v21 + Video UI)
     ========================================= */
     :root { --main-color: #ffaa00; --bg-glass: rgba(20, 20, 25, 0.85); --border-glass: rgba(255, 170, 0, 0.3); --text-glow: 0 0 8px rgba(255, 170, 0, 0.6); }
     * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -24,27 +24,36 @@
     .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
     .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
     label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 500; }
+    
     input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow); }
     input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
     .val { width: 36px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: bold; text-shadow: var(--text-glow); }
+    
     select, input[type=url] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; }
+    
     button { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; color: #000; background: var(--main-color); transition: 0.25s; font-size: 11px; text-transform: uppercase; box-shadow: var(--text-glow); }
     button:hover { background: #ffc74f; }
-    button:active { transform: scale(0.97); }
     button.danger { background: #ff3333; color: white; }
-    button.drive { background: #00C853; color: white; }
     button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
+    
     #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 44px; height: 44px; border-radius: 50%; background: var(--bg-glass); backdrop-filter: blur(20px); border: 2px solid var(--main-color); color: var(--main-color); font-weight:bold; cursor: pointer; display: none; box-shadow: var(--text-glow); font-size: 20px; align-items: center; justify-content: center;}
     #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 50px; background: var(--main-color); color: #000; border-radius: 50px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff; font-size: 14px; letter-spacing: 2px; }
     .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main-color); font-weight: 900; letter-spacing: 4px; font-size: 24px; text-shadow: var(--text-glow); }
+    
     .color-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); }
     #currentColorBox { width: 100%; height: 12px; border-radius: 6px; background: #0f0; margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.3); }
     .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; margin-bottom: 15px; border: 1px solid var(--border-glass); }
     .layer-item { padding: 8px 10px; font-size: 11px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; transition: 0.2s; border-left: 3px solid transparent; font-weight: 600; }
     .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main-color); color: #fff; }
     #chromaPanel { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; border: 1px solid var(--border-glass); }
-  </style>
+
+    /* 🎬 VIDEO CONTROLS FLOTANTES */
+    #videoControls { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); background: var(--bg-glass); backdrop-filter: blur(20px); border: 1px solid var(--border-glass); border-radius: 16px; padding: 15px 20px; display: none; z-index: 150; box-shadow: 0 10px 40px rgba(0,0,0,0.7); min-width: 350px; }
+    #videoControls.show { display: block; }
+    .vid-progress { flex: 1; height: 6px; background: #333; border-radius: 3px; cursor: pointer; position: relative; margin-bottom:10px; }
+    .vid-progress-bar { height: 100%; background: var(--main-color); border-radius: 3px; width: 0%; }
+</style>
 </head>
 <body>
 
@@ -52,8 +61,18 @@
 <div class="loader" id="loader">CARGANDO...</div>
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')" style="display:flex;">☰</button>
 
+<div id="videoControls">
+    <div class="vid-progress" id="vidProgress"><div class="vid-progress-bar" id="vidProgressBar"></div></div>
+    <div class="row" style="justify-content: center; gap:15px;">
+        <button onclick="mediaAction('play')" class="secondary">▶</button>
+        <button onclick="mediaAction('pause')" class="secondary">⏸</button>
+        <button onclick="mediaAction('stop')" class="secondary">⏹</button>
+    </div>
+    <div class="row"><label>Volumen</label><input type="range" id="vidVolume" min="0" max="1" step="0.1" value="1"></div>
+</div>
+
 <div class="ui-panel" id="ui">
-  <h2>STUDIO DIAMOND v21.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
+  <h2>STUDIO DIAMOND v21.5 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
 
   <div class="sec-head">📐 Guías & Entorno</div>
   <div class="row">
@@ -67,7 +86,7 @@
   <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
   <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
 
-  <div class="sec-head">☁️ Nube</div>
+  <div class="sec-head">☁️ Archivos</div>
   <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">CONECTAR DRIVE</button></div>
   <div class="row" id="driveActions" style="display:none; gap:8px;">
       <button onclick="saveSceneToDrive()" class="secondary">GUARDAR</button>
@@ -79,13 +98,23 @@
     <input type="url" id="webUrl" placeholder="URL Video/Imagen">
     <button onclick="loadFromWeb()" style="flex:0 0 40px;">+</button>
   </div>
-  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR LOCAL</button>
-  <input type="file" id="fileInput" multiple style="display:none;">
+  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR (3D/VIDEO/IMG)</button>
+  <input type="file" id="fileInput" multiple style="display:none;" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj">
   
   <div class="sec-head">Capas Activas</div>
   <div id="layerList" class="layer-list"></div>
 
   <div id="editorUI" style="display:none;">
+    <div class="sec-head">📍 Proyección</div>
+    <div class="row">
+        <select id="projSelect" onchange="changeProjection(this.value)">
+            <option value="plane">Plano 2D</option>
+            <option value="360">Esfera 360°</option>
+            <option value="180">Domo 180°</option>
+            <option value="cube">Cubo Skybox</option>
+        </select>
+    </div>
+
     <div class="sec-head">🎨 Ajustes de Imagen</div>
     <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
     <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
@@ -105,6 +134,9 @@
         <div class="row"><label>Tolerancia</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
         <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
         <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
+        <div class="row"><label>Anti-Blue</label><input type="range" id="deblue" min="0" max="1" step="0.01"><span class="val" id="v_deblue">0</span></div>
+        <div class="row"><label>Anti-Green</label><input type="range" id="degreen" min="0" max="1" step="0.01"><span class="val" id="v_degreen">0</span></div>
+        
         <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
             <div class="row"><label style="color:#f66">Rojo</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
             <div class="row"><label style="color:#6f6">Verde</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
@@ -112,11 +144,7 @@
         </div>
     </div>
     
-    <div class="row" style="margin-top:20px; gap:8px;">
-        <button onclick="mediaAction('play')" class="secondary">▶ REPRODUCIR</button>
-        <button onclick="mediaAction('pause')" class="secondary">⏸ PAUSAR</button>
-    </div>
-     <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:5px;">🗑️ ELIMINAR OBJETO</button>
+     <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:15px;">🗑️ ELIMINAR OBJETO</button>
   </div>
 
   <div class="sec-head">⚙️ Realidad Mixta</div>
@@ -134,6 +162,10 @@
 
 <script type="module">
 import * as THREE from 'three';
+// 🔥 RESTAURADOS LOADERS 3D
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
@@ -141,14 +173,13 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 SHADERS (DEPTH FIX v21: RG8 Format)
+// 🌑 SHADERS (DEPTH FIX v21 + COLOR CORRECTION v4.3)
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
 
 const depthFS = `#version 300 es
 precision highp float; precision highp sampler2D; in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj; out vec4 outColor;
-// FIX: WebGL2 RG8 decode (R=High byte, G=Low byte for packed depth)
 float decode(vec4 rg){ return (rg.r * 255.0 * 256.0 + rg.g * 255.0); }
 void main(){ 
   float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters; if(zMeters <= 0.0) discard;
@@ -160,7 +191,9 @@ const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = project
 const fShader = `
 uniform sampler2D map; uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
 uniform bool chromaOn, chromaInvert; uniform vec3 k1; uniform float sim1, smooth1, despill;
+uniform float deblue, degreen;
 varying vec2 vUv;
+
 vec3 rgb2hsv(vec3 c) {
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
     vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
@@ -168,8 +201,21 @@ vec3 rgb2hsv(vec3 c) {
     float d = q.x - min(q.w, q.y); float e = 1.0e-10;
     return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
+
+// 🔥 RESTAURADO: Función Anti-Dominante
+vec3 removeTint(vec3 col, float amt, int type) { 
+    if(amt <= 0.0) return col;
+    vec3 hsv = rgb2hsv(col);
+    float hueTarg = (type==0) ? 0.55 : 0.33; // Blue or Green target
+    float mask = 1.0 - smoothstep(0.1, 0.4, abs(hsv.x - hueTarg));
+    float w = amt * mask * hsv.y;
+    float g = dot(col, vec3(0.299, 0.587, 0.114));
+    return mix(col, vec3(g), w * 0.8);
+}
+
 void main() {
   vec4 tex = texture2D(map, vUv); vec3 col = tex.rgb; float alpha = tex.a * uOpacity;
+  
   if(chromaOn) {
       vec3 hsv = rgb2hsv(col); vec3 kHsv = rgb2hsv(k1);
       float hueDist = abs(hsv.x - kHsv.x); if (hueDist > 0.5) hueDist = 1.0 - hueDist;
@@ -183,9 +229,14 @@ void main() {
           }
       } else { alpha = (1.0 - mask) * uOpacity; col = vec3(1.0); }
   }
+
+  // Corrección Color
+  col = removeTint(col, deblue, 0);
+  col = removeTint(col, degreen, 1);
   col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
   float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation);
   col = pow(max(col, 0.0), vec3(1.0 / uGamma));
+  
   gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
 }`;
 
@@ -208,6 +259,8 @@ let currentUnit = 'm';
 function init() {
   scene = new THREE.Scene();
   scene.add(new THREE.AmbientLight(0xffedd5, 1.2)); 
+  const dl = new THREE.DirectionalLight(0xffffff, 1.5); dl.position.set(2,5,2); scene.add(dl);
+  
   camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500);
   camera.position.set(0, 1.6, 2);
 
@@ -230,8 +283,10 @@ function init() {
   
   renderer.setAnimationLoop(animate);
   
+  // UI Bindings
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
+  
   document.querySelectorAll('input[type=range]').forEach(i => {
       if(!i.id.startsWith('key')) i.addEventListener('input', e => {
           const val = parseFloat(e.target.value);
@@ -240,9 +295,20 @@ function init() {
           updateMaterialParam(e.target.id, val);
       });
   });
+  
   ['keyR', 'keyG', 'keyB'].forEach(id => {
       document.getElementById(id).addEventListener('input', updateChromaManual);
   });
+  
+  // 🔥 RESTAURADO: Carga de Archivos Robusta
+  document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+  
+  // 🔥 RESTAURADO: Video Controls
+  document.getElementById('vidVolume').addEventListener('input', (e) => {
+      const o = objects.find(x=>x.id===activeId);
+      if(o && o.video) o.video.volume = parseFloat(e.target.value);
+  });
+
   window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
   window.setChromaPreset = (r,g,b) => { 
@@ -252,30 +318,138 @@ function init() {
 }
 
 // ==========================================
-// 📐 VISUALES
+// 📦 LOADERS & ASSETS (RESTAURADOS v4.3)
+// ==========================================
+async function handleFileSelect(e) {
+    if(!e.target.files.length) return;
+    document.getElementById('loader').style.display='grid';
+    for(const f of e.target.files) {
+        const url = URL.createObjectURL(f);
+        const n = f.name.toLowerCase();
+        try {
+            if(n.match(/\.(glb|gltf)$/)) await load3D(url, n, 'gltf');
+            else if(n.match(/\.fbx$/)) await load3D(url, n, 'fbx');
+            else if(n.match(/\.obj$/)) await load3D(url, n, 'obj');
+            else if(n.match(/\.gif$/)) await loadGif(f, n);
+            else if(f.type.startsWith('video/') || n.includes('360') || n.includes('180')) await loadVideo(url, n);
+            else if(f.type.startsWith('image/')) await loadImg(url, n);
+        } catch(err) { console.error(err); alert("Error archivo: "+n); }
+    }
+    document.getElementById('loader').style.display='none';
+    e.target.value = '';
+}
+
+async function loadVideo(url, name) {
+    const vid = document.createElement('video');
+    vid.src = url; vid.crossOrigin = 'anonymous'; vid.loop = true; vid.muted = true; vid.playsInline = true;
+    try { await vid.play(); } catch(e){ console.log("Click play needed"); }
+    const tex = new THREE.VideoTexture(vid); tex.colorSpace = THREE.SRGBColorSpace;
+    
+    // Auto-detect mode
+    let mode = 'plane';
+    if(name.includes('360')) mode = '360';
+    else if(name.includes('180')) mode = '180';
+    
+    const ar = (vid.videoWidth/vid.videoHeight) || 1.77;
+    createObject(mode, tex, ar, name, 'video', vid);
+}
+
+async function loadImg(url, name) {
+    const tex = await new THREE.TextureLoader().loadAsync(url); 
+    tex.colorSpace = THREE.SRGBColorSpace;
+    createObject('plane', tex, tex.image.width/tex.image.height, name, 'image');
+}
+
+async function loadGif(file, name) {
+    const buf = await file.arrayBuffer();
+    const r = new window.Omggif.GifReader(new Uint8Array(buf));
+    const cvs=document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
+    const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
+    const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
+    const obj = createObject('plane', tex, r.width/r.height, name, 'gif');
+    obj.gifData = {r, ctx, dat, tex, f:0, nextTime:0};
+}
+
+async function load3D(url, name, type) {
+    let m;
+    if(type==='gltf') m=(await new GLTFLoader().loadAsync(url)).scene;
+    else if(type==='fbx') m=await new FBXLoader().loadAsync(url);
+    else m=await new OBJLoader().loadAsync(url);
+    
+    const box = new THREE.Box3().setFromObject(m); 
+    const sz = box.getSize(new THREE.Vector3()).length();
+    const sc = (sz>0 && sz<1000) ? 2/sz : 1; 
+    m.scale.setScalar(sc); 
+    m.position.set(0, 1, -2);
+    
+    m.traverse(c=>{ if(c.isMesh){ c.material.transparent=true; c.material.depthWrite=true; c.castShadow=true; }});
+    
+    const obj = { id: Math.random().toString(36).substr(2,9), mesh:m, name, type:'model', originalAspect:1 };
+    objects.push(obj); scene.add(m); selectObject(obj.id);
+}
+
+function createObject(mode, tex, ar, name, type, video=null) {
+    let geo;
+    // 🔥 RESTAURADO: Geometrías 360/180
+    if(mode === '360') geo = new THREE.SphereGeometry(20, 64, 64);
+    else if(mode === '180') { geo = new THREE.SphereGeometry(20, 64, 64, 0, Math.PI); geo.rotateY(-Math.PI/2); }
+    else if(mode === 'cube') geo = new THREE.BoxGeometry(30,30,30);
+    else geo = new THREE.PlaneGeometry(ar, 1);
+    
+    if(mode !== 'plane') geo.scale(-1,1,1); // Inside view
+
+    const mat = new THREE.ShaderMaterial({
+        uniforms: { 
+            map:{value:tex}, uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uGamma:{value:1}, uOpacity:{value:1},
+            chromaOn:{value:false}, chromaInvert:{value:false}, k1:{value:new THREE.Color(0,1,0)}, 
+            sim1:{value:0.4}, smooth1:{value:0.08}, despill:{value:0.5}, deblue:{value:0}, degreen:{value:0} 
+        },
+        vertexShader: vShader, fragmentShader: fShader, transparent:true, side:THREE.DoubleSide, depthWrite:false
+    });
+    
+    const mesh = new THREE.Mesh(geo, mat);
+    
+    if(mode === 'plane') mesh.position.set(0, 1.6, -2);
+    else mesh.position.set(0,0,0);
+    
+    const obj = { id: Math.random().toString(36).substr(2,9), mesh, name, type, video, projMode: mode, originalAspect: ar, texture: tex };
+    objects.push(obj); scene.add(mesh); selectObject(obj.id);
+    return obj;
+}
+
+window.changeProjection = (mode) => {
+    const o = objects.find(x=>x.id===activeId); if(!o || o.type==='model') return;
+    scene.remove(o.mesh);
+    // Recrear objeto conservando propiedades
+    const newObj = createObject(mode, o.texture, o.originalAspect, o.name, o.type, o.video);
+    newObj.mesh.rotation.copy(o.mesh.rotation);
+    // Eliminar el viejo del array y poner el nuevo en su lugar
+    objects = objects.filter(x=>x.id !== newObj.id); // quitar el nuevo push
+    const idx = objects.findIndex(x=>x.id===o.id);
+    objects[idx] = newObj; newObj.id = o.id; // Mantener ID
+    selectObject(newObj.id);
+};
+
+window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) loadVideo(u, 'Web Video'); };
+
+// ==========================================
+// 📐 VISUALES (v21 Stable)
 // ==========================================
 function initEngineeringUI() {
     engGroup = new THREE.Group();
     scene.add(engGroup);
-    
     const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
     const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
     lineY.name = 'lineY'; engGroup.add(lineY);
-    
-    const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); 
-    frameGeo.rotateZ(Math.PI / 4); 
+    const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); frameGeo.rotateZ(Math.PI / 4); 
     const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, side: THREE.DoubleSide, transparent: true, opacity: 0.8, depthWrite: false });
-    const shadow = new THREE.Mesh(frameGeo, frameMat);
-    shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
-
+    const shadow = new THREE.Mesh(frameGeo, frameMat); shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
     coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
     engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
     dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
     engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
-    
     engGroup.visible = false;
 }
-
 function createLabel(txt) {
     const cvs = document.createElement('canvas'); cvs.width=256; cvs.height=64;
     const tex = new THREE.CanvasTexture(cvs);
@@ -284,241 +458,93 @@ function createLabel(txt) {
     s.userData = { cvs, ctx: cvs.getContext('2d'), tex, lastText: null }; 
     return s;
 }
-
 function updateLabelText(sprite, text, isDim = false) {
-    if (sprite.userData.lastText === text) return;
-    sprite.userData.lastText = text;
-
-    const { ctx, tex } = sprite.userData;
-    ctx.clearRect(0,0,256,64);
+    if (sprite.userData.lastText === text) return; sprite.userData.lastText = text;
+    const { ctx, tex } = sprite.userData; ctx.clearRect(0,0,256,64);
     ctx.fillStyle = "rgba(20, 15, 0, 0.8)"; ctx.roundRect(5,5,246,54,12); ctx.fill();
     ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00"; ctx.lineWidth=3; ctx.stroke();
-    ctx.fillStyle = "#fff"; ctx.font = "bold 34px 'Fira Code', monospace"; 
-    ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.shadowColor = isDim ? "#ffff00" : "#ffaa00"; ctx.shadowBlur = 10;
-    ctx.fillText(text, 128, 32);
-    tex.needsUpdate = true;
+    ctx.fillStyle = "#fff"; ctx.font = "bold 34px 'Fira Code', monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(text, 128, 32); tex.needsUpdate = true;
 }
-
-function formatUnit(val) {
-    if(currentUnit==='cm') return (val*100).toFixed(0)+'cm';
-    if(currentUnit==='ft') return (val*3.28).toFixed(2)+'ft';
-    return val.toFixed(2)+'m';
-}
-
+function formatUnit(val) { if(currentUnit==='cm') return (val*100).toFixed(0)+'cm'; if(currentUnit==='ft') return (val*3.28).toFixed(2)+'ft'; return val.toFixed(2)+'m'; }
 function updateEngineeringVisuals() {
     if(!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
-    const obj = objects.find(o => o.id === activeId);
-    if(!obj) return;
-
+    const obj = objects.find(o => o.id === activeId); if(!obj) return;
     engGroup.visible = true;
     const P = obj.mesh.position; const S = obj.mesh.scale;
-    let baseW = obj.originalAspect || 1; let baseH = 1;
-    let realW = baseW * S.x; let realH = baseH * S.y;
-
-    const lineY = engGroup.getObjectByName('lineY');
-    lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
-    lineY.computeLineDistances();
-
-    const shadow = engGroup.getObjectByName('shadowPlane');
-    shadow.position.set(P.x, 0.005, P.z); 
-    const frameScale = Math.max(realW, 0.5) * 1.1; 
-    shadow.scale.set(frameScale, frameScale, 1);
-
-    dimLabels.w.visible = true; dimLabels.h.visible = true;
-    dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0));
-    dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0));
-
+    let baseW = obj.originalAspect || 1; let realW = baseW * S.x; let realH = S.y;
+    const lineY = engGroup.getObjectByName('lineY'); lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]); lineY.computeLineDistances();
+    const shadow = engGroup.getObjectByName('shadowPlane'); shadow.position.set(P.x, 0.005, P.z); const frameScale = Math.max(realW, 0.5) * 1.1; shadow.scale.set(frameScale, frameScale, 1);
+    dimLabels.w.visible = true; dimLabels.h.visible = true; dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0)); dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0));
     if(document.getElementById('showCoords').checked) {
         coordLabels.x.visible = true; coordLabels.y.visible = true; coordLabels.z.visible = true;
-        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z);
-        coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); 
-        coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); 
-    } else {
-        coordLabels.x.visible = false; coordLabels.y.visible = false; coordLabels.z.visible = false;
-    }
-
-    const now = performance.now();
-    if (now - lastUIUpdate > 100) { 
-        updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true);
-        updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
-        if(document.getElementById('showCoords').checked) {
-            updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
-            updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
-            updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
+        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); 
+        const now = performance.now();
+        if (now - lastUIUpdate > 100) { 
+            updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true); updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
+            updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y)); updateLabelText(coordLabels.x, "X: " + formatUnit(P.x)); updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
+            lastUIUpdate = now;
         }
-        lastUIUpdate = now;
-    }
+    } else { coordLabels.x.visible = false; coordLabels.y.visible = false; coordLabels.z.visible = false; }
 }
-
 function updateGrid() {
-    const old = scene.getObjectByName("grid"); if(old) scene.remove(old);
-    if(!document.getElementById('showGrid').checked) return;
-    let gridSize = 15; let divisions = 15;
-    if(currentUnit==='ft') { gridSize = 15*0.3048; divisions = 15; }
-    const colorGrid = new THREE.Color(0xffaa00);
+    const old = scene.getObjectByName("grid"); if(old) scene.remove(old); if(!document.getElementById('showGrid').checked) return;
+    let gridSize = 15; if(currentUnit==='ft') gridSize = 15*0.3048; 
     const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
-    const material = new THREE.ShaderMaterial({
-        transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
-        uniforms: { uColor: { value: colorGrid }, uDivisions: { value: divisions } },
-        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-        fragmentShader: `varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions;
-            void main() {
-                vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions);
-                float line = min(grid.x, grid.y);
-                float alpha = 1.0 - min(line, 1.0); alpha = pow(alpha, 0.3); 
-                float dist = distance(vUv, vec2(0.5)); float mask = 1.0 - smoothstep(0.2, 0.5, dist);
-                gl_FragColor = vec4(uColor, alpha * mask * 0.6);
-            }`
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.001; mesh.name = "grid"; scene.add(mesh);
+    const material = new THREE.ShaderMaterial({ transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uColor: { value: new THREE.Color(0xffaa00) }, uDivisions: { value: 15 } }, vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`, fragmentShader: `varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions; void main() { vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions); float line = min(grid.x, grid.y); float alpha = 1.0 - min(line, 1.0); alpha = pow(alpha, 0.3); float dist = distance(vUv, vec2(0.5)); float mask = 1.0 - smoothstep(0.2, 0.5, dist); gl_FragColor = vec4(uColor, alpha * mask * 0.6); }` });
+    const mesh = new THREE.Mesh(geometry, material); mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.001; mesh.name = "grid"; scene.add(mesh);
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (Grip = Select + Hold)
+// 🎮 CONTROLES
 // ==========================================
 function setupXRControllers() {
-    controller1 = renderer.xr.getController(0); 
-    controller1.addEventListener('selectstart', onSelect); 
-    controller1.addEventListener('squeezestart', onGripStart); 
-    controller1.addEventListener('squeezeend', onGripEnd);
-    scene.add(controller1);
-
-    controller2 = renderer.xr.getController(1); 
-    controller2.addEventListener('selectstart', onSelect);
-    scene.add(controller2);
-
+    controller1 = renderer.xr.getController(0); controller1.addEventListener('selectstart', onSelect); controller1.addEventListener('squeezestart', onGripStart); controller1.addEventListener('squeezeend', onGripEnd); scene.add(controller1);
+    controller2 = renderer.xr.getController(1); controller2.addEventListener('selectstart', onSelect); scene.add(controller2);
     const fac = new XRControllerModelFactory();
     controllerGrip1 = renderer.xr.getControllerGrip(0); controllerGrip1.add(fac.createControllerModel(controllerGrip1)); scene.add(controllerGrip1);
     controllerGrip2 = renderer.xr.getControllerGrip(1); controllerGrip2.add(fac.createControllerModel(controllerGrip2)); scene.add(controllerGrip2);
-
     const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]);
     const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, opacity: 0.5, transparent: true });
-    const line = new THREE.Line(geo, lineMat); line.scale.z = 5;
-    controller1.add(line.clone()); controller2.add(line.clone());
+    const line = new THREE.Line(geo, lineMat); line.scale.z = 5; controller1.add(line.clone()); controller2.add(line.clone());
     raycaster = new THREE.Raycaster();
 }
-
 function handleStableControls() {
-  const s = renderer.xr.getSession();
-  if (!s || !activeId) return;
-
-  const obj = objects.find(o => o.id === activeId);
-  if (!obj) return;
-
+  const s = renderer.xr.getSession(); if (!s || !activeId) return;
+  const obj = objects.find(o => o.id === activeId); if (!obj) return;
   for (const src of s.inputSources) {
-    const gp = src.gamepad;
-    if (!gp) continue;
-
+    const gp = src.gamepad; if (!gp) continue;
     const grip = gp.buttons?.[1]?.pressed === true;
     const axes = gp.axes || [];
-    let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
-    let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
-
-    if (!Number.isFinite(ax)) ax = 0;
-    if (!Number.isFinite(ay)) ay = 0;
-
+    let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0); let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
+    if (!Number.isFinite(ax)) ax = 0; if (!Number.isFinite(ay)) ay = 0;
     if (src.handedness === 'left' && grip) {
-      if (Math.abs(ay) > 0.1) {
-        obj.mesh.position.y -= ay * 0.02;
-        if (obj.mesh.position.y < 0) obj.mesh.position.y = 0;
-      }
-      if (Math.abs(ax) > 0.1) {
-        let scaleF = 1 + (ax * 0.02);
-        if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; 
-        obj.mesh.scale.multiplyScalar(scaleF);
-        obj.mesh.scale.clampScalar(0.05, 50.0);
-      }
+      if (Math.abs(ay) > 0.1) { obj.mesh.position.y -= ay * 0.02; if (obj.mesh.position.y < 0) obj.mesh.position.y = 0; }
+      if (Math.abs(ax) > 0.1) { let scaleF = 1 + (ax * 0.02); if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; obj.mesh.scale.multiplyScalar(scaleF); obj.mesh.scale.clampScalar(0.05, 50.0); }
     }
-
     if (src.handedness === 'right' && grip) {
-      if (Math.abs(ay) > 0.1) {
-        const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize();
-        dir.y = 0;
-        obj.mesh.position.addScaledVector(dir, ay * -0.05);
-      }
-      if (Math.abs(ax) > 0.1) {
-        obj.mesh.rotation.y -= ax * 0.05;
-      }
+      if (Math.abs(ay) > 0.1) { const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize(); dir.y = 0; obj.mesh.position.addScaledVector(dir, ay * -0.05); }
+      if (Math.abs(ax) > 0.1) { obj.mesh.rotation.y -= ax * 0.05; }
     }
   }
 }
-
 function onGripStart(e) {
-    const c = e.target;
-    const hits = getIntersections(c);
-    
-    if (hits.length > 0) {
-        const mesh = hits[0].object;
-        const id = mesh.userData?.id;
-        
-        if (id) {
-            selectObject(id); 
-            c.attach(mesh);
-            c.userData.selected = mesh;
-        }
-    }
+    const c = e.target; const hits = getIntersections(c);
+    if (hits.length > 0) { const mesh = hits[0].object; const id = mesh.userData?.id; if (id) { selectObject(id); c.attach(mesh); c.userData.selected = mesh; } }
 }
-function onGripEnd(e) {
-    const c = e.target;
-    if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; }
-}
-function onSelect(e) {
-    const hits = getIntersections(e.target);
-    if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id);
-}
+function onGripEnd(e) { const c = e.target; if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } }
+function onSelect(e) { const hits = getIntersections(e.target); if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id); }
 function getIntersections(c) {
-    tempMatrix.identity().extractRotation(c.matrixWorld);
-    raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
-    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix);
-    return raycaster.intersectObjects(objects.map(o=>o.mesh), false);
+    tempMatrix.identity().extractRotation(c.matrixWorld); raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
+    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix); return raycaster.intersectObjects(objects.map(o=>o.mesh), false);
 }
 
 // ==========================================
-// 📦 LOADERS
+// 📦 LOGIC + UPDATES
 // ==========================================
-async function addAsset(url, type, name, isGif=false, isRestore=false) {
-  if(!isRestore) document.getElementById('loader').style.display='grid';
-  let tex, mesh, gifData=null, video=null, newObj=null;
-  try {
-    if(isGif) {
-        const buf = await (await fetch(url)).arrayBuffer();
-        const r = new window.Omggif.GifReader(new Uint8Array(buf));
-        const cvs=document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
-        const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
-        tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
-        gifData={r, ctx, dat, tex, f:0, nextTime:0, playing:true};
-    } else if(type==='video') {
-        video=document.createElement('video'); video.src=url; video.crossOrigin='anonymous'; video.loop=true; video.muted=true; video.playsInline=true;
-        await video.play(); tex=new THREE.VideoTexture(video); tex.colorSpace=THREE.SRGBColorSpace;
-    } else {
-        tex=await new THREE.TextureLoader().loadAsync(url); tex.colorSpace=THREE.SRGBColorSpace;
-    }
-    const ar = video ? video.videoWidth/video.videoHeight : (tex.image?tex.image.width/tex.image.height:1.77);
-    const mat = new THREE.ShaderMaterial({
-        uniforms: { 
-            map:{value:tex}, uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uGamma:{value:1}, uOpacity:{value:1},
-            chromaOn:{value:false}, chromaInvert:{value:false}, k1:{value:new THREE.Color(0,1,0)}, sim1:{value:0.4}, smooth1:{value:0.08}, despill:{value:0.5} 
-        },
-        vertexShader: vShader, fragmentShader: fShader, transparent:true, side:THREE.DoubleSide, depthWrite:false
-    });
-    mesh = new THREE.Mesh(new THREE.PlaneGeometry(ar, 1), mat);
-    mesh.position.set(0, 1.6, -2);
-    mesh.userData.id = Math.random().toString(36).substr(2,9);
-    newObj = { id:mesh.userData.id, name, mesh, video, gifData, type, billboard:false, originalAspect:ar, sourceUrl:url };
-    objects.push(newObj); scene.add(mesh);
-    if(!isRestore) selectObject(newObj.id);
-  } catch(e){ console.error(e); }
-  if(!isRestore) document.getElementById('loader').style.display='none';
-  return newObj;
-}
-
 function animate(time, frame) {
   const dt = clock.getElapsedTime();
-  orbit.update();
-  handleStableControls();
-  updateEngineeringVisuals();
+  orbit.update(); handleStableControls(); updateEngineeringVisuals();
   
   objects.forEach(o => {
       if(o.billboard) o.mesh.lookAt(camera.position.x, o.mesh.position.y, camera.position.z);
@@ -526,22 +552,22 @@ function animate(time, frame) {
           const g=o.gifData; g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data); g.ctx.putImageData(g.dat,0,0);
           g.tex.needsUpdate=true; g.nextTime=performance.now()+100; g.f=(g.f+1)%g.r.numFrames();
       }
+      // Video Progress Bar
+      if(o.id===activeId && o.video && !o.video.paused) {
+          const pct = (o.video.currentTime / o.video.duration)*100;
+          document.getElementById('vidProgressBar').style.width = pct+'%';
+      }
   });
 
   if(frame && occlusionEnabled && xrGlBinding) {
       const pose = frame.getViewerPose(xrRefSpace);
       if(pose) {
-          const gl = renderer.getContext();
-          gl.colorMask(false,false,false,false);
+          const gl = renderer.getContext(); gl.colorMask(false,false,false,false);
           for(const view of pose.views) {
               const dInfo = xrGlBinding.getDepthInformation(view);
               if(dInfo) {
-                  // 🔥 DEPTH FIX V21: Usando formato RG8 (WebXR standard en WebGL2)
-                  gl.bindTexture(gl.TEXTURE_2D, depthTex);
-                  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG8, dInfo.width, dInfo.height, 0, gl.RG, gl.UNSIGNED_BYTE, dInfo.data);
-                  gl.useProgram(depthProgram);
-                  gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
-                  gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
+                  gl.bindTexture(gl.TEXTURE_2D, depthTex); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG8, dInfo.width, dInfo.height, 0, gl.RG, gl.UNSIGNED_BYTE, dInfo.data);
+                  gl.useProgram(depthProgram); gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters); gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
                   gl.bindVertexArray(depthVao); gl.drawArrays(gl.TRIANGLES,0,6);
               }
           }
@@ -551,88 +577,68 @@ function animate(time, frame) {
   renderer.render(scene, camera);
 }
 
-// 🔥 CONFIGURACIÓN ROBUSTA DE SESIÓN (ESTILO V5.0)
+function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o && o.type!=='model') { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='gamma') u.uGamma.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; else if(id==='deblue') u.deblue.value=v; else if(id==='degreen') u.degreen.value=v; }}
+function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o && o.type!=='model') { o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); }}
+function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o && o.type!=='model') { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
+
+function selectObject(id){ 
+    activeId=id; const o=objects.find(x=>x.id===id); 
+    if(o){ 
+        transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; 
+        if(o.type!=='model') {
+            document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; 
+            document.getElementById('projSelect').value = o.projMode || 'plane';
+            // Show video UI
+            document.getElementById('videoControls').classList.toggle('show', !!o.video);
+        } else {
+            document.getElementById('videoControls').classList.remove('show');
+        }
+        updateLayers();
+    } else {
+        transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; document.getElementById('videoControls').classList.remove('show');
+    }
+}
+
+// 🔥 UTILIDADES RESTAURADAS
+window.mediaAction = (a) => { const o=objects.find(x=>x.id===activeId); if(o&&o.video) { if(a=='play') o.video.play(); else if(a=='pause') o.video.pause(); else if(a=='stop') {o.video.pause(); o.video.currentTime=0;} } };
+window.deleteActive = () => { const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); if(objects[i].video) objects[i].video.pause(); objects.splice(i,1); activeId=null; transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
+window.loadFromWeb = () => { const u=document.getElementById('webUrl').value; if(u) loadVideo(u, 'Web Asset'); };
+document.getElementById('fileInput').onchange=(e)=>{ handleFileSelect(e); };
+
+// INIT
 function setupVR() {
   if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok => {
       if(ok) {
           const btn = document.getElementById('vrBtn'); btn.style.display='block';
           btn.onclick = async () => {
               const wantDepth = document.getElementById('checkOcclusion').checked;
-              
-              const requiredFeatures = ['local-floor'];
-              const optionalFeatures = ['dom-overlay'];
-              
-              // Pedimos depth-sensing solo si el usuario lo marcó
-              if (wantDepth) requiredFeatures.push('depth-sensing'); 
-
+              const requiredFeatures = ['local-floor']; const optionalFeatures = ['dom-overlay'];
+              if(wantDepth) requiredFeatures.push('depth-sensing'); 
               try {
                   xrSession = await navigator.xr.requestSession('immersive-ar', { 
-                      requiredFeatures, 
-                      optionalFeatures, 
-                      domOverlay:{root:document.body}, 
-                      depthSensing: wantDepth ? { 
-                        // 🔥 Compatibilidad ampliada (copiado de v5.0)
-                        usagePreference: ["gpu-optimized", "cpu-optimized"], 
-                        dataFormatPreference: ["luminance-alpha"] 
-                      } : undefined 
+                      requiredFeatures, optionalFeatures, domOverlay:{root:document.body}, 
+                      depthSensing: wantDepth ? { usagePreference:['gpu-optimized', 'cpu-optimized'], dataFormatPreference:['luminance-alpha'] } : undefined 
                   });
-              } catch(e) {
-                  console.error(e);
-                  alert("ERROR: No se pudo iniciar AR con Oclusión.");
-                  return;
-              }
-
-              renderer.xr.setSession(xrSession); 
-              xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
-              
-              occlusionEnabled = wantDepth;
-              if(occlusionEnabled) initDepthOcclusion(xrSession);
+              } catch(e) { alert("Error AR (Oclusión no soportada?)"); return; }
+              renderer.xr.setSession(xrSession); xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+              occlusionEnabled = wantDepth; if(occlusionEnabled) initDepthOcclusion(xrSession);
           };
       }
   });
 }
-
 function initDepthOcclusion(s) {
-    const gl=renderer.getContext(); 
-    xrGlBinding=new XRWebGLBinding(s,gl);
-
+    const gl=renderer.getContext(); xrGlBinding=new XRWebGLBinding(s,gl);
     const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,depthVS); gl.compileShader(vs);
     const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs,depthFS); gl.compileShader(fs);
     depthProgram=gl.createProgram(); gl.attachShader(depthProgram,vs); gl.attachShader(depthProgram,fs); gl.linkProgram(depthProgram);
-
-    // VAO Setup
     depthVao=gl.createVertexArray(); gl.bindVertexArray(depthVao);
     const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
-    
-    const loc = gl.getAttribLocation(depthProgram, 'aPos');
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    gl.bindVertexArray(null);
-
-    // Texture Setup (RG8 for packed depth)
-    depthTex=gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, depthTex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.bindTexture(gl.TEXTURE_2D, null);
+    const loc = gl.getAttribLocation(depthProgram, 'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    depthTex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, depthTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 }
-
-function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o) { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='gamma') u.uGamma.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; }}
-function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); }}
-function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
-function selectObject(id){ activeId=id; const o=objects.find(x=>x.id===id); if(o){ transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value; document.getElementById('contrast').value=o.mesh.material.uniforms.uContrast.value; document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value; document.getElementById('gamma').value=o.mesh.material.uniforms.uGamma.value; document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value; document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value; document.getElementById('despill').value=o.mesh.material.uniforms.despill.value; updateMaterial(); updateLayers(); } }
-function updateLayers() { const l=document.getElementById('layerList'); l.innerHTML=''; objects.forEach(o=>{ const d=document.createElement('div'); d.className=`layer-item ${o.id===activeId?'active':''}`; d.innerText=(o.type=='video'?'🎬 ':'🖼️ ')+o.name.slice(0,15); d.onclick=()=>selectObject(o.id); l.appendChild(d); }); }
-window.toggleUIPanel = () => document.getElementById('ui').classList.toggle('minimized');
-window.handleAuthClick = () => { if(!CLIENT_ID) alert("Falta API KEY"); gapi.load('client:auth2', ()=>{ gapi.client.init({apiKey:API_KEY, clientId:CLIENT_ID, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope:SCOPES}).then(()=>gapi.auth2.getAuthInstance().signIn()).then(()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('driveActions').style.display='flex'; }); }); };
-window.saveSceneToDrive = () => { /* Logica guardar */ };
-window.loadSceneFromDrive = () => { /* Logica cargar */ };
-window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
-document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
-window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); activeId=null; transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
-window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
 </script>
