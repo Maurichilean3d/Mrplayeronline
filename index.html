@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v4.2 (Geo Morph Extended)</title>
+  <title>MR Studio Diamond v4.3 (Unified Geo)</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <style>
     /* ESTILOS DE INTERFAZ (UI LIMPIA) */
@@ -55,7 +55,7 @@
 <div class="loader" id="loader"><div class="spinner"></div><span>CARGANDO...</span></div>
 
 <div class="ui-panel" id="ui">
-  <h2>🥽 MR Studio Diamond v4.2</h2>
+  <h2>🥽 MR Studio Diamond v4.3</h2>
 
   <div class="sec-head">📂 Archivos <button class="warn" style="padding:4px; font-size:10px; width:auto; flex:0;" onclick="document.getElementById('fileInput').click()">+ IMPORTAR</button></div>
   <input type="file" id="fileInput" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj" multiple style="display:none;" />
@@ -63,24 +63,19 @@
   <div class="layer-list" id="layerList"></div>
 
   <div id="generalControls">
-      <div class="sec-head">📍 Proyección</div>
+      <div class="sec-head">📍 Modo de Proyección</div>
       <div class="row">
-        <select id="projSelect">
-          <option value="plane">Plano 2D</option>
-          <option value="360">Esfera 360° (Inmersiva)</option>
-          <option value="180">Domo 180° (Inmersiva)</option>
-        </select>
-      </div>
-      
-      <div class="row" id="shapeRow" style="display:none;">
-        <label>Geometría</label>
-        <select id="shapeSelect">
-            <option value="sphere">Esfera (Estándar)</option>
-            <option value="cube">Cubo (Skybox Fake)</option>
-            <option value="ovoid">Ovoide (Estirado)</option>
-            <option value="earth">Tierra (Achatada 0.75)</option>
-            <option value="earth_poles">Tierra Polos (0.68)</option>
-            <option value="earth_extreme">Tierra Extrema (0.60)</option>
+        <select id="modeSelect">
+          <option value="plane">Plano 2D (TV)</option>
+          <option disabled>─── 360 GRADOS ───</option>
+          <option value="360_sphere">360° Esfera (Estándar)</option>
+          <option value="360_cube">360° Cubo (Skybox)</option>
+          <option value="360_ovoid">360° Ovoide (Estirado)</option>
+          <option value="360_earth">360° Tierra (0.75)</option>
+          <option value="360_earth_poles">360° Tierra Polos (0.68)</option>
+          <option value="360_earth_extreme">360° Tierra Extrema (0.60)</option>
+          <option disabled>─── 180 GRADOS ───</option>
+          <option value="180_sphere">180° Domo (Estándar)</option>
         </select>
       </div>
       
@@ -290,7 +285,7 @@ async function handleFileSelect(e) {
       else if(n.match(/\.fbx$/)) await load3D(url, n, 'fbx');
       else if(n.match(/\.obj$/)) await load3D(url, n, 'obj');
       else if(n.match(/\.gif$/)) await loadGif(f, n);
-      else if(f.type.startsWith('video/') || n.includes('360')) await loadVideo(url, n);
+      else if(f.type.startsWith('video/') || n.includes('360') || n.includes('180')) await loadVideo(url, n);
       else if(f.type.startsWith('image/')) await loadImg(url, n);
     } catch(err) { 
       console.error(err);
@@ -320,18 +315,18 @@ async function loadVideo(url, name) {
   tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
   tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter;
   
-  let proj = 'plane';
-  if(name.includes('360')) proj='360';
-  else if(name.includes('180')) proj='180';
+  // Detección automática de modo
+  let mode = 'plane';
+  if(name.includes('360')) mode='360_sphere';
+  else if(name.includes('180')) mode='180_sphere';
 
   const ar = (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77;
 
-  // Default shape: sphere
-  const mesh = createMesh(proj, 'sphere', tex, ar);
+  const mesh = createMesh(mode, tex, ar);
   const obj = { id: uid(), mesh, name, type:'video', video:vid, tex, settings: defSettings() };
-  obj.settings.projection = proj;
+  obj.settings.mode = mode; // Set mode settings
   
-  if(proj !== 'plane') {
+  if(mode !== 'plane') {
       obj.mesh.position.set(0, 1.6, 0); 
       obj.settings.scale = 1; 
       obj.settings.dist = 0;
@@ -355,7 +350,7 @@ async function loadGif(file, name) {
   const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
   
-  const mesh = createMesh('plane', 'sphere', tex, w/h);
+  const mesh = createMesh('plane', tex, w/h);
   mesh.position.set(0, 1.6, -2);
   const obj = { id:uid(), mesh, name, type:'gif', settings:defSettings(), gif:{r,ctx,dat,tex,f:0,num:r.numFrames(),t:0} };
   addObj(obj);
@@ -365,7 +360,7 @@ async function loadImg(url, name) {
   const tex = await new THREE.TextureLoader().loadAsync(url);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-  const mesh = createMesh('plane', 'sphere', tex, tex.image.width/tex.image.height);
+  const mesh = createMesh('plane', tex, tex.image.width/tex.image.height);
   mesh.position.set(0, 1.6, -2);
   const obj = { id:uid(), mesh, name, type:'image', tex, settings:defSettings() };
   addObj(obj);
@@ -389,21 +384,25 @@ async function load3D(url, name, type) {
   addObj(obj);
 }
 
-function createMesh(proj, shape = 'sphere', tex, aspect) {
+// LOGICA UNIFICADA DE CREACIÓN
+function createMesh(mode, tex, aspect) {
   let geo, side=THREE.DoubleSide;
   
-  if(proj === '360' || proj === '180') {
-    if(shape === 'cube') {
-        geo = new THREE.BoxGeometry(30, 30, 30); // Cubo grande
+  if(mode.startsWith('360_') || mode.startsWith('180_')) {
+    
+    if(mode === '360_cube') {
+        geo = new THREE.BoxGeometry(30, 30, 30);
     } else {
-        // Esfera (Base para ovoid y earths)
-        const tLen = (proj === '180') ? Math.PI : Math.PI*2;
+        // Esfera (Base para 360, 180, ovoides, earth...)
+        const tLen = (mode.includes('180')) ? Math.PI : Math.PI*2;
         geo = new THREE.SphereGeometry(20, 64, 64, 0, tLen);
     }
 
-    if(proj === '180') geo.rotateY(-Math.PI/2);
+    if(mode.includes('180')) geo.rotateY(-Math.PI/2);
     side = THREE.BackSide; 
+
   } else {
+    // Plane
     geo = new THREE.PlaneGeometry(aspect, 1);
   }
 
@@ -418,12 +417,12 @@ function createMesh(proj, shape = 'sphere', tex, aspect) {
     },
     vertexShader: vert, fragmentShader: frag,
     transparent: true, side: side, 
-    depthWrite: (proj==='plane'), 
+    depthWrite: (mode==='plane'), 
     depthTest: true
   });
   
   const mesh = new THREE.Mesh(geo, mat);
-  if(proj !== 'plane') {
+  if(mode !== 'plane') {
       mesh.frustumCulled = false; 
       mesh.renderOrder = -1; 
   }
@@ -432,7 +431,7 @@ function createMesh(proj, shape = 'sphere', tex, aspect) {
 
 function defSettings() {
     return { 
-        scale:1, dist:2, height:1.6, rotY:0, projection:'plane', shape:'sphere', flipX: false,
+        scale:1, dist:2, height:1.6, rotY:0, mode:'plane', flipX: false,
         chromaEnabled:false, chromaInvert:false, keyR:0, keyG:1, keyB:0, sim:0.4, smooth:0.05, 
         offsetX:0, offsetY:0, opac:1,
         brightness:0, contrast:1, saturation:1, gamma:1
@@ -446,7 +445,7 @@ function updateObj(k, v) {
   o.settings[k]=v;
   const s = o.settings; const m = o.mesh;
 
-  if(k==='projection' || k==='shape') {
+  if(k==='mode') {
     scene.remove(m);
     let ar=1.77; 
     if(o.video) ar=o.video.videoWidth/o.video.videoHeight;
@@ -455,14 +454,15 @@ function updateObj(k, v) {
     let tMap = o.tex;
     if(!tMap && m.material.uniforms && m.material.uniforms.map) tMap = m.material.uniforms.map.value;
     
-    const nm = createMesh(s.projection, s.shape, tMap, ar);
+    const nm = createMesh(s.mode, tMap, ar);
     
     nm.position.copy(m.position);
     nm.rotation.copy(m.rotation);
     nm.scale.copy(m.scale); 
     o.mesh=nm; 
     
-    if(s.projection === 'plane' && k === 'projection'){ 
+    // Si cambiamos a Plano, resetear para que no quede gigante
+    if(s.mode === 'plane'){ 
         nm.position.set(0,1.6,-2); 
         nm.scale.set(1,1,1);
         o.settings.dist=2; 
@@ -472,8 +472,7 @@ function updateObj(k, v) {
     scene.add(nm); selectObj(o.id); return; 
   }
 
-  // LOGICA MULTI-FORMA (ESFERA, CUBO, OVOIDE, TIERRA)
-  if(k==='scale' || k==='flipX' || k==='shape') {
+  if(k==='scale' || k==='flipX' || k==='mode') {
      const bs = o.baseScale || 1;
      const dir = s.flipX ? -1 : 1;
      
@@ -481,15 +480,13 @@ function updateObj(k, v) {
      let sy = s.scale * bs;
      let sz = s.scale * bs;
 
-     // Aplica deformación solo si no es plano
-     if(s.projection !== 'plane') {
+     // Aplica deformación según el MODO
+     if(s.mode !== 'plane') {
          let yMult = 1.0;
-         // Ajustes solicitados
-         if(s.shape === 'ovoid') yMult = 1.35;         // Estirado
-         if(s.shape === 'earth') yMult = 0.75;         // Oblata
-         if(s.shape === 'earth_poles') yMult = 0.68;   // Polos achatados
-         if(s.shape === 'earth_extreme') yMult = 0.60; // Corrección agresiva
-         
+         if(s.mode === '360_ovoid') yMult = 1.35;
+         if(s.mode === '360_earth') yMult = 0.75;
+         if(s.mode === '360_earth_poles') yMult = 0.68;
+         if(s.mode === '360_earth_extreme') yMult = 0.60;
          sy *= yMult;
      }
 
@@ -497,13 +494,13 @@ function updateObj(k, v) {
   }
   
   if(k==='dist' || k==='height') {
-      if(s.projection === 'plane') {
+      if(s.mode === 'plane') {
          if(k==='dist') m.position.z = -s.dist;
          if(k==='height') m.position.y = s.height;
       }
   }
 
-  if(k==='rotY') m.rotation.y = THREE.MathUtils.degToRad(s.rotY) + (s.projection==='180'?-Math.PI/2:0);
+  if(k==='rotY') m.rotation.y = THREE.MathUtils.degToRad(s.rotY) + (s.mode.includes('180')?-Math.PI/2:0);
 
   if(o.type !== 'model' && m.material.uniforms) {
     const u=m.material.uniforms;
@@ -527,8 +524,7 @@ const bind = (id, k, type='float') => {
     updateObj(k,v); syncUI();
   });
 };
-bind('projSelect','projection','str'); 
-bind('shapeSelect','shape','str'); 
+bind('modeSelect','mode','str'); // BIND UNIFICADO
 bind('scale','scale'); bind('dist','dist'); bind('height','height'); bind('rotY','rotY');
 bind('chromaActive','chromaEnabled','bool'); bind('chromaInvert','chromaInvert','bool');
 bind('keyR','keyR'); bind('keyG','keyG'); bind('keyB','keyB');
@@ -560,16 +556,14 @@ function syncUI() {
   const set = (id, v) => { const el=document.getElementById(id); if(el) el.value=v; const t=document.getElementById('v_'+id); if(t)t.innerText=(typeof v==='number')?v.toFixed(2):v; };
 
   if(o.type!=='model') {
-      document.getElementById('projSelect').value = s.projection;
-      document.getElementById('shapeSelect').value = s.shape || 'sphere';
+      document.getElementById('modeSelect').value = s.mode;
   }
   
-  const is360 = (s.projection === '360' || s.projection === '180');
-  document.getElementById('posControls').style.display = is360 ? 'none' : 'block';
-  document.getElementById('shapeRow').style.display = is360 ? 'flex' : 'none';
+  const isImmersive = (s.mode !== 'plane');
+  document.getElementById('posControls').style.display = isImmersive ? 'none' : 'block';
 
   set('scale',s.scale); 
-  if(!is360) {
+  if(!isImmersive) {
     set('dist',Math.abs(o.mesh.position.z)); set('height',o.mesh.position.y);
   }
   set('rotY',s.rotY);
