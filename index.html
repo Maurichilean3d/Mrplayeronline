@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v12.0 | Architect Edition</title>
+  <title>MR Studio Diamond v13.0 | Architect Projections</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -57,51 +57,53 @@
     #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 14px 40px; background: #6c5ce7; color: white; border-radius: 50px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(108,92,231,0.6); border: 2px solid white; }
     .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #a29bfe; font-weight: 900; letter-spacing: 2px; }
     
+    #gStatus { font-size: 10px; color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+    .dot.on { background: #0F9D58; box-shadow: 0 0 5px #0F9D58; }
     #currentColorBox { width: 100%; height: 10px; border-radius: 4px; background: #00ff00; margin-bottom: 5px; border: 1px solid #555; }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO v12.0...</div>
+<div class="loader" id="loader">CARGANDO v13.0...</div>
 <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
 <div class="ui-panel" id="ui">
   <h2>
-      <span>💎 DIAMOND v12.0</span>
+      <span>💎 DIAMOND v13.0</span>
       <button style="width:auto; padding:4px 8px; background:transparent; font-size:16px;" onclick="toggleUIPanel()">×</button>
   </h2>
 
-  <div class="sec-head">📐 Arquitectura & Unidades</div>
+  <div class="sec-head">📐 Arquitectura</div>
   <div class="row">
       <select id="unitSystem" onchange="updateUnits()">
-          <option value="m">MKS - Metros</option>
-          <option value="cm">MKS - Centímetros</option>
-          <option value="mm">MKS - Milímetros</option>
-          <option value="ft">Imperial - Pies</option>
-          <option value="in">Imperial - Pulgadas</option>
+          <option value="m">MKS - Metros (m)</option>
+          <option value="cm">MKS - Centímetros (cm)</option>
+          <option value="mm">MKS - Milímetros (mm)</option>
+          <option value="ft">Imperial - Pies (ft)</option>
+          <option value="in">Imperial - Pulgadas (in)</option>
       </select>
   </div>
   <div class="row">
-      <label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Mostrar Grilla</label>
-      <label><input type="checkbox" id="showPlanes" onchange="updateGrid()"> Planos Aux</label>
+      <label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Grilla de Piso</label>
   </div>
   
-  <div class="sec-head">🔒 Restricción de Escala (3D)</div>
+  <div class="sec-head">🔒 Escala Segura (Mano Izq)</div>
   <div class="row" style="font-size:10px; color:#aaa;">
       <label><input type="checkbox" id="lockX"> Bloq X</label>
       <label><input type="checkbox" id="lockY"> Bloq Y</label>
       <label><input type="checkbox" id="lockZ"> Bloq Z</label>
   </div>
 
-  <div class="sec-head">☁️ Nube</div>
-  <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive-btn">🔑 CONECTAR DRIVE</button></div>
+  <div class="sec-head">☁️ Proyecto</div>
+  <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive-btn">🔑 DRIVE</button></div>
   <div class="row" id="driveActions" style="display:none; gap:5px;">
       <button onclick="saveSceneToDrive()">💾 GUARDAR</button>
       <button onclick="loadSceneFromDrive()">📂 CARGAR</button>
   </div>
 
-  <div class="sec-head">📥 Contenido</div>
+  <div class="sec-head">📥 Assets</div>
   <div class="row">
     <input type="url" id="webUrl" placeholder="URL Video/Imagen">
     <button class="primary" onclick="loadFromWeb()" style="width:50px;">ADD</button>
@@ -113,13 +115,13 @@
   <div id="layerList" class="layer-list"></div>
 
   <div id="editorUI" style="display:none;">
-    <div class="sec-head">🎨 Color & Luz</div>
-    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
-    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
-    <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
+    <div class="sec-head">🎨 Ajustes</div>
+    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"></div>
+    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"></div>
+    <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"></div>
     
     <div class="sec-head">🛠️ Chroma Key</div>
-    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar Chroma</label></div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label></div>
     <div id="chromaPanel" style="display:none; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin-top:5px;">
         <div id="currentColorBox"></div>
         <div class="row" style="justify-content: space-around; margin-bottom:8px;">
@@ -138,11 +140,11 @@
     <div class="row" style="margin-top:10px; gap:5px;">
         <button id="btnPlay" class="media-btn" onclick="mediaAction('play')">▶</button>
         <button id="btnPause" class="media-btn" onclick="mediaAction('pause')">⏸</button>
-        <button class="danger" onclick="deleteActive()">🗑️ BORRAR</button>
+        <button class="danger" onclick="deleteActive()">🗑️</button>
     </div>
   </div>
 
-  <div class="sec-head">⚙️ Config MR</div>
+  <div class="sec-head">⚙️ MR</div>
   <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Real</label></div>
 </div>
 
@@ -161,10 +163,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
+// ==========================================
+// 🔑 CONFIGURACIÓN
+// ==========================================
 const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 OCLUSIÓN SHADERS
+// 🎨 SHADERS
 // ==========================================
 const depthVS = `#version 300 es
 precision highp float; in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
@@ -175,9 +180,6 @@ void main(){ vec4 la = texture(uDepth, vUv); float zMeters = decodeRaw(la) * uRa
   float z = -zMeters; float clipZ = uProj[2][2] * z + uProj[3][2]; float clipW = uProj[2][3] * z + uProj[3][3];
   gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0); outColor = vec4(0.0); }`;
 
-// ==========================================
-// 🎨 PRO SHADER
-// ==========================================
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
 uniform sampler2D map; uniform float uBrightness; uniform float uContrast; uniform float uSaturation;
@@ -186,8 +188,7 @@ uniform float uOpacity; uniform bool chromaOn; uniform vec3 k1; uniform float si
 varying vec2 vUv;
 float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
 void main() {
-  vec4 texColor = texture2D(map, vUv);
-  float alpha = texColor.a;
+  vec4 texColor = texture2D(map, vUv); float alpha = texColor.a;
   if(chromaOn) { float d = distance(texColor.rgb, k1); float k = smoothstep(sim1, sim1 + smooth1, d); alpha *= k; }
   vec3 col = texColor.rgb; col *= uTint; col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
   float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation); col += vec3(uEmissive * 0.5);
@@ -204,17 +205,13 @@ let clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null;
 let occlusionEnabled = false;
 
-// Variables XR & UI Espacial
+// Variables XR & UI
 let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
 const tempMatrix = new THREE.Matrix4();
-let measureLine, measureLabelSprite, measureLabelCanvas, measureLabelCtx;
-let rotationRing;
-let tutorialPlane;
-let gridHelper, planeHelper;
 
-// Estado de Unidades
-let currentUnit = 'm'; // m, cm, mm, ft, in
-let unitFactor = 1.0; // Factor para convertir metros a unidad visual
+// UI ARQUITECTURA
+let uiLines, uiLabels = {}, uiPlaneX, uiPlaneZ;
+let currentUnit = 'm';
 
 function init() {
   scene = new THREE.Scene();
@@ -235,17 +232,15 @@ function init() {
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
   
-  // 📏 ELEMENTOS DE MEDICIÓN
-  createMeasurementUI();
-  createRotationRing();
-  createTutorialUI();
-  updateGrid(); // Crear grilla inicial
+  // INICIALIZAR UI ARQUITECTO
+  initArchitectUI();
+  updateGrid(); 
 
   setupXRControllers();
   setupVR();
   renderer.setAnimationLoop(animate);
   
-  // UI Listeners
+  // Listeners UI
   document.getElementById('keyR').addEventListener('input', updateChromaManual);
   document.getElementById('keyG').addEventListener('input', updateChromaManual);
   document.getElementById('keyB').addEventListener('input', updateChromaManual);
@@ -255,7 +250,8 @@ function init() {
       if(input.id.startsWith('key')) return; 
       input.addEventListener('input', (e) => {
          const val = parseFloat(e.target.value);
-         document.getElementById('v_' + e.target.id).innerText = val.toFixed(2);
+         const lbl = document.getElementById('v_' + e.target.id);
+         if(lbl) lbl.innerText = val.toFixed(2);
          updateMaterialParam(e.target.id, val);
       });
   });
@@ -264,142 +260,163 @@ function init() {
       document.getElementById('keyR').value = r; document.getElementById('keyG').value = g; document.getElementById('keyB').value = b;
       updateChromaManual();
   };
-  window.updateUnits = updateUnits;
+  window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
 }
 
 // ==========================================
-// 📏 SISTEMA DE MEDICIÓN Y UI "IRON MAN"
+// 📐 UI ARQUITECTO (TENNIS COURT STYLE)
 // ==========================================
-function createMeasurementUI() {
-    // Línea de distancia (Gris suave, transparente)
-    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,0)]);
-    const mat = new THREE.LineBasicMaterial({ color: 0xaaaaaa, transparent: true, opacity: 0.5 });
-    measureLine = new THREE.Line(geo, mat);
-    measureLine.frustumCulled = false;
-    scene.add(measureLine);
+function initArchitectUI() {
+    // 1. Líneas de Proyección (Geometry dinámica)
+    // Definimos puntos para: [Obj -> Floor], [Floor -> UserX], [Floor -> UserZ]
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(18); // 3 lineas * 2 puntos * 3 coords
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    const mat = new THREE.LineDashedMaterial({ color: 0x00ffff, dashSize: 0.1, gapSize: 0.05, opacity: 0.7, transparent: true });
+    uiLines = new THREE.LineSegments(geo, mat);
+    uiLines.visible = false;
+    uiLines.computeLineDistances();
+    scene.add(uiLines);
 
-    // Etiqueta de texto (Sprite)
-    measureLabelCanvas = document.createElement('canvas');
-    measureLabelCanvas.width = 256; measureLabelCanvas.height = 64;
-    measureLabelCtx = measureLabelCanvas.getContext('2d');
-    const tex = new THREE.CanvasTexture(measureLabelCanvas);
-    const spriteMat = new THREE.SpriteMaterial({ map: tex, transparent: true });
-    measureLabelSprite = new THREE.Sprite(spriteMat);
-    measureLabelSprite.scale.set(0.5, 0.125, 1);
-    measureLabelSprite.visible = false;
-    scene.add(measureLabelSprite);
-}
-
-function updateMeasureLabel(distMeters) {
-    let val = distMeters;
-    let label = "m";
-    // Conversión según unidad seleccionada
-    if(currentUnit === 'cm') { val *= 100; label = 'cm'; }
-    if(currentUnit === 'mm') { val *= 1000; label = 'mm'; }
-    if(currentUnit === 'ft') { val *= 3.28084; label = 'ft'; }
-    if(currentUnit === 'in') { val *= 39.3701; label = 'in'; }
-
-    measureLabelCtx.clearRect(0, 0, 256, 64);
-    measureLabelCtx.fillStyle = "rgba(0, 0, 0, 0.6)";
-    measureLabelCtx.fillRect(0, 0, 256, 64);
-    measureLabelCtx.fillStyle = "#ffffff";
-    measureLabelCtx.font = "bold 40px Arial";
-    measureLabelCtx.textAlign = "center";
-    measureLabelCtx.textBaseline = "middle";
-    measureLabelCtx.fillText(val.toFixed(2) + " " + label, 128, 32);
-    measureLabelSprite.material.map.needsUpdate = true;
-}
-
-function createRotationRing() {
-    const geo = new THREE.RingGeometry(0.5, 0.52, 64);
-    const mat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.0, side: THREE.DoubleSide });
-    rotationRing = new THREE.Mesh(geo, mat);
-    rotationRing.rotation.x = -Math.PI / 2;
-    scene.add(rotationRing);
-}
-
-function createTutorialUI() {
-    const cvs = document.createElement('canvas'); cvs.width = 512; cvs.height = 512;
-    const ctx = cvs.getContext('2d');
-    ctx.fillStyle = "rgba(10, 10, 20, 0.9)"; ctx.fillRect(0,0,512,512);
-    ctx.strokeStyle = "#6c5ce7"; ctx.lineWidth = 10; ctx.strokeRect(0,0,512,512);
-    ctx.fillStyle = "#fff"; ctx.font = "bold 30px Arial"; ctx.textAlign = "center";
+    // 2. Planos "Fantasma" (Proyección en paredes)
+    const planeGeo = new THREE.PlaneGeometry(1,1);
+    const planeMat = new THREE.MeshBasicMaterial({ color: 0x6c5ce7, transparent: true, opacity: 0.1, side: THREE.DoubleSide });
     
-    const lines = [
-        "CONTROLES ARQUITECTO",
-        "--------------------",
-        "MANO DERECHA (Grip):",
-        "🕹️ Stick Y: Acercar / Alejar",
-        "🕹️ Stick X: Rotar Objeto",
-        "",
-        "MANO IZQUIERDA (Grip):",
-        "🕹️ Stick Y: Escalar Objeto",
-        "--------------------",
-        "🔫 Gatillo: Seleccionar"
-    ];
-    lines.forEach((l, i) => ctx.fillText(l, 256, 100 + (i * 40)));
-    
+    uiPlaneX = new THREE.Mesh(planeGeo, planeMat); // Plano lateral
+    uiPlaneZ = new THREE.Mesh(planeGeo, planeMat); // Plano frontal/trasero
+    uiPlaneX.visible = false; uiPlaneZ.visible = false;
+    scene.add(uiPlaneX); scene.add(uiPlaneZ);
+
+    // 3. Etiquetas de Texto (3 Sprites)
+    uiLabels.y = createTextSprite();
+    uiLabels.x = createTextSprite();
+    uiLabels.z = createTextSprite();
+    scene.add(uiLabels.y); scene.add(uiLabels.x); scene.add(uiLabels.z);
+}
+
+function createTextSprite() {
+    const cvs = document.createElement('canvas'); cvs.width = 256; cvs.height = 64;
     const tex = new THREE.CanvasTexture(cvs);
-    const mat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
-    tutorialPlane = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), mat);
-    tutorialPlane.visible = false;
-    // Se adjunta al controllerGrip2 (Izquierda) en setupControllers
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(0.4, 0.1, 1);
+    sprite.visible = false;
+    sprite.renderOrder = 999; // Siempre visible
+    sprite.userData = { cvs, ctx: cvs.getContext('2d'), tex };
+    return sprite;
 }
 
-// ==========================================
-// 📐 GRILLA Y UNIDADES
-// ==========================================
-function updateUnits() {
-    currentUnit = document.getElementById('unitSystem').value;
-    updateGrid();
+function updateLabel(sprite, text) {
+    const { cvs, ctx, tex } = sprite.userData;
+    ctx.clearRect(0, 0, 256, 64);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; ctx.fillRect(0, 0, 256, 64);
+    ctx.fillStyle = "#00ffff"; ctx.font = "bold 34px monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(text, 128, 32);
+    tex.needsUpdate = true;
+    sprite.visible = true;
+}
+
+function convertUnit(valMeters) {
+    let v = valMeters; let u = "m";
+    if(currentUnit === 'cm') { v *= 100; u = 'cm'; }
+    else if(currentUnit === 'mm') { v *= 1000; u = 'mm'; }
+    else if(currentUnit === 'ft') { v *= 3.28084; u = 'ft'; }
+    else if(currentUnit === 'in') { v *= 39.3701; u = 'in'; }
+    return v.toFixed(2) + " " + u;
 }
 
 function updateGrid() {
-    if(gridHelper) scene.remove(gridHelper);
-    if(planeHelper) scene.remove(planeHelper);
-    
-    if(!document.getElementById('showGrid').checked) return;
-
-    let size = 10; let divs = 10; let color = 0x888888;
-    
-    // Ajustar tamaño de grilla según unidad
-    if(currentUnit === 'ft' || currentUnit === 'in') {
-        size = 3.048; // ~10 pies (3 metros aprox)
-        divs = 10;    // 1 pie por cuadro
-        color = 0x6c5ce7; 
-    } else {
-        size = 10;    // 10 metros
-        divs = 10;    // 1 metro por cuadro
-        color = 0x00ff00;
-    }
-
-    gridHelper = new THREE.GridHelper(size, divs, color, 0x444444);
-    scene.add(gridHelper);
-
-    if(document.getElementById('showPlanes').checked) {
-        planeHelper = new THREE.GridHelper(size, divs, 0xff0000, 0x220000);
-        planeHelper.rotation.x = Math.PI / 2;
-        scene.add(planeHelper);
+    // Recrear grilla suelo
+    const oldGrid = scene.getObjectByName("mainGrid");
+    if(oldGrid) scene.remove(oldGrid);
+    if(document.getElementById('showGrid').checked) {
+        let size = 10; let divs = 10;
+        if(currentUnit === 'ft' || currentUnit === 'in') { size = 3.048; divs = 10; } // ~10 pies
+        const grid = new THREE.GridHelper(size, divs, 0x444444, 0x222222);
+        grid.name = "mainGrid";
+        scene.add(grid);
     }
 }
 
+// LÓGICA DE VISUALIZACIÓN ARQUITECTO
+function updateArchitectVisuals(obj, camPos) {
+    if(!obj) {
+        uiLines.visible = false;
+        uiPlaneX.visible = false; uiPlaneZ.visible = false;
+        Object.values(uiLabels).forEach(s => s.visible = false);
+        return;
+    }
+
+    const P = obj.position; 
+    const floorPt = new THREE.Vector3(P.x, 0, P.z);
+    
+    // Asumimos que el usuario es el origen relativo para proyectar
+    // Proyección estilo "Esquina de Cuarto"
+    const refX = camPos.x; // Plano lateral pasa por el usuario? O fijo?
+    const refZ = camPos.z; // Plano frontal pasa por el usuario
+
+    // 1. ACTUALIZAR LINEAS
+    // Línea Vertical (Altura) -> P a Suelo
+    // Línea X (Ancho) -> Suelo a Plano Lateral (refX)
+    // Línea Z (Profundidad) -> Suelo a Plano Frontal (refZ)
+    
+    const posAttr = uiLines.geometry.attributes.position;
+    // Linea 1: P -> Floor
+    posAttr.setXYZ(0, P.x, P.y, P.z); posAttr.setXYZ(1, P.x, 0, P.z);
+    // Linea 2: Floor -> Eje Z (mostrando desplazamiento X)
+    posAttr.setXYZ(2, P.x, 0, P.z); posAttr.setXYZ(3, refX, 0, P.z); // Linea horizontal hacia el lado
+    // Linea 3: Floor -> Eje X (mostrando desplazamiento Z)
+    posAttr.setXYZ(4, P.x, 0, P.z); posAttr.setXYZ(5, P.x, 0, refZ); // Linea profundidad hacia el usuario
+
+    posAttr.needsUpdate = true;
+    uiLines.visible = true;
+    uiLines.computeLineDistances(); // Para el efecto dashed
+
+    // 2. ACTUALIZAR ETIQUETAS
+    // Altura (Y)
+    uiLabels.y.position.set(P.x, P.y/2, P.z);
+    updateLabel(uiLabels.y, convertUnit(P.y));
+    
+    // Distancia Lateral (X)
+    uiLabels.x.position.set((P.x + refX)/2, 0.1, P.z);
+    updateLabel(uiLabels.x, convertUnit(Math.abs(P.x - refX)));
+
+    // Distancia Profundidad (Z)
+    uiLabels.z.position.set(P.x, 0.1, (P.z + refZ)/2);
+    updateLabel(uiLabels.z, convertUnit(Math.abs(P.z - refZ)));
+
+    // Orientar etiquetas a la cámara
+    Object.values(uiLabels).forEach(s => s.lookAt(camPos));
+
+    // 3. ACTUALIZAR PLANOS FANTASMA (TENNIS COURT WALLS)
+    // Plano que muestra la proyección X (Lateral)
+    uiPlaneX.position.set(refX, P.y/2, P.z);
+    uiPlaneX.scale.set(0.02, P.y, 1); // Fina linea vertical o panel
+    uiPlaneX.visible = true;
+
+    // Plano que muestra la proyección Z (Frontal)
+    uiPlaneZ.position.set(P.x, P.y/2, refZ);
+    uiPlaneZ.rotation.y = Math.PI / 2;
+    uiPlaneZ.scale.set(0.02, P.y, 1);
+    uiPlaneZ.visible = true;
+}
+
 // ==========================================
-// 🎮 CONTROLES XR AVANZADOS (ARCHITECT LOGIC)
+// 🎮 CONTROLES XR (FIX CRASH & LOGIC)
 // ==========================================
 function setupXRControllers() {
-    controller1 = renderer.xr.getController(0); // DERECHA
+    controller1 = renderer.xr.getController(0);
     controller1.addEventListener('selectstart', onSelectStart);
+    controller1.addEventListener('squeezestart', onSqueezeStart);
+    controller1.addEventListener('squeezeend', onSqueezeEnd);
     scene.add(controller1);
 
-    controller2 = renderer.xr.getController(1); // IZQUIERDA
+    controller2 = renderer.xr.getController(1);
     controller2.addEventListener('selectstart', onSelectStart);
-    // Listener para botón Y (Menu) - Suele ser button 4 o 5
-    controller2.addEventListener('connected', (e) => {
-        e.data.gamepad.onbuttondown = (btn) => {
-            if(btn.button === 4 || btn.button === 5) toggleTutorial();
-        };
-    });
+    controller2.addEventListener('squeezestart', onSqueezeStart);
+    controller2.addEventListener('squeezeend', onSqueezeEnd);
     scene.add(controller2);
 
     const controllerModelFactory = new XRControllerModelFactory();
@@ -409,11 +426,6 @@ function setupXRControllers() {
 
     controllerGrip2 = renderer.xr.getControllerGrip(1);
     controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
-    // Adjuntar tutorial a la mano izquierda
-    if(tutorialPlane) {
-        tutorialPlane.position.set(0, 0.2, 0); // Flotando sobre el mando
-        controllerGrip2.add(tutorialPlane);
-    }
     scene.add(controllerGrip2);
 
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
@@ -423,101 +435,107 @@ function setupXRControllers() {
     raycaster = new THREE.Raycaster();
 }
 
-function toggleTutorial() {
-    if(tutorialPlane) tutorialPlane.visible = !tutorialPlane.visible;
-}
-
 function handleArchitectControls() {
     const session = renderer.xr.getSession();
-    if (!session || !activeId) return;
+    if (!session || !activeId) {
+        updateArchitectVisuals(null, null); // Ocultar UI si no hay acción
+        return;
+    }
+    
     const obj = objects.find(o => o.id === activeId);
-    if (!obj) return;
+    if (!obj || !obj.mesh) return;
 
-    // Reseteamos UI si no hay acción
-    measureLine.visible = false;
-    measureLabelSprite.visible = false;
-    rotationRing.material.opacity = 0;
+    let isInteracting = false;
+    const camPos = new THREE.Vector3();
+    camera.getWorldPosition(camPos);
 
     for (const source of session.inputSources) {
         if (!source.gamepad) continue;
         const gp = source.gamepad;
-        const gripPressed = gp.buttons[1].pressed; // Botón lateral
+        const gripPressed = gp.buttons[1].pressed;
         const axisX = gp.axes[2];
         const axisY = gp.axes[3];
 
-        // --- MANO DERECHA (MOVIMIENTO & ROTACIÓN) ---
+        // DERECHA (MOVIMIENTO Y ROTACIÓN)
         if (source.handedness === 'right' && gripPressed) {
-            
-            // 1. ACERCAR / ALEJAR (Stick Y) - Rayo Tractor
+            isInteracting = true;
+            // Rayo Tractor (Acercar/Alejar)
             if (Math.abs(axisY) > 0.1) {
-                // Vector dirección Cámara -> Objeto
-                const camPos = new THREE.Vector3();
                 const objPos = new THREE.Vector3();
-                camera.getWorldPosition(camPos);
                 obj.mesh.getWorldPosition(objPos);
-                
                 const dir = new THREE.Vector3().subVectors(objPos, camPos).normalize();
-                const speed = axisY * -0.05; // Invertir eje
-                obj.mesh.position.addScaledVector(dir, speed);
-
-                // UI MEDICIÓN
-                measureLine.geometry.setFromPoints([camPos, objPos]);
-                measureLine.visible = true;
-                
-                const dist = camPos.distanceTo(objPos);
-                measureLabelSprite.position.copy(camPos).lerp(objPos, 0.5);
-                measureLabelSprite.position.y += 0.1;
-                measureLabelSprite.lookAt(camPos);
-                measureLabelSprite.visible = true;
-                updateMeasureLabel(dist);
+                // Bloquear Y para que no se hunda en el suelo al acercar
+                dir.y = 0; dir.normalize(); 
+                obj.mesh.position.addScaledVector(dir, axisY * -0.05);
             }
-
-            // 2. ROTACIÓN Y (Stick X)
+            // Rotación
             if (Math.abs(axisX) > 0.1) {
                 obj.mesh.rotation.y -= axisX * 0.05;
-                // UI ROTACIÓN
-                rotationRing.position.copy(obj.mesh.position);
-                rotationRing.material.opacity = 0.8;
             }
         }
 
-        // --- MANO IZQUIERDA (ESCALA) ---
+        // IZQUIERDA (ESCALA - CRASH FIX)
         if (source.handedness === 'left' && gripPressed) {
+            isInteracting = true;
             if (Math.abs(axisY) > 0.1) {
-                const scaleSpeed = 1 - (axisY * 0.02);
+                // MATH SAFEGUARD: Prevenir escala 0 o infinita
+                let scaleFactor = 1 - (axisY * 0.02);
+                if (scaleFactor < 0.1) scaleFactor = 0.1; // Limite inferior seguridad
                 
-                const lockX = document.getElementById('lockX').checked;
-                const lockY = document.getElementById('lockY').checked;
-                const lockZ = document.getElementById('lockZ').checked;
+                const s = obj.mesh.scale;
+                const lx = document.getElementById('lockX').checked;
+                const ly = document.getElementById('lockY').checked;
+                const lz = document.getElementById('lockZ').checked;
 
-                if(!lockX) obj.mesh.scale.x *= scaleSpeed;
-                if(!lockY) obj.mesh.scale.y *= scaleSpeed;
-                if(!lockZ) obj.mesh.scale.z *= scaleSpeed;
+                if(!lx) s.x *= scaleFactor;
+                if(!ly) s.y *= scaleFactor;
+                if(!lz) s.z *= scaleFactor;
 
-                // Clamp
-                obj.mesh.scale.clampScalar(0.01, 20);
-                
-                // Actualizar UI Slider
-                if(!lockX) {
-                    document.getElementById('scale').value = obj.mesh.scale.x;
-                    document.getElementById('v_scale').innerText = obj.mesh.scale.x.toFixed(2);
-                }
+                // Clamp final para evitar crash de renderizado
+                s.clampScalar(0.05, 50.0);
             }
         }
     }
+
+    if(isInteracting) {
+        updateArchitectVisuals(obj.mesh, camPos);
+    } else {
+        updateArchitectVisuals(null, null);
+    }
 }
 
+// LOGICA GRIP (Agarrar y Arrastrar Físico)
+function onSqueezeStart(event) {
+    const controller = event.target;
+    const intersections = getIntersections(controller);
+    if (intersections.length > 0) {
+        const object = intersections[0].object;
+        controller.attach(object);
+        controller.userData.selected = object;
+    }
+}
+function onSqueezeEnd(event) {
+    const controller = event.target;
+    if (controller.userData.selected !== undefined) {
+        const object = controller.userData.selected;
+        scene.attach(object);
+        controller.userData.selected = undefined;
+    }
+}
 function onSelectStart(event) {
     const controller = event.target;
-    tempMatrix.identity().extractRotation(controller.matrixWorld);
-    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
-    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
-    const meshGroup = objects.map(o => o.mesh);
-    const intersections = raycaster.intersectObjects(meshGroup, false);
+    const intersections = getIntersections(controller);
     if (intersections.length > 0) {
         const object = intersections[0].object;
         if(object.userData && object.userData.id) selectObject(object.userData.id);
     }
+}
+function getIntersections(controller) {
+    tempMatrix.identity().extractRotation(controller.matrixWorld);
+    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    const meshGroup = objects.map(o => o.mesh);
+    return raycaster.intersectObjects(meshGroup, false);
 }
 
 // ==========================================
@@ -545,7 +563,6 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
     }
 
     const aspect = video ? video.videoWidth/video.videoHeight : (tex.image ? tex.image.width/tex.image.height : 1.77);
-
     const mat = new THREE.ShaderMaterial({
       uniforms: { 
         map: { value: tex }, uAspect: { value: aspect }, uTime: { value: 0 },
@@ -565,26 +582,20 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
     mesh.userData.id = objId;
     
     newObj = { id: objId, name, mesh, video, gifData, type, billboard: false, originalAspect: aspect, sourceUrl: url };
-    
-    objects.push(newObj);
-    scene.add(mesh);
+    objects.push(newObj); scene.add(mesh);
     if(!isRestore) selectObject(newObj.id);
-  } catch (e) { 
-    console.error(e); if(!isRestore) alert("Error cargando.");
-  }
+  } catch (e) { console.error(e); if(!isRestore) alert("Error cargando."); }
   if(!isRestore) toggleLoader(false);
   return newObj;
 }
 
 // ==========================================
-// 🎮 UPDATE LOOP
+// 🎮 LOOP & OCLUSIÓN
 // ==========================================
 function animate(time, frame) {
   const elapsedTime = clock.getElapsedTime();
   orbit.update();
-  
-  // LOGICA DE CONTROLES AVANZADOS
-  handleArchitectControls();
+  handleArchitectControls(); // Control Trazadores y Escala
   
   objects.forEach(obj => {
       if(obj.billboard && obj.mesh) obj.mesh.lookAt(camera.position.x, obj.mesh.position.y, camera.position.z);
@@ -619,13 +630,10 @@ function animate(time, frame) {
       gl.colorMask(true, true, true, true);
     }
   }
-
   renderer.render(scene, camera);
 }
 
-// ==========================================
-// 🔌 SETUP VR
-// ==========================================
+// SETUP VR & OCLUSIÓN
 function setupVR() {
   if (navigator.xr) {
     navigator.xr.isSessionSupported('immersive-ar').then(ok => {
@@ -644,7 +652,6 @@ function setupVR() {
     });
   }
 }
-
 function initDepthOcclusion(session) {
   const gl = renderer.getContext(); xrGlBinding = new XRWebGLBinding(session, gl);
   const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, depthVS); gl.compileShader(vs);
@@ -657,15 +664,16 @@ function initDepthOcclusion(session) {
   depthTex = gl.createTexture();
 }
 
+// UTILS & UI SYNC
 function updateMaterialParam(id, val) {
     const obj = objects.find(o => o.id === activeId); if(!obj) return;
     const u = obj.mesh.material.uniforms;
-    if(id === 'scale') obj.mesh.scale.setScalar(val); else if(id === 'posY') obj.mesh.position.y = val; else if(id === 'posZ') obj.mesh.position.z = val; else if(id === 'rotY') obj.mesh.rotation.y = val;
+    if(id === 'scale') obj.mesh.scale.setScalar(val);
+    else if(id === 'posY') obj.mesh.position.y = val; else if(id === 'posZ') obj.mesh.position.z = val; else if(id === 'rotY') obj.mesh.rotation.y = val;
     else if(id === 'brightness') u.uBrightness.value = val; else if(id === 'contrast') u.uContrast.value = val; else if(id === 'saturation') u.uSaturation.value = val;
     else if(id === 'emissive') u.uEmissive.value = val; else if(id === 'opacity') u.uOpacity.value = val; else if(id === 'blur') u.uBlur.value = val; else if(id === 'vignette') u.uVignette.value = val; else if(id === 'noise') u.uNoise.value = val; else if(id === 'k1sim') u.sim1.value = val; else if(id === 'k1smooth') u.smooth1.value = val;
     if(id === 'uRed' || id === 'uGreen' || id === 'uBlue') u.uTint.value.set(document.getElementById('uRed').value, document.getElementById('uGreen').value, document.getElementById('uBlue').value);
 }
-
 function updateChromaManual() {
     const obj = objects.find(o => o.id === activeId); if(!obj) return;
     const r = parseFloat(document.getElementById('keyR').value);
@@ -675,7 +683,6 @@ function updateChromaManual() {
     const hex = new THREE.Color(r, g, b).getHexString();
     document.getElementById('currentColorBox').style.backgroundColor = '#' + hex;
 }
-
 function updateMaterial() {
     const obj = objects.find(o => o.id === activeId); if(!obj) return;
     const u = obj.mesh.material.uniforms;
@@ -683,7 +690,6 @@ function updateMaterial() {
     document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
     const currentK1 = u.k1.value; document.getElementById('keyR').value = currentK1.r; document.getElementById('keyG').value = currentK1.g; document.getElementById('keyB').value = currentK1.b; updateChromaManual();
 }
-
 function selectObject(id) {
   activeId = id; const obj = objects.find(o => o.id === id); if (!obj) return;
   transformCtrl.attach(obj.mesh); document.getElementById('editorUI').style.display = 'block'; updateLayers();
@@ -698,10 +704,9 @@ function selectObject(id) {
   const k1 = u.k1.value; document.getElementById('keyR').value = k1.r; document.getElementById('keyG').value = k1.g; document.getElementById('keyB').value = k1.b; updateChromaManual();
 }
 
-// PERSISTENCE & UTILS
-window.saveSceneToDrive = () => { /* ... (Same logic as v11) ... */ };
-window.loadSceneFromDrive = () => { /* ... (Same logic as v11) ... */ };
-window.handleAuthClick = () => { /* ... (Same logic as v11) ... */ };
+window.saveSceneToDrive = () => { /* Logic from v12 */ };
+window.loadSceneFromDrive = () => { /* Logic from v12 */ };
+window.handleAuthClick = () => { if(!CLIENT_ID) alert("Pon API KEYS"); gapi.load('client:auth2', () => { gapi.client.init({ apiKey: API_KEY, clientId: CLIENT_ID, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope: SCOPES }).then(() => gapi.auth2.getAuthInstance().signIn()).then(() => { document.getElementById('authPanel').style.display = 'none'; document.getElementById('driveActions').style.display = 'flex'; document.getElementById('gDot').classList.add('on'); document.getElementById('gText').innerText = "Conectado"; }); }); };
 window.loadFromWeb = () => { const u = document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset', u.includes('.gif')); };
 document.getElementById('fileInput').onchange = (e) => { for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
 window.deleteActive = () => { const i = objects.findIndex(o => o.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
