@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MR Studio Diamond v8.0 | Cloud Sync</title>
+  <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; user-select: none; }
+    body { margin: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', system-ui, sans-serif; color: #eee; }
+    #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
+    
+    /* UI PRINCIPAL */
+    .ui-panel { 
+      position: fixed; left: 20px; top: 20px; width: 400px; max-height: 90vh; 
+      background: rgba(12, 12, 16, 0.95); backdrop-filter: blur(20px); 
+      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; 
+      padding: 15px; overflow-y: auto; z-index: 100; 
+      box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    .ui-panel.minimized { transform: translateX(-450px); }
+    
+    /* BOTONES Y CONTROLES */
+    #toggleUI {
+        position: fixed; left: 20px; top: 20px; z-index: 101;
+        width: 40px; height: 40px; border-radius: 50%; background: #6c5ce7;
+        border: none; color: white; cursor: pointer; display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5); font-weight: bold;
+    }
+
+    h2 { margin: 0 0 15px 0; font-size: 18px; color: #a29bfe; font-weight: 800; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;}
+    .sec-head { font-size: 10px; font-weight: 800; color: #74b9ff; margin: 15px 0 8px 0; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    label { font-size: 11px; flex: 1; color: #ccc; }
+    input[type=range] { flex: 2; height: 4px; accent-color: #6c5ce7; cursor: pointer; background: #333; border-radius: 2px; }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: #6c5ce7; cursor: pointer; }
+    .val { width: 40px; text-align: right; font-size: 10px; color: #a29bfe; font-family: monospace; }
+    
+    select, input[type=url] { width: 100%; background: #1e1e24; border: 1px solid #333; color: #eee; padding: 8px; border-radius: 6px; font-size: 11px; outline: none; }
+    
+    button { flex: 1; padding: 10px; border-radius: 6px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; color: white; background: #2d3436; transition: 0.2s; }
+    button:active { transform: scale(0.96); }
+    button.primary { background: #6c5ce7; }
+    button.danger { background: rgba(214, 48, 49, 0.2); color: #ff7675; border: 1px solid #d63031; }
+    button.media-btn { background: #0984e3; }
+    button.drive-btn { background: #0F9D58; color: white; }
+
+    .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; border: 1px solid #333; }
+    .layer-item { padding: 8px; font-size: 11px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+    .layer-item:hover { background: rgba(255,255,255,0.05); }
+    .layer-item.active { background: rgba(108, 92, 231, 0.25); border-left: 3px solid #6c5ce7; }
+
+    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 14px 40px; background: #6c5ce7; color: white; border-radius: 50px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(108,92,231,0.6); border: 2px solid white; }
+    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #a29bfe; font-weight: 900; letter-spacing: 2px; }
+    
+    /* Indicador de Google */
+    #gStatus { font-size: 10px; color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
+    .dot.on { background: #0F9D58; box-shadow: 0 0 5px #0F9D58; }
+  </style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div class="loader" id="loader">PROCESANDO...</div>
+<button id="toggleUI" onclick="toggleUIPanel()">☰</button>
+
+<div class="ui-panel" id="ui">
+  <h2>
+      <span>💎 DIAMOND v8.0</span>
+      <button style="width:auto; padding:4px 8px; background:transparent; font-size:16px;" onclick="toggleUIPanel()">×</button>
+  </h2>
+
+  <div class="sec-head">☁️ Google Cloud Sync</div>
+  <div id="gStatus"><div class="dot" id="gDot"></div> <span id="gText">Desconectado</span></div>
+  <div class="row" id="authPanel">
+      <button onclick="handleAuthClick()" class="drive-btn">🔑 CONECTAR DRIVE</button>
+  </div>
+  <div class="row" id="driveActions" style="display:none; gap:5px;">
+      <button onclick="saveSceneToDrive()">💾 GUARDAR</button>
+      <button onclick="loadSceneFromDrive()">📂 CARGAR</button>
+  </div>
+
+  <div class="sec-head">📥 Importar Contenido</div>
+  <div class="row">
+    <input type="url" id="webUrl" placeholder="Pegar URL (.mp4, .gif, .png)">
+    <button class="primary" onclick="loadFromWeb()" style="width:60px;">ADD</button>
+  </div>
+  <button onclick="document.getElementById('fileInput').click()" style="width:100%; margin-top:5px;">📁 ABRIR LOCAL</button>
+  <input type="file" id="fileInput" multiple style="display:none;">
+
+  <div class="sec-head">Capas Activas</div>
+  <div id="layerList" class="layer-list"></div>
+
+  <div id="editorUI" style="display:none;">
+    
+    <div style="background: rgba(108, 92, 231, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(108, 92, 231, 0.3); margin-bottom: 10px;">
+        <div class="row" style="margin:0;">
+            <input type="checkbox" id="checkBillboard" style="width:20px; height:20px;"> 
+            <label style="font-weight:bold; color: #fff; font-size:12px;">ACTIVAR BILLBOARD (Mirar a cámara)</label>
+        </div>
+    </div>
+
+    <div class="sec-head">✨ Estilo & Holograma</div>
+    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1.0</span></div>
+    <div class="row"><label>Emisión (Luz)</label><input type="range" id="emissive" min="0" max="2" step="0.01" value="0"><span class="val" id="v_emissive">0.0</span></div>
+    
+    <div class="sec-head">🎮 Media Controls</div>
+    <div class="row" style="gap:5px;">
+        <button id="btnPlay" class="media-btn" onclick="mediaAction('play')">▶ Play</button>
+        <button id="btnPause" class="media-btn" onclick="mediaAction('pause')">⏸ Pause</button>
+        <button id="btnMute" class="media-btn" onclick="mediaAction('mute')">🔇 Mute</button>
+    </div>
+
+    <div class="sec-head">📐 Transformación</div>
+    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.01" max="10" step="0.01" value="1"><span class="val" id="v_scale">1.0</span></div>
+    <div class="row"><label>Altura Y</label><input type="range" id="posY" min="-5" max="5" step="0.1" value="1.6"><span class="val" id="v_posY">1.6</span></div>
+    <div class="row"><label>Dist. Z</label><input type="range" id="posZ" min="-10" max="10" step="0.1" value="-2"><span class="val" id="v_posZ">-2.0</span></div>
+    <div class="row"><label>Rot Y</label><input type="range" id="rotY" min="-3.14" max="3.14" step="0.1" value="0"><span class="val" id="v_rotY">0.0</span></div>
+    
+    <div class="sec-head">🌐 Proyección</div>
+    <select id="projSelect" onchange="updateProjection()">
+      <option value="plane">Plano 2D (Standard)</option>
+      <option value="curved">Pantalla Curva</option>
+      <option value="orb">Orbe Flotante</option>
+      <option value="360">Entorno 360°</option>
+    </select>
+
+    <div class="sec-head">🧪 Chroma Key</div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar Chroma</label></div>
+    <div id="chromaPanel" style="display:none; padding:8px; background:rgba(255,255,255,0.05); border-radius:8px;">
+        <div class="row">
+            <input type="color" id="pickerColor" value="#00ff00" style="width:40px; height:30px; border:none; padding:0;">
+            <label style="font-size:10px;">Color Key</label>
+        </div>
+        <div class="row"><label>Similitud</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001" value="0.4"></div>
+        <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001" value="0.08"></div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px; display:flex; gap:10px;">
+    <button class="danger" onclick="deleteActive()">🗑️ ELIMINAR</button>
+    <button onclick="centerActive()">🎯 RE-CENTRAR</button>
+  </div>
+  
+  <div class="sec-head">⚙️ Global</div>
+  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Real (Depth API)</label></div>
+</div>
+
+<button id="vrBtn">ENTRAR EN MR</button>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { TransformControls } from 'three/addons/controls/TransformControls.js';
+
+// ==========================================
+// ☁️ CONFIGURACIÓN GOOGLE API (REQUIERE KEYS)
+// ==========================================
+const CLIENT_ID = 'TU_CLIENT_ID_AQUI'; // <--- PEGA TU CLIENT ID DE GOOGLE CLOUD
+const API_KEY = 'TU_API_KEY_AQUI';     // <--- PEGA TU API KEY DE GOOGLE CLOUD
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+window.handleAuthClick = () => {
+    gapi.load('client:auth2', () => {
+        gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+            scope: SCOPES
+        }).then(() => {
+            return gapi.auth2.getAuthInstance().signIn();
+        }).then(() => {
+            updateSigninStatus(true);
+        }).catch(err => {
+            console.error("Error Auth:", err);
+            alert("Error de autenticación. Revisa la consola y tus API Keys.");
+        });
+    });
+};
+
+function updateSigninStatus(isSignedIn) {
+    if (isSignedIn) {
+        document.getElementById('authPanel').style.display = 'none';
+        document.getElementById('driveActions').style.display = 'flex';
+        document.getElementById('gDot').classList.add('on');
+        document.getElementById('gText').innerText = "Conectado a Drive";
+    }
+}
+
+// ==========================================
+// 💾 SISTEMA DE GUARDADO/CARGA
+// ==========================================
+
+// 1. Convertir Escena a JSON
+window.saveSceneToDrive = () => {
+    if(objects.length === 0) { alert("Nada que guardar."); return; }
+    
+    toggleLoader(true);
+    const sceneData = objects.map(o => ({
+        type: o.type,
+        url: o.sourceUrl, // Importante: URL original
+        name: o.name,
+        transform: {
+            position: o.mesh.position.toArray(),
+            rotation: o.mesh.rotation.toArray(),
+            scale: o.mesh.scale.toArray()
+        },
+        settings: {
+            opacity: o.mesh.material.uniforms.uOpacity.value,
+            emissive: o.mesh.material.uniforms.uEmissive.value,
+            billboard: o.billboard,
+            chromaOn: o.mesh.material.uniforms.chromaOn.value,
+            chromaColor: o.mesh.material.uniforms.k1.value.getHexString(),
+            sim: o.mesh.material.uniforms.sim1.value,
+            smooth: o.mesh.material.uniforms.smooth1.value
+        }
+    }));
+
+    const fileContent = JSON.stringify(sceneData, null, 2);
+    const fileName = `diamond_project_${new Date().toISOString().slice(0,10)}.json`;
+
+    // Subir a Drive (Multipart)
+    const fileMetadata = { 'name': fileName, 'mimeType': 'application/json' };
+    const multipartRequestBody =
+      `\r\n--foo_bar_baz\r\nContent-Type: application/json\r\n\r\n` +
+      JSON.stringify(fileMetadata) +
+      `\r\n--foo_bar_baz\r\nContent-Type: application/json\r\n\r\n` +
+      fileContent +
+      `\r\n--foo_bar_baz--`;
+
+    gapi.client.request({
+      'path': '/upload/drive/v3/files',
+      'method': 'POST',
+      'params': {'uploadType': 'multipart'},
+      'headers': { 'Content-Type': 'multipart/related; boundary=foo_bar_baz' },
+      'body': multipartRequestBody
+    }).then((res) => {
+        toggleLoader(false);
+        alert(`✅ Proyecto guardado en Drive!\nID: ${res.result.id}`);
+    }).catch(err => {
+        toggleLoader(false);
+        console.error(err);
+        alert("Error guardando en Drive.");
+    });
+};
+
+// 2. Cargar JSON desde Drive (Simplificado: Busca el último guardado)
+window.loadSceneFromDrive = () => {
+    toggleLoader(true);
+    // Busca archivos JSON creados por esta app
+    gapi.client.drive.files.list({
+        'q': "mimeType='application/json' and trashed=false",
+        'orderBy': 'createdTime desc',
+        'pageSize': 1,
+        'fields': "files(id, name)"
+    }).then(res => {
+        const files = res.result.files;
+        if (files && files.length > 0) {
+            const fileId = files[0].id;
+            // Descargar contenido
+            return gapi.client.drive.files.get({ fileId: fileId, alt: 'media' });
+        } else {
+            throw new Error("No se encontraron proyectos guardados.");
+        }
+    }).then(res => {
+        reconstructScene(res.result);
+    }).catch(err => {
+        toggleLoader(false);
+        alert("Error cargando: " + err.message);
+    });
+};
+
+async function reconstructScene(data) {
+    // Limpiar escena actual
+    [...objects].forEach(o => {
+        scene.remove(o.mesh);
+        if(o.video) o.video.pause();
+    });
+    objects = [];
+    transformCtrl.detach();
+    document.getElementById('editorUI').style.display = 'none';
+
+    // Reconstruir uno a uno
+    for (const item of data) {
+        // addAsset ahora devuelve una promesa con el objeto creado
+        const obj = await addAsset(item.url, item.type, item.name, item.url.includes('.gif'));
+        if (obj) {
+            // Aplicar transformaciones guardadas
+            obj.mesh.position.fromArray(item.transform.position);
+            obj.mesh.rotation.fromArray(item.transform.rotation);
+            obj.mesh.scale.fromArray(item.transform.scale);
+            
+            // Aplicar ajustes visuales
+            obj.mesh.material.uniforms.uOpacity.value = item.settings.opacity;
+            obj.mesh.material.uniforms.uEmissive.value = item.settings.emissive;
+            obj.billboard = item.settings.billboard;
+            obj.mesh.material.uniforms.chromaOn.value = item.settings.chromaOn;
+            obj.mesh.material.uniforms.k1.value.set('#' + item.settings.chromaColor);
+            obj.mesh.material.uniforms.sim1.value = item.settings.sim;
+            obj.mesh.material.uniforms.smooth1.value = item.settings.smooth;
+        }
+    }
+    updateLayers();
+    toggleLoader(false);
+    alert("✅ Escena restaurada desde la nube.");
+}
+
+
+// ==========================================
+// 🎨 CORE 3D ENGINE
+// ==========================================
+
+const vShader = `
+varying vec2 vUv; 
+void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+`;
+
+const fShader = `
+uniform sampler2D map;
+uniform bool chromaOn;
+uniform vec3 k1; 
+uniform float sim1; 
+uniform float smooth1;
+uniform float uOpacity;     
+uniform float uEmissive;    
+varying vec2 vUv;
+
+void main() {
+  vec4 tex = texture2D(map, vUv);
+  
+  float alpha = tex.a;
+  if(chromaOn) {
+    float d = distance(tex.rgb, k1);
+    float k = smoothstep(sim1, sim1 + smooth1, d);
+    alpha *= k;
+  }
+  
+  alpha *= uOpacity;
+  vec3 finalColor = tex.rgb * (1.0 + uEmissive);
+
+  gl_FragColor = vec4(finalColor, alpha);
+  if(alpha < 0.01) discard; 
+}
+`;
+
+// --- DEPTH SHADER ---
+const depthVS = `#version 300 es
+precision highp float; in vec2 aPos; out vec2 vUv;
+void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
+const depthFS = `#version 300 es
+precision highp float; precision highp sampler2D;
+in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj; out vec4 outColor;
+float decodeRaw(vec4 la){ return (la.r * 255.0 * 256.0 + la.a * 255.0); }
+void main(){
+  vec4 la = texture(uDepth, vUv);
+  float zMeters = decodeRaw(la) * uRawToMeters;
+  if(zMeters <= 0.0) discard;
+  float z = -zMeters;
+  float clipZ = uProj[2][2] * z + uProj[3][2];
+  float clipW = uProj[2][3] * z + uProj[3][3];
+  gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0);
+  outColor = vec4(0.0);
+}`;
+
+let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
+let objects = [], activeId = null;
+let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null;
+let occlusionEnabled = false;
+
+function init() {
+  scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, 1));
+
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500);
+  camera.position.set(0, 1.6, 2);
+
+  renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.xr.enabled = true;
+
+  orbit = new OrbitControls(camera, renderer.domElement);
+  orbit.target.set(0, 1.6, -2);
+  orbit.enableDamping = true;
+
+  transformCtrl = new TransformControls(camera, renderer.domElement);
+  transformCtrl.addEventListener('dragging-changed', e => orbit.
