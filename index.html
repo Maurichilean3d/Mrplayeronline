@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v18.0 | Stable Engineering</title>
+  <title>MR Studio Diamond v19.0 | Synced Shadow</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -15,7 +15,7 @@
     
     .ui-panel { 
       position: fixed; left: 20px; top: 20px; width: 350px; max-height: 95vh; 
-      background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); 
+      background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(25px); 
       border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; 
       padding: 15px; overflow-y: auto; z-index: 100; 
       box-shadow: 0 20px 60px rgba(0,0,0,0.9);
@@ -40,8 +40,8 @@
     button.danger { background: #ff4757; color: white; }
     button.drive { background: #2ecc71; color: white; }
 
-    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid #444; color: #00d2ff; font-weight:bold; cursor: pointer; display: none; }
-    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: #00d2ff; color: #000; border-radius: 30px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(0, 210, 255, 0.5); border: 2px solid white; }
+    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid #555; color: #00d2ff; font-weight:bold; cursor: pointer; display: none; }
+    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: #00d2ff; color: #000; border-radius: 30px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); border: 2px solid white; }
     .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #00d2ff; font-weight: 900; letter-spacing: 2px; }
     
     .color-btn { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid #444; transition: 0.2s; }
@@ -56,15 +56,15 @@
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO v18.0...</div>
+<div class="loader" id="loader">CARGANDO v19.0...</div>
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>DIAMOND v18.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>DIAMOND v19.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
 
-  <div class="sec-head">📐 Arquitectura & Cotas</div>
+  <div class="sec-head">📐 Cotas & Unidades</div>
   <div class="row">
-      <select id="unitSystem" onchange="updateUnits()">
+      <select id="unitSystem" onchange="updateUnits()" style="width:100%; padding:5px; background:#222; color:#fff; border:1px solid #444;">
           <option value="m">Metros (m)</option>
           <option value="cm">Centímetros (cm)</option>
           <option value="ft">Pies (ft)</option>
@@ -83,7 +83,7 @@
 
   <div class="sec-head">📥 Assets</div>
   <div class="row">
-    <input type="url" id="webUrl" placeholder="URL Video/Imagen">
+    <input type="url" id="webUrl" placeholder="URL Video/Imagen" style="width:100%; padding:5px; background:#222; color:#fff; border:1px solid #444;">
     <button onclick="loadFromWeb()" style="width:40px; margin-left:5px;">+</button>
   </div>
   <button onclick="document.getElementById('fileInput').click()" style="margin-top:5px; background:#333; color:#fff; border:1px solid #555;">📁 ABRIR LOCAL</button>
@@ -210,24 +210,36 @@ void main() {
 }`;
 
 // ==========================================
-// ⚙️ SISTEMA GLOBAL
+// ⚙️ SISTEMA PRINCIPAL
 // ==========================================
 let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null, clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null, occlusionEnabled = false;
-let controller1, controller2, controllerGrip1, controllerGrip2, raycaster, tempMatrix = new THREE.Matrix4();
+
+// Variables XR & UI
+let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
+const tempMatrix = new THREE.Matrix4();
 
 // UI INGENIERÍA
-let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null };
-let gridHelper, currentUnit = 'm';
+let engGroup; 
+let coordLabels = { x:null, y:null, z:null };
+let dimLabels = { w:null, h:null, d:null };
+let gridHelper;
+let currentUnit = 'm';
 
 function init() {
-  scene = new THREE.Scene(); scene.add(new THREE.AmbientLight(0xffffff, 1));
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500); camera.position.set(0, 1.6, 2);
+  scene = new THREE.Scene();
+  scene.add(new THREE.AmbientLight(0xffffff, 1));
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500);
+  camera.position.set(0, 1.6, 2);
+
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio); renderer.xr.enabled = true;
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.xr.enabled = true;
 
   orbit = new OrbitControls(camera, renderer.domElement);
+  
   transformCtrl = new TransformControls(camera, renderer.domElement);
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
@@ -236,48 +248,58 @@ function init() {
   updateGrid(); 
   setupXRControllers();
   setupVR();
+  
   renderer.setAnimationLoop(animate);
   
-  // Eventos UI
+  // UI Bindings
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
+  
   document.querySelectorAll('input[type=range]').forEach(i => {
       if(!i.id.startsWith('key')) i.addEventListener('input', e => {
           const val = parseFloat(e.target.value);
           const lbl = document.getElementById('v_' + e.target.id);
-          if(lbl) lbl.innerText = val.toFixed(2);
+          if(lbl) lbl.innerText = val.toFixed(3); // Mayor precisión para chroma
           updateMaterialParam(e.target.id, val);
       });
   });
-  ['keyR', 'keyG', 'keyB'].forEach(id => document.getElementById(id).addEventListener('input', updateChromaManual));
+  
+  // Manual RGB Sliders
+  ['keyR', 'keyG', 'keyB'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateChromaManual);
+  });
 
   window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
-  window.setChromaPreset = (r,g,b) => { document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; updateChromaManual(); };
+  window.setChromaPreset = (r,g,b) => { 
+      document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; 
+      updateChromaManual(); 
+  };
 }
 
 // ==========================================
-// 📐 INGENIERÍA UI (COTAS RESTAURADAS)
+// 📐 SISTEMA VISUAL (COTAS V19)
 // ==========================================
 function initEngineeringUI() {
-    engGroup = new THREE.Group(); scene.add(engGroup);
+    engGroup = new THREE.Group();
+    scene.add(engGroup);
     
-    // Lineas
-    const lineMat = new THREE.LineDashedMaterial({ color: 0x00d2ff, dashSize: 0.1, gapSize: 0.05, opacity:0.6, transparent:true });
+    const lineMat = new THREE.LineDashedMaterial({ color: 0x00e5ff, dashSize: 0.1, gapSize: 0.05, opacity:0.6, transparent:true });
     const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
     lineY.name = 'lineY'; engGroup.add(lineY);
     
-    // Sombra
-    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent:true, opacity:0.15, side:THREE.DoubleSide }));
-    shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
+    // Sombra (Projection Plane)
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent:true, opacity:0.15, side:THREE.DoubleSide }));
+    shadow.rotation.x = -Math.PI/2; 
+    shadow.name = 'shadowPlane'; 
+    engGroup.add(shadow);
 
-    // Etiquetas
     coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
     engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
 
-    dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H");
+    dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
     dimLabels.w.material.color.setHex(0xffff00); 
-    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h);
+    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
     
     engGroup.visible = false;
 }
@@ -294,8 +316,8 @@ function createLabel(txt) {
 function updateLabelText(sprite, text) {
     const { ctx, tex } = sprite.userData;
     ctx.clearRect(0,0,256,64);
-    ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0,0,256,64); // Fondo simple para rendimiento
-    ctx.strokeStyle = "#00d2ff"; ctx.lineWidth=3; ctx.strokeRect(2,2,252,60);
+    ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.roundRect(5,5,246,54,10); ctx.fill();
+    ctx.strokeStyle = "#00e5ff"; ctx.lineWidth=2; ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.font = "bold 36px monospace"; 
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(text, 128, 32);
@@ -316,17 +338,21 @@ function updateEngineeringVisuals() {
     engGroup.visible = true;
     const P = obj.mesh.position;
     const S = obj.mesh.scale;
-    let baseW = obj.originalAspect || 1; let realW = baseW * S.x; let realH = S.y;
+    const R = obj.mesh.rotation;
+    
+    let baseW = obj.originalAspect || 1; let baseH = 1;
+    let realW = baseW * S.x; let realH = baseH * S.y;
 
     // Linea Piso
     const lineY = engGroup.getObjectByName('lineY');
     lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
     lineY.computeLineDistances();
 
-    // Sombra
+    // Sombra Sincronizada
     const shadow = engGroup.getObjectByName('shadowPlane');
     shadow.position.set(P.x, 0.01, P.z);
-    shadow.scale.set(realW, realW*0.1, 1); // Adaptado
+    shadow.rotation.set(-Math.PI/2, 0, R.y); // Rota en Z porque esta acostado
+    shadow.scale.set(realW, 0.1, 1); // 0.1 de grosor visual para "panel"
 
     // Coordenadas
     if(document.getElementById('showCoords').checked) {
@@ -342,6 +368,7 @@ function updateEngineeringVisuals() {
     dimLabels.w.visible = true; dimLabels.h.visible = true;
     dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.15, 0));
     updateLabelText(dimLabels.w, "W: " + formatUnit(realW));
+    
     dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.15, 0, 0));
     updateLabelText(dimLabels.h, "H: " + formatUnit(realH));
 }
@@ -356,7 +383,7 @@ function updateGrid() {
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (SIN CRASHES)
+// 🎮 CONTROLES XR (STABLE V16)
 // ==========================================
 function setupXRControllers() {
     controller1 = renderer.xr.getController(0); 
@@ -367,7 +394,6 @@ function setupXRControllers() {
 
     controller2 = renderer.xr.getController(1); 
     controller2.addEventListener('selectstart', onSelect);
-    // REMOVIDO LISTENER PROBLEMATICO PARA BOTONES
     scene.add(controller2);
 
     const fac = new XRControllerModelFactory();
@@ -554,7 +580,7 @@ window.saveSceneToDrive = () => { /* Logica guardar */ };
 window.loadSceneFromDrive = () => { /* Logica cargar */ };
 window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
 document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
-window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
+window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; } };
 window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
