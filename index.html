@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v9.2 | Native Chroma Fix</title>
+  <title>MR Studio Diamond v10.0 | Full XR Control</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -39,14 +39,13 @@
     input[type=checkbox] { width: 14px; height: 14px; accent-color: #6c5ce7; cursor: pointer; }
     .val { width: 35px; text-align: right; font-size: 9px; color: #a29bfe; font-family: monospace; }
     
-    /* Botones de colores para Chroma */
+    /* Colores Chroma */
     .color-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #555; cursor: pointer; transition: 0.2s; }
     .color-btn:hover { transform: scale(1.1); border-color: white; }
     
     select, input[type=url] { width: 100%; background: #1e1e24; border: 1px solid #333; color: #eee; padding: 6px; border-radius: 6px; font-size: 11px; outline: none; }
     
     button { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 10px; font-weight: 700; cursor: pointer; color: white; background: #2d3436; transition: 0.2s; }
-    button:active { transform: scale(0.96); }
     button.primary { background: #6c5ce7; }
     button.danger { background: rgba(214, 48, 49, 0.2); color: #ff7675; border: 1px solid #d63031; }
     button.media-btn { background: #0984e3; }
@@ -62,20 +61,18 @@
     #gStatus { font-size: 10px; color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
     .dot.on { background: #0F9D58; box-shadow: 0 0 5px #0F9D58; }
-    
-    /* Indicador de color actual */
     #currentColorBox { width: 100%; height: 10px; border-radius: 4px; background: #00ff00; margin-bottom: 5px; border: 1px solid #555; }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO v9.2...</div>
+<div class="loader" id="loader">CARGANDO v10.0...</div>
 <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
 <div class="ui-panel" id="ui">
   <h2>
-      <span>💎 DIAMOND v9.2</span>
+      <span>💎 DIAMOND v10.0</span>
       <button style="width:auto; padding:4px 8px; background:transparent; font-size:16px;" onclick="toggleUIPanel()">×</button>
   </h2>
 
@@ -123,7 +120,7 @@
     <div class="row"><label>Vignette</label><input type="range" id="vignette" min="0" max="2" step="0.1" value="0"><span class="val" id="v_vignette">0</span></div>
     <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
 
-    <div class="sec-head">🛠️ Chroma Key (MR Fix)</div>
+    <div class="sec-head">🛠️ Chroma Key</div>
     <select id="projSelect" onchange="updateProjection()" style="margin-bottom:5px;">
       <option value="plane">Plano Standard</option>
       <option value="curved">Pantalla Curva IMAX</option>
@@ -135,20 +132,16 @@
     
     <div id="chromaPanel" style="display:none; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin-top:5px;">
         <div id="currentColorBox"></div>
-        
         <div class="row" style="justify-content: space-around; margin-bottom:8px;">
             <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
             <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
             <div class="color-btn" style="background:#ff00ff;" onclick="setChromaPreset(1,0,1)"></div>
             <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
         </div>
-
         <div class="row"><label style="color:#f55">Key R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
         <div class="row"><label style="color:#5f5">Key G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
         <div class="row"><label style="color:#55f">Key B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
-        
         <hr style="border:0; border-top:1px solid #444; margin:5px 0;">
-        
         <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.01"></div>
         <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.01"></div>
     </div>
@@ -180,38 +173,22 @@ import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
 // ==========================================
-// 🔑 CONFIGURACIÓN GOOGLE (RELLENA ESTO)
+// 🔑 CONFIGURACIÓN GOOGLE
 // ==========================================
 const CLIENT_ID = ''; 
 const API_KEY = '';     
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🎨 PRO SHADER: MOTOR GRÁFICO
+// 🎨 PRO SHADER
 // ==========================================
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-
 const fShader = `
-uniform sampler2D map;
-uniform float uAspect; 
-uniform float uBrightness;
-uniform float uContrast;
-uniform float uSaturation;
-uniform vec3 uTint; 
-uniform float uEmissive;
-uniform float uBlur;
-uniform float uVignette;
-uniform float uNoise;
-uniform float uTime;
-uniform float uOpacity;
-uniform bool chromaOn;
-uniform vec3 k1; 
-uniform float sim1; 
-uniform float smooth1;
+uniform sampler2D map; uniform float uAspect; uniform float uBrightness; uniform float uContrast; uniform float uSaturation;
+uniform vec3 uTint; uniform float uEmissive; uniform float uBlur; uniform float uVignette; uniform float uNoise; uniform float uTime;
+uniform float uOpacity; uniform bool chromaOn; uniform vec3 k1; uniform float sim1; uniform float smooth1;
 varying vec2 vUv;
-
 float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
-
 void main() {
   vec4 texColor = vec4(0.0);
   if (uBlur > 0.0) {
@@ -221,42 +198,16 @@ void main() {
       texColor += texture2D(map, vUv - vec2(off, 0.0)) * 0.175;
       texColor += texture2D(map, vUv + vec2(0.0, off * uAspect)) * 0.175;
       texColor += texture2D(map, vUv - vec2(0.0, off * uAspect)) * 0.175;
-  } else {
-      texColor = texture2D(map, vUv);
-  }
-
+  } else { texColor = texture2D(map, vUv); }
   float alpha = texColor.a;
-  if(chromaOn) {
-    float d = distance(texColor.rgb, k1);
-    float k = smoothstep(sim1, sim1 + smooth1, d);
-    alpha *= k;
-  }
-
-  vec3 col = texColor.rgb;
-  col *= uTint;
-  col += uBrightness;
-  col = (col - 0.5) * uContrast + 0.5;
-  float gray = dot(col, vec3(0.299, 0.587, 0.114));
-  col = mix(vec3(gray), col, uSaturation);
-  col += vec3(uEmissive * 0.5);
-
-  if (uNoise > 0.0) {
-     float grain = random(vUv + mod(uTime, 10.0));
-     col += (grain - 0.5) * uNoise;
-  }
-
-  if (uVignette > 0.0) {
-     vec2 dist = (vUv - 0.5) * vec2(1.0, 1.0/uAspect);
-     float len = dot(dist, dist) * uVignette * 4.0;
-     col *= (1.0 - smoothstep(0.2, 1.0, len));
-     alpha *= (1.0 - smoothstep(0.5, 1.0, len)); 
-  }
-
-  alpha *= uOpacity;
-  gl_FragColor = vec4(col, alpha);
-  if(alpha < 0.01) discard; 
-}
-`;
+  if(chromaOn) { float d = distance(texColor.rgb, k1); float k = smoothstep(sim1, sim1 + smooth1, d); alpha *= k; }
+  vec3 col = texColor.rgb; col *= uTint; col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
+  float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation); col += vec3(uEmissive * 0.5);
+  if (uNoise > 0.0) { float grain = random(vUv + mod(uTime, 10.0)); col += (grain - 0.5) * uNoise; }
+  if (uVignette > 0.0) { vec2 dist = (vUv - 0.5) * vec2(1.0, 1.0/uAspect); float len = dot(dist, dist) * uVignette * 4.0;
+     col *= (1.0 - smoothstep(0.2, 1.0, len)); alpha *= (1.0 - smoothstep(0.5, 1.0, len)); }
+  alpha *= uOpacity; gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
+}`;
 
 // ==========================================
 // ⚙️ SISTEMA PRINCIPAL
@@ -265,11 +216,12 @@ let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null;
 let clock = new THREE.Clock();
 
-// Variables XR
+// Variables XR Controllers
 let controller1, controller2;
 let controllerGrip1, controllerGrip2;
 let raycaster;
 const tempMatrix = new THREE.Matrix4();
+let intersected = [];
 
 function init() {
   scene = new THREE.Scene();
@@ -291,15 +243,16 @@ function init() {
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
   
+  // 🎮 SETUP AVANZADO DE CONTROLES
   setupXRControllers();
+  
   setupVR();
   renderer.setAnimationLoop(animate);
   
-  // LISTENERS PARA LOS NUEVOS SLIDERS DE CHROMA
+  // UI LISTENERS
   document.getElementById('keyR').addEventListener('input', updateChromaManual);
   document.getElementById('keyG').addEventListener('input', updateChromaManual);
   document.getElementById('keyB').addEventListener('input', updateChromaManual);
-
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('checkBillboard').addEventListener('change', (e) => {
       const o = objects.find(obj => obj.id === activeId);
@@ -307,7 +260,7 @@ function init() {
   });
   
   document.querySelectorAll('input[type=range]').forEach(input => {
-      if(input.id.startsWith('key')) return; // Saltamos los de chroma manuales pues tienen su propia fn
+      if(input.id.startsWith('key')) return; 
       input.addEventListener('input', (e) => {
          const val = parseFloat(e.target.value);
          const display = document.getElementById('v_' + e.target.id);
@@ -316,40 +269,41 @@ function init() {
       });
   });
   
-  // Función Global para los botones de colores
   window.setChromaPreset = (r, g, b) => {
-      document.getElementById('keyR').value = r;
-      document.getElementById('keyG').value = g;
-      document.getElementById('keyB').value = b;
+      document.getElementById('keyR').value = r; document.getElementById('keyG').value = g; document.getElementById('keyB').value = b;
       updateChromaManual();
   };
 }
 
 function updateChromaManual() {
-    const obj = objects.find(o => o.id === activeId);
-    if(!obj) return;
-    
+    const obj = objects.find(o => o.id === activeId); if(!obj) return;
     const r = parseFloat(document.getElementById('keyR').value);
     const g = parseFloat(document.getElementById('keyG').value);
     const b = parseFloat(document.getElementById('keyB').value);
-    
-    // Actualizar Shader
     obj.mesh.material.uniforms.k1.value.setRGB(r, g, b);
-    
-    // Actualizar Visualizador UI
     const hex = new THREE.Color(r, g, b).getHexString();
     document.getElementById('currentColorBox').style.backgroundColor = '#' + hex;
 }
 
+// ==========================================
+// 🎮 XR INTERACTION LOGIC (MOVE / ROTATE / SCALE)
+// ==========================================
 function setupXRControllers() {
+    // Controller 1
     controller1 = renderer.xr.getController(0);
-    controller1.addEventListener('selectstart', onSelectStart);
+    controller1.addEventListener('selectstart', onSelectStart); // Gatillo (UI Select)
+    controller1.addEventListener('squeezestart', onSqueezeStart); // Grip (Agarrar)
+    controller1.addEventListener('squeezeend', onSqueezeEnd);     // Soltar
     scene.add(controller1);
 
+    // Controller 2
     controller2 = renderer.xr.getController(1);
     controller2.addEventListener('selectstart', onSelectStart);
+    controller2.addEventListener('squeezestart', onSqueezeStart);
+    controller2.addEventListener('squeezeend', onSqueezeEnd);
     scene.add(controller2);
 
+    // Modelos
     const controllerModelFactory = new XRControllerModelFactory();
     controllerGrip1 = renderer.xr.getControllerGrip(0);
     controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
@@ -359,24 +313,77 @@ function setupXRControllers() {
     controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
     scene.add(controllerGrip2);
 
+    // Rayo Láser
     const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
-    const line = new THREE.Line(geometry);
-    line.name = 'line';
-    line.scale.z = 5;
-
-    controller1.add(line.clone());
-    controller2.add(line.clone());
+    const line = new THREE.Line(geometry); line.name = 'line'; line.scale.z = 5;
+    controller1.add(line.clone()); controller2.add(line.clone());
 
     raycaster = new THREE.Raycaster();
 }
 
+// 1. SELECT (Gatillo) -> Solo para seleccionar UI y objeto activo
 function onSelectStart(event) {
     const controller = event.target;
     const intersections = getIntersections(controller);
     if (intersections.length > 0) {
         const object = intersections[0].object;
-        if(object.userData && object.userData.id) {
-            selectObject(object.userData.id);
+        if(object.userData && object.userData.id) selectObject(object.userData.id);
+    }
+}
+
+// 2. SQUEEZE (Grip) -> AGARRAR FISICAMENTE
+function onSqueezeStart(event) {
+    const controller = event.target;
+    const intersections = getIntersections(controller);
+    if (intersections.length > 0) {
+        const object = intersections[0].object;
+        // Parenting: Pegar objeto al control manteniendo su transform global
+        controller.attach(object);
+        controller.userData.selected = object;
+    }
+}
+
+function onSqueezeEnd(event) {
+    const controller = event.target;
+    if (controller.userData.selected !== undefined) {
+        const object = controller.userData.selected;
+        // Soltar: Devolver a la escena manteniendo su nueva posición
+        scene.attach(object);
+        controller.userData.selected = undefined;
+    }
+}
+
+// 3. JOYSTICK -> ESCALAR (Solo si está agarrado)
+function handleJoystickScaling() {
+    // Verificar si hay sesión XR
+    const session = renderer.xr.getSession();
+    if (session && session.inputSources) {
+        for (const source of session.inputSources) {
+            if (source.gamepad) {
+                // Eje Y del Joystick (normalmente axes[3])
+                const axisY = source.gamepad.axes[3]; 
+                
+                // Buscar qué controller es (0 o 1)
+                let controller = null;
+                if(source.handedness === 'left') controller = controller1;
+                if(source.handedness === 'right') controller = controller2;
+
+                // Si este control tiene algo agarrado
+                if (controller && controller.userData.selected) {
+                    const obj = controller.userData.selected;
+                    if (Math.abs(axisY) > 0.1) { // Deadzone
+                        const scaleFactor = 1 - (axisY * 0.05); // Velocidad de escala
+                        obj.scale.multiplyScalar(scaleFactor);
+                        // Limitar escala min/max
+                        obj.scale.clampScalar(0.1, 10);
+                        // Actualizar UI si es el activo
+                        if(obj.userData.id === activeId) {
+                            document.getElementById('scale').value = obj.scale.x;
+                            document.getElementById('v_scale').innerText = obj.scale.x.toFixed(2);
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -402,39 +409,25 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
       const resp = await fetch(url);
       const buf = await resp.arrayBuffer();
       const reader = new window.Omggif.GifReader(new Uint8Array(buf));
-      const cvs = document.createElement('canvas');
-      cvs.width = reader.width; cvs.height = reader.height;
-      const ctx = cvs.getContext('2d');
-      const imgData = ctx.createImageData(cvs.width, cvs.height);
-      tex = new THREE.CanvasTexture(cvs);
-      tex.colorSpace = THREE.SRGBColorSpace;
+      const cvs = document.createElement('canvas'); cvs.width = reader.width; cvs.height = reader.height;
+      const ctx = cvs.getContext('2d'); const imgData = ctx.createImageData(cvs.width, cvs.height);
+      tex = new THREE.CanvasTexture(cvs); tex.colorSpace = THREE.SRGBColorSpace;
       gifData = { reader, ctx, imgData, tex, frame: 0, nextTime: 0, playing: true };
     } else if (type === 'video') {
-      video = document.createElement('video');
-      video.src = url;
-      video.loop = true; video.muted = true; video.crossOrigin = "anonymous";
-      video.playsInline = true;
-      await video.play();
-      tex = new THREE.VideoTexture(video);
-      tex.colorSpace = THREE.SRGBColorSpace;
+      video = document.createElement('video'); video.src = url; video.loop = true; video.muted = true; video.crossOrigin = "anonymous"; video.playsInline = true;
+      await video.play(); tex = new THREE.VideoTexture(video); tex.colorSpace = THREE.SRGBColorSpace;
     } else {
-      tex = await new THREE.TextureLoader().loadAsync(url);
-      tex.colorSpace = THREE.SRGBColorSpace;
+      tex = await new THREE.TextureLoader().loadAsync(url); tex.colorSpace = THREE.SRGBColorSpace;
     }
 
     const aspect = video ? video.videoWidth/video.videoHeight : (tex.image ? tex.image.width/tex.image.height : 1.77);
 
     const mat = new THREE.ShaderMaterial({
       uniforms: { 
-        map: { value: tex }, 
-        uAspect: { value: aspect },
-        uTime: { value: 0 },
-        // Grading
+        map: { value: tex }, uAspect: { value: aspect }, uTime: { value: 0 },
         uBrightness: { value: 0.0 }, uContrast: { value: 1.0 }, uSaturation: { value: 1.0 },
         uTint: { value: new THREE.Vector3(1,1,1) }, uEmissive: { value: 0.0 }, uOpacity: { value: 1.0 },
-        // Effects
         uBlur: { value: 0.0 }, uVignette: { value: 0.0 }, uNoise: { value: 0.0 },
-        // Chroma
         chromaOn: { value: false }, k1: { value: new THREE.Color(0,1,0) }, sim1: { value: 0.4 }, smooth1: { value: 0.08 }
       },
       vertexShader: vShader, fragmentShader: fShader, transparent: true, side: THREE.DoubleSide, depthWrite: false
@@ -447,20 +440,13 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
     const objId = Math.random().toString(36).substr(2,9);
     mesh.userData.id = objId; // ID para Raycaster
     
-    newObj = { 
-        id: objId, 
-        name, mesh, video, gifData, type, 
-        billboard: false,
-        originalAspect: aspect,
-        sourceUrl: url 
-    };
+    newObj = { id: objId, name, mesh, video, gifData, type, billboard: false, originalAspect: aspect, sourceUrl: url };
     
     objects.push(newObj);
     scene.add(mesh);
     if(!isRestore) selectObject(newObj.id);
   } catch (e) { 
-    console.error(e); 
-    if(!isRestore) alert("Error cargando. Revisa CORS.");
+    console.error(e); if(!isRestore) alert("Error cargando. Revisa CORS.");
   }
   if(!isRestore) toggleLoader(false);
   return newObj;
@@ -470,37 +456,30 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
 // 🎮 UPDATE LOOP
 // ==========================================
 function animate(time) {
-  const dt = clock.getDelta();
   const elapsedTime = clock.getElapsedTime();
   orbit.update();
   
+  // Procesar escala por joystick
+  handleJoystickScaling();
+  
   objects.forEach(obj => {
-      if(obj.billboard && obj.mesh) {
-          obj.mesh.lookAt(camera.position.x, obj.mesh.position.y, camera.position.z);
-      }
-      if(obj.mesh && obj.mesh.material.uniforms.uTime) {
-          obj.mesh.material.uniforms.uTime.value = elapsedTime;
-      }
+      if(obj.billboard && obj.mesh) obj.mesh.lookAt(camera.position.x, obj.mesh.position.y, camera.position.z);
+      if(obj.mesh && obj.mesh.material.uniforms.uTime) obj.mesh.material.uniforms.uTime.value = elapsedTime;
       if (obj.gifData && obj.gifData.playing) {
         const g = obj.gifData;
         if (performance.now() > g.nextTime) {
-          g.reader.decodeAndBlitFrameRGBA(g.frame, g.imgData.data);
-          g.ctx.putImageData(g.imgData, 0, 0);
-          g.tex.needsUpdate = true;
-          g.nextTime = performance.now() + (g.reader.frameInfo(g.frame).delay * 10 || 100);
+          g.reader.decodeAndBlitFrameRGBA(g.frame, g.imgData.data); g.ctx.putImageData(g.imgData, 0, 0);
+          g.tex.needsUpdate = true; g.nextTime = performance.now() + (g.reader.frameInfo(g.frame).delay * 10 || 100);
           g.frame = (g.frame + 1) % g.reader.numFrames();
         }
       }
   });
-
   renderer.render(scene, camera);
 }
 
 function updateMaterialParam(id, val) {
-    const obj = objects.find(o => o.id === activeId);
-    if(!obj) return;
+    const obj = objects.find(o => o.id === activeId); if(!obj) return;
     const u = obj.mesh.material.uniforms;
-
     if(id === 'scale') obj.mesh.scale.setScalar(val);
     else if(id === 'posY') obj.mesh.position.y = val;
     else if(id === 'posZ') obj.mesh.position.z = val;
@@ -515,78 +494,42 @@ function updateMaterialParam(id, val) {
     else if(id === 'noise') u.uNoise.value = val;
     else if(id === 'k1sim') u.sim1.value = val;
     else if(id === 'k1smooth') u.smooth1.value = val;
-
     if(id === 'uRed' || id === 'uGreen' || id === 'uBlue') {
-        u.uTint.value.set(
-            document.getElementById('uRed').value,
-            document.getElementById('uGreen').value,
-            document.getElementById('uBlue').value
-        );
+        u.uTint.value.set(document.getElementById('uRed').value, document.getElementById('uGreen').value, document.getElementById('uBlue').value);
     }
 }
 
 function updateMaterial() {
-    const obj = objects.find(o => o.id === activeId);
-    if(!obj) return;
+    const obj = objects.find(o => o.id === activeId); if(!obj) return;
     const u = obj.mesh.material.uniforms;
     u.chromaOn.value = document.getElementById('chromaToggle').checked;
     document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
-    
-    // Al abrir el panel, sincronizamos los sliders con el valor actual del material
     const currentK1 = u.k1.value;
-    document.getElementById('keyR').value = currentK1.r;
-    document.getElementById('keyG').value = currentK1.g;
-    document.getElementById('keyB').value = currentK1.b;
+    document.getElementById('keyR').value = currentK1.r; document.getElementById('keyG').value = currentK1.g; document.getElementById('keyB').value = currentK1.b;
     updateChromaManual();
 }
 
 function selectObject(id) {
   activeId = id;
-  const obj = objects.find(o => o.id === id);
-  if (!obj) return;
+  const obj = objects.find(o => o.id === id); if (!obj) return;
   transformCtrl.attach(obj.mesh);
   document.getElementById('editorUI').style.display = 'block';
   updateLayers();
-
   const u = obj.mesh.material.uniforms;
   const setVal = (domId, val) => {
       const el = document.getElementById(domId);
-      if(el) {
-          el.value = val;
-          const disp = document.getElementById('v_' + domId);
-          if(disp) disp.innerText = (typeof val === 'number') ? val.toFixed(2) : val;
-      }
+      if(el) { el.value = val; const disp = document.getElementById('v_' + domId); if(disp) disp.innerText = (typeof val === 'number') ? val.toFixed(2) : val; }
   };
-
-  setVal('scale', obj.mesh.scale.x);
-  setVal('posY', obj.mesh.position.y);
-  setVal('posZ', obj.mesh.position.z);
-  setVal('rotY', obj.mesh.rotation.y);
-  setVal('brightness', u.uBrightness.value);
-  setVal('contrast', u.uContrast.value);
-  setVal('saturation', u.uSaturation.value);
-  setVal('emissive', u.uEmissive.value);
-  setVal('opacity', u.uOpacity.value);
-  setVal('blur', u.uBlur.value);
-  setVal('vignette', u.uVignette.value);
-  setVal('noise', u.uNoise.value);
-  
-  document.getElementById('uRed').value = u.uTint.value.x;
-  document.getElementById('uGreen').value = u.uTint.value.y;
-  document.getElementById('uBlue').value = u.uTint.value.z;
-
+  setVal('scale', obj.mesh.scale.x); setVal('posY', obj.mesh.position.y); setVal('posZ', obj.mesh.position.z); setVal('rotY', obj.mesh.rotation.y);
+  setVal('brightness', u.uBrightness.value); setVal('contrast', u.uContrast.value); setVal('saturation', u.uSaturation.value);
+  setVal('emissive', u.uEmissive.value); setVal('opacity', u.uOpacity.value);
+  setVal('blur', u.uBlur.value); setVal('vignette', u.uVignette.value); setVal('noise', u.uNoise.value);
+  document.getElementById('uRed').value = u.uTint.value.x; document.getElementById('uGreen').value = u.uTint.value.y; document.getElementById('uBlue').value = u.uTint.value.z;
   document.getElementById('checkBillboard').checked = obj.billboard;
   document.getElementById('chromaToggle').checked = u.chromaOn.value;
-  setVal('k1sim', u.sim1.value);
-  setVal('k1smooth', u.smooth1.value);
-  
+  setVal('k1sim', u.sim1.value); setVal('k1smooth', u.smooth1.value);
   document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
-  
-  // Sincronizar Sliders Chroma
-  const k1 = u.k1.value;
-  document.getElementById('keyR').value = k1.r;
-  document.getElementById('keyG').value = k1.g;
-  document.getElementById('keyB').value = k1.b;
+  const k1 = u.k1.value; document.getElementById('keyR').value = k1.r; document.getElementById('keyG').value = k1.g; document.getElementById('keyB').value = k1.b;
   updateChromaManual();
 }
 
@@ -594,71 +537,36 @@ function selectObject(id) {
 // ☁️ PERSISTENCIA
 // ==========================================
 window.saveSceneToDrive = () => {
-    if(objects.length === 0) return;
-    toggleLoader(true);
+    if(objects.length === 0) return; toggleLoader(true);
     const sceneData = objects.map(o => ({
         type: o.type, url: o.sourceUrl, name: o.name,
         transform: { pos: o.mesh.position.toArray(), rot: o.mesh.rotation.toArray(), scl: o.mesh.scale.toArray() },
         settings: {
-            billboard: o.billboard,
-            opacity: o.mesh.material.uniforms.uOpacity.value,
-            brightness: o.mesh.material.uniforms.uBrightness.value,
-            contrast: o.mesh.material.uniforms.uContrast.value,
-            saturation: o.mesh.material.uniforms.uSaturation.value,
-            emissive: o.mesh.material.uniforms.uEmissive.value,
-            blur: o.mesh.material.uniforms.uBlur.value,
-            vignette: o.mesh.material.uniforms.uVignette.value,
-            noise: o.mesh.material.uniforms.uNoise.value,
-            tint: o.mesh.material.uniforms.uTint.value.toArray(),
-            chromaOn: o.mesh.material.uniforms.chromaOn.value,
-            chromaColor: o.mesh.material.uniforms.k1.value.getHexString(),
-            sim: o.mesh.material.uniforms.sim1.value,
-            smooth: o.mesh.material.uniforms.smooth1.value
+            billboard: o.billboard, opacity: o.mesh.material.uniforms.uOpacity.value,
+            brightness: o.mesh.material.uniforms.uBrightness.value, contrast: o.mesh.material.uniforms.uContrast.value,
+            saturation: o.mesh.material.uniforms.uSaturation.value, emissive: o.mesh.material.uniforms.uEmissive.value,
+            blur: o.mesh.material.uniforms.uBlur.value, vignette: o.mesh.material.uniforms.uVignette.value,
+            noise: o.mesh.material.uniforms.uNoise.value, tint: o.mesh.material.uniforms.uTint.value.toArray(),
+            chromaOn: o.mesh.material.uniforms.chromaOn.value, chromaColor: o.mesh.material.uniforms.k1.value.getHexString(),
+            sim: o.mesh.material.uniforms.sim1.value, smooth: o.mesh.material.uniforms.smooth1.value
         }
     }));
-    
-    const fileContent = JSON.stringify(sceneData);
-    const metadata = { 'name': 'diamond_xr_v9.json', 'mimeType': 'application/json' };
-    const multipart = `\r\n--foo\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(metadata)}\r\n--foo\r\nContent-Type: application/json\r\n\r\n${fileContent}\r\n--foo--`;
-
-    gapi.client.request({
-      'path': '/upload/drive/v3/files', 'method': 'POST',
-      'params': {'uploadType': 'multipart'},
-      'headers': { 'Content-Type': 'multipart/related; boundary=foo' },
-      'body': multipart
-    }).then(() => { toggleLoader(false); alert("Guardado OK"); })
-      .catch(e => { toggleLoader(false); console.error(e); alert("Error guardando"); });
+    const multipart = `\r\n--foo\r\nContent-Type: application/json\r\n\r\n${JSON.stringify({ 'name': 'diamond_xr_v10.json', 'mimeType': 'application/json' })}\r\n--foo\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(sceneData)}\r\n--foo--`;
+    gapi.client.request({ 'path': '/upload/drive/v3/files', 'method': 'POST', 'params': {'uploadType': 'multipart'}, 'headers': { 'Content-Type': 'multipart/related; boundary=foo' }, 'body': multipart })
+    .then(() => { toggleLoader(false); alert("Guardado OK"); }).catch(e => { toggleLoader(false); console.error(e); alert("Error guardando"); });
 };
 
 async function reconstructScene(data) {
-    [...objects].forEach(o => { scene.remove(o.mesh); if(o.video) o.video.pause(); });
-    objects = []; transformCtrl.detach(); document.getElementById('editorUI').style.display = 'none';
-
+    [...objects].forEach(o => { scene.remove(o.mesh); if(o.video) o.video.pause(); }); objects = []; transformCtrl.detach(); document.getElementById('editorUI').style.display = 'none';
     for (const item of data) {
-        if(!item.url) continue;
-        const obj = await addAsset(item.url, item.type, item.name, item.url.includes('.gif'), true);
+        if(!item.url) continue; const obj = await addAsset(item.url, item.type, item.name, item.url.includes('.gif'), true);
         if (obj) {
-            obj.mesh.position.fromArray(item.transform.pos);
-            obj.mesh.rotation.fromArray(item.transform.rot);
-            obj.mesh.scale.fromArray(item.transform.scl);
-            
-            const u = obj.mesh.material.uniforms;
-            const s = item.settings;
-            obj.billboard = s.billboard;
-            u.uOpacity.value = s.opacity;
-            u.uBrightness.value = s.brightness || 0;
-            u.uContrast.value = s.contrast || 1;
-            u.uSaturation.value = s.saturation || 1;
-            u.uEmissive.value = s.emissive || 0;
-            u.uBlur.value = s.blur || 0;
-            u.uVignette.value = s.vignette || 0;
-            u.uNoise.value = s.noise || 0;
-            if(s.tint) u.uTint.value.fromArray(s.tint);
-            
-            u.chromaOn.value = s.chromaOn;
-            u.k1.value.set('#' + s.chromaColor);
-            u.sim1.value = s.sim;
-            u.smooth1.value = s.smooth;
+            obj.mesh.position.fromArray(item.transform.pos); obj.mesh.rotation.fromArray(item.transform.rot); obj.mesh.scale.fromArray(item.transform.scl);
+            const u = obj.mesh.material.uniforms; const s = item.settings;
+            obj.billboard = s.billboard; u.uOpacity.value = s.opacity; u.uBrightness.value = s.brightness || 0; u.uContrast.value = s.contrast || 1;
+            u.uSaturation.value = s.saturation || 1; u.uEmissive.value = s.emissive || 0; u.uBlur.value = s.blur || 0; u.uVignette.value = s.vignette || 0;
+            u.uNoise.value = s.noise || 0; if(s.tint) u.uTint.value.fromArray(s.tint);
+            u.chromaOn.value = s.chromaOn; u.k1.value.set('#' + s.chromaColor); u.sim1.value = s.sim; u.smooth1.value = s.smooth;
         }
     }
     updateLayers(); toggleLoader(false);
@@ -670,20 +578,10 @@ window.handleAuthClick = () => {
     gapi.load('client:auth2', () => {
         gapi.client.init({ apiKey: API_KEY, clientId: CLIENT_ID, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope: SCOPES })
         .then(() => gapi.auth2.getAuthInstance().signIn())
-        .then(() => {
-            document.getElementById('authPanel').style.display = 'none';
-            document.getElementById('driveActions').style.display = 'flex';
-            document.getElementById('gDot').classList.add('on');
-            document.getElementById('gText').innerText = "Conectado";
-        });
+        .then(() => { document.getElementById('authPanel').style.display = 'none'; document.getElementById('driveActions').style.display = 'flex'; document.getElementById('gDot').classList.add('on'); document.getElementById('gText').innerText = "Conectado"; });
     });
 };
-window.loadSceneFromDrive = () => {
-    toggleLoader(true);
-    gapi.client.drive.files.list({ 'q': "mimeType='application/json' and trashed=false", 'orderBy': 'createdTime desc', 'pageSize': 1 })
-    .then(res => res.result.files[0] ? gapi.client.drive.files.get({ fileId: res.result.files[0].id, alt: 'media' }) : Promise.reject("No hay saves"))
-    .then(res => reconstructScene(res.result)).catch(e => { toggleLoader(false); alert("Error carga: " + e); });
-};
+window.loadSceneFromDrive = () => { toggleLoader(true); gapi.client.drive.files.list({ 'q': "mimeType='application/json' and trashed=false", 'orderBy': 'createdTime desc', 'pageSize': 1 }) .then(res => res.result.files[0] ? gapi.client.drive.files.get({ fileId: res.result.files[0].id, alt: 'media' }) : Promise.reject("No hay saves")).then(res => reconstructScene(res.result)).catch(e => { toggleLoader(false); alert("Error carga: " + e); }); };
 window.loadFromWeb = () => { const u = document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset', u.includes('.gif')); };
 document.getElementById('fileInput').onchange = (e) => { for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
 window.deleteActive = () => { const i = objects.findIndex(o => o.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
@@ -693,11 +591,7 @@ window.toggleUIPanel = () => { document.getElementById('ui').classList.toggle('m
 window.updateProjection = () => {
   const o = objects.find(x=>x.id===activeId); if(!o) return;
   const m = document.getElementById('projSelect').value; scene.remove(o.mesh);
-  let g; if(m=='360') { g=new THREE.SphereGeometry(100,64,32); o.mesh.material.side=THREE.BackSide; }
-  else if(m=='orb') { g=new THREE.SphereGeometry(1.5,64,32); o.mesh.material.side=THREE.FrontSide; }
-  else if(m=='curved') { g=new THREE.CylinderGeometry(5,5,2,32,1,true,3.8,1.8); o.mesh.scale.set(-1,1,1); o.mesh.material.side=THREE.DoubleSide; }
-  else { g=new THREE.PlaneGeometry(o.originalAspect*2, 2); o.mesh.material.side=THREE.DoubleSide; }
-  o.mesh.geometry=g; scene.add(o.mesh); transformCtrl.attach(o.mesh);
+  let g; if(m=='360') { g=new THREE.SphereGeometry(100,64,32); o.mesh.material.side=THREE.BackSide; } else if(m=='orb') { g=new THREE.SphereGeometry(1.5,64,32); o.mesh.material.side=THREE.FrontSide; } else if(m=='curved') { g=new THREE.CylinderGeometry(5,5,2,32,1,true,3.8,1.8); o.mesh.scale.set(-1,1,1); o.mesh.material.side=THREE.DoubleSide; } else { g=new THREE.PlaneGeometry(o.originalAspect*2, 2); o.mesh.material.side=THREE.DoubleSide; } o.mesh.geometry=g; scene.add(o.mesh); transformCtrl.attach(o.mesh);
 };
 function toggleLoader(s) { document.getElementById('loader').style.display=s?'grid':'none'; }
 function setupVR() { if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok=>{ if(ok) { document.getElementById('vrBtn').style.display='block'; document.getElementById('vrBtn').onclick=async()=>{ xrSession=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['local-floor'],optionalFeatures:['dom-overlay'],domOverlay:{root:document.body}}); renderer.xr.setSession(xrSession); xrRefSpace=await xrSession.requestReferenceSpace('local-floor'); }; } }); }
