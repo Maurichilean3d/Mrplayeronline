@@ -3,134 +3,169 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v19.0 | Synced Shadow</title>
+  <title>MR Studio Diamond v20.0 | Amber UI</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+    /* =========================================
+       ESTILO "AMBER GLASS" FUTURISTA
+    ========================================= */
+    :root {
+        --main-color: #ffaa00; /* Naranja Ámbar Neón */
+        --bg-glass: rgba(20, 20, 25, 0.75);
+        --border-glass: rgba(255, 170, 0, 0.3);
+        --text-glow: 0 0 8px rgba(255, 170, 0, 0.6);
+    }
+
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
     body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
+    /* PANEL DE VIDRIO MEJORADO */
     .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 350px; max-height: 95vh; 
-      background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(25px); 
-      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; 
-      padding: 15px; overflow-y: auto; z-index: 100; 
-      box-shadow: 0 20px 60px rgba(0,0,0,0.9);
-      scrollbar-width: thin; scrollbar-color: #555 transparent;
-      transition: transform 0.3s ease;
+      position: fixed; left: 20px; top: 20px; width: 350px; max-height: 90vh; 
+      background: var(--bg-glass);
+      backdrop-filter: blur(30px) saturate(150%); /* Efecto vidrio potente */
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid var(--border-glass); 
+      border-radius: 24px; /* Bordes muy redondeados estilo moderno */
+      padding: 20px; overflow-y: auto; z-index: 100; 
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5), inset 0 0 20px rgba(255, 170, 0, 0.05);
+      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
-    .ui-panel.minimized { transform: translateX(-420px); }
+    .ui-panel.minimized { transform: translateX(-450px); }
     
-    h2 { margin: 0 0 15px 0; font-size: 15px; color: #00d2ff; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; justify-content: space-between; }
-    .sec-head { font-size: 10px; font-weight: 800; color: #888; margin: 15px 0 6px 0; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+    /* TYPOGRAPHY & GLOW */
+    h2 { margin: 0 0 20px 0; font-size: 16px; color: var(--main-color); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--border-glass); padding-bottom: 12px; display: flex; justify-content: space-between; text-shadow: var(--text-glow); }
+    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
     
-    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11px; }
-    label { flex: 1; color: #ccc; cursor: pointer; white-space: nowrap; }
-    input[type=range] { flex: 2; height: 4px; accent-color: #00d2ff; background: #333; border-radius: 2px; }
-    input[type=checkbox] { width: 14px; height: 14px; accent-color: #00d2ff; cursor: pointer; }
-    .val { width: 32px; text-align: right; font-size: 9px; color: #00d2ff; font-family: monospace; }
+    /* CONTROLES */
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 500; }
     
-    select, input[type=url] { width: 100%; background: #222; border: 1px solid #444; color: #eee; padding: 6px; border-radius: 4px; outline: none; }
+    /* Sliders Brillantes */
+    input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow); }
     
-    button { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: #000; background: #00d2ff; transition: 0.2s; font-size: 11px; }
-    button:active { transform: scale(0.95); }
-    button.danger { background: #ff4757; color: white; }
-    button.drive { background: #2ecc71; color: white; }
+    /* Checkbox Brillantes */
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; filter: drop-shadow(0 0 2px var(--main-color)); }
+    .val { width: 36px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: bold; text-shadow: var(--text-glow); }
+    
+    /* Inputs de Texto/Select */
+    select, input[type=url] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; transition: 0.3s; }
+    select:focus, input[type=url]:focus { border-color: var(--main-color); box-shadow: 0 0 10px rgba(255,170,0,0.3); }
+    
+    /* Botones Estilizados */
+    button { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; color: #000; background: var(--main-color); transition: 0.25s; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: var(--text-glow); }
+    button:hover { background: #ffc74f; box-shadow: 0 0 20px rgba(255, 170, 0, 0.8); }
+    button:active { transform: scale(0.97); }
+    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
+    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
+    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
+    button.secondary:hover { border-color: var(--main-color); color: var(--main-color); }
 
-    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid #555; color: #00d2ff; font-weight:bold; cursor: pointer; display: none; }
-    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: #00d2ff; color: #000; border-radius: 30px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); border: 2px solid white; }
-    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #00d2ff; font-weight: 900; letter-spacing: 2px; }
+    /* Toggle y VR BTN */
+    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 44px; height: 44px; border-radius: 50%; background: var(--bg-glass); backdrop-filter: blur(20px); border: 2px solid var(--main-color); color: var(--main-color); font-weight:bold; cursor: pointer; display: none; box-shadow: var(--text-glow); font-size: 20px; align-items: center; justify-content: center;}
+    #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 50px; background: var(--main-color); color: #000; border-radius: 50px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff; font-size: 14px; letter-spacing: 2px; }
     
-    .color-btn { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid #444; transition: 0.2s; }
-    .color-btn:hover { transform: scale(1.1); border-color: #fff; }
-    #currentColorBox { width: 100%; height: 8px; border-radius: 4px; background: #0f0; margin-bottom: 8px; border: 1px solid #333; }
+    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main-color); font-weight: 900; letter-spacing: 4px; font-size: 24px; text-shadow: var(--text-glow); }
     
-    .layer-list { max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; }
-    .layer-item { padding: 6px; font-size: 10px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-    .layer-item.active { background: rgba(0, 210, 255, 0.15); border-left: 3px solid #00d2ff; }
+    /* Chroma Colors */
+    .color-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); transition: 0.2s; }
+    .color-btn:hover { transform: scale(1.15); border-color: #fff; box-shadow: 0 0 15px currentColor; }
+    #currentColorBox { width: 100%; height: 12px; border-radius: 6px; background: #0f0; margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.3); box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+    
+    /* Layer List */
+    .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; margin-bottom: 15px; border: 1px solid var(--border-glass); }
+    .layer-item { padding: 8px 10px; font-size: 11px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; transition: 0.2s; border-left: 3px solid transparent; font-weight: 600; }
+    .layer-item:hover { background: rgba(255, 170, 0, 0.1); }
+    .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main-color); color: #fff; text-shadow: 0 0 5px var(--main-color); }
+    
+    /* Sub-paneles */
+    #chromaPanel { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; border: 1px solid var(--border-glass); }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO v19.0...</div>
-<button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
+<div class="loader" id="loader">CARGANDO v20.0...</div>
+<button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')" style="display:flex;">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>DIAMOND v19.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>STUDIO DIAMOND <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
 
-  <div class="sec-head">📐 Cotas & Unidades</div>
+  <div class="sec-head">📐 Guías & Entorno</div>
   <div class="row">
-      <select id="unitSystem" onchange="updateUnits()" style="width:100%; padding:5px; background:#222; color:#fff; border:1px solid #444;">
+      <select id="unitSystem" onchange="updateUnits()">
           <option value="m">Metros (m)</option>
           <option value="cm">Centímetros (cm)</option>
           <option value="ft">Pies (ft)</option>
       </select>
   </div>
-  <div class="row"><label><input type="checkbox" id="showDims" checked> Mostrar Cotas Dinámicas</label></div>
-  <div class="row"><label><input type="checkbox" id="showCoords" checked> Mostrar Coordenadas X/Y/Z</label></div>
-  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Grilla de Suelo</label></div>
+  <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
+  <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
+  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
 
-  <div class="sec-head">☁️ Proyecto</div>
+  <div class="sec-head">☁️ Nube</div>
   <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">CONECTAR DRIVE</button></div>
-  <div class="row" id="driveActions" style="display:none; gap:5px;">
-      <button onclick="saveSceneToDrive()">GUARDAR</button>
-      <button onclick="loadSceneFromDrive()">CARGAR</button>
+  <div class="row" id="driveActions" style="display:none; gap:8px;">
+      <button onclick="saveSceneToDrive()" class="secondary">GUARDAR</button>
+      <button onclick="loadSceneFromDrive()" class="secondary">CARGAR</button>
   </div>
 
-  <div class="sec-head">📥 Assets</div>
+  <div class="sec-head">📥 Importar</div>
   <div class="row">
-    <input type="url" id="webUrl" placeholder="URL Video/Imagen" style="width:100%; padding:5px; background:#222; color:#fff; border:1px solid #444;">
-    <button onclick="loadFromWeb()" style="width:40px; margin-left:5px;">+</button>
+    <input type="url" id="webUrl" placeholder="URL Video/Imagen">
+    <button onclick="loadFromWeb()" style="flex:0 0 40px;">+</button>
   </div>
-  <button onclick="document.getElementById('fileInput').click()" style="margin-top:5px; background:#333; color:#fff; border:1px solid #555;">📁 ABRIR LOCAL</button>
+  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR LOCAL</button>
   <input type="file" id="fileInput" multiple style="display:none;">
   
-  <div class="sec-head">Capas</div>
+  <div class="sec-head">Capas Activas</div>
   <div id="layerList" class="layer-list"></div>
 
   <div id="editorUI" style="display:none;">
-    <div class="sec-head">🎨 Imagen</div>
+    <div class="sec-head">🎨 Ajustes de Imagen</div>
     <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
     <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
     <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
     <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
     <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
     
-    <div class="sec-head">🛠️ Chroma Key</div>
-    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir</label></div>
-    <div id="chromaPanel" style="display:none; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px;">
+    <div class="sec-head">🛠️ Chroma Key Avanzado</div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir Máscara</label></div>
+    <div id="chromaPanel" style="display:none;">
         <div id="currentColorBox"></div>
-        <div class="row" style="justify-content: space-around; margin-bottom:10px;">
+        <div class="row" style="justify-content: space-around; margin-bottom:15px;">
             <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
             <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
             <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
         </div>
-        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
-        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
+        <div class="row"><label>Tolerancia</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
+        <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
         <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
-        <div style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
-            <div class="row"><label style="color:#f55">R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
-            <div class="row"><label style="color:#5f5">G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
-            <div class="row"><label style="color:#55f">B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
+            <div class="row"><label style="color:#f66">Rojo</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+            <div class="row"><label style="color:#6f6">Verde</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+            <div class="row"><label style="color:#66f">Azul</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
         </div>
     </div>
     
-    <div class="row" style="margin-top:15px; gap:5px;">
-        <button onclick="mediaAction('play')" style="background:#333; color:white;">▶</button>
-        <button onclick="mediaAction('pause')" style="background:#333; color:white;">⏸</button>
-        <button class="danger" onclick="deleteActive()">🗑️</button>
+    <div class="row" style="margin-top:20px; gap:8px;">
+        <button onclick="mediaAction('play')" class="secondary">▶ REPRODUCIR</button>
+        <button onclick="mediaAction('pause')" class="secondary">⏸ PAUSAR</button>
     </div>
+     <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:5px;">🗑️ ELIMINAR OBJETO</button>
   </div>
 
-  <div class="sec-head">⚙️ Oclusión</div>
-  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Profundidad Real (Depth API)</label></div>
+  <div class="sec-head">⚙️ Realidad Mixta</div>
+  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Lidar (Depth API)</label></div>
 </div>
 
-<button id="vrBtn">ENTRAR EN MR</button>
+<button id="vrBtn">INICIAR EXPERIENCIA MR</button>
 
 <script type="importmap">
 { "imports": {
@@ -148,7 +183,7 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 OCLUSIÓN SHADERS
+// 🌑 OCLUSIÓN SHADERS (Sin Cambios)
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
@@ -162,7 +197,7 @@ void main(){
 }`;
 
 // ==========================================
-// 🎨 PRO SHADER (V17 - HSV)
+// 🎨 PRO SHADER (V17 - HSV - Sin Cambios)
 // ==========================================
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
@@ -216,20 +251,19 @@ let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null, clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null, occlusionEnabled = false;
 
-// Variables XR & UI
 let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
 const tempMatrix = new THREE.Matrix4();
 
-// UI INGENIERÍA
 let engGroup; 
 let coordLabels = { x:null, y:null, z:null };
 let dimLabels = { w:null, h:null, d:null };
-let gridHelper;
+// Removemos gridHelper global, ahora se maneja por nombre en la escena
 let currentUnit = 'm';
 
 function init() {
   scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0xffffff, 1));
+  // Luz ambiental un poco más cálida para el ambiente
+  scene.add(new THREE.AmbientLight(0xffedd5, 1.2)); 
   camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500);
   camera.position.set(0, 1.6, 2);
 
@@ -237,6 +271,8 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.xr.enabled = true;
+  // Importante para que los colores se vean vibrantes como en la referencia
+  renderer.outputColorSpace = THREE.SRGBColorSpace; 
 
   orbit = new OrbitControls(camera, renderer.domElement);
   
@@ -251,24 +287,20 @@ function init() {
   
   renderer.setAnimationLoop(animate);
   
-  // UI Bindings
+  // UI Bindings (Sin cambios)
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
-  
   document.querySelectorAll('input[type=range]').forEach(i => {
       if(!i.id.startsWith('key')) i.addEventListener('input', e => {
           const val = parseFloat(e.target.value);
           const lbl = document.getElementById('v_' + e.target.id);
-          if(lbl) lbl.innerText = val.toFixed(3); // Mayor precisión para chroma
+          if(lbl) lbl.innerText = val.toFixed(3);
           updateMaterialParam(e.target.id, val);
       });
   });
-  
-  // Manual RGB Sliders
   ['keyR', 'keyG', 'keyB'].forEach(id => {
       document.getElementById(id).addEventListener('input', updateChromaManual);
   });
-
   window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
   window.setChromaPreset = (r,g,b) => { 
@@ -278,27 +310,37 @@ function init() {
 }
 
 // ==========================================
-// 📐 SISTEMA VISUAL (COTAS V19)
+// 📐 SISTEMA VISUAL MEJORADO (COTAS & PROYECCIÓN)
 // ==========================================
 function initEngineeringUI() {
     engGroup = new THREE.Group();
     scene.add(engGroup);
     
-    const lineMat = new THREE.LineDashedMaterial({ color: 0x00e5ff, dashSize: 0.1, gapSize: 0.05, opacity:0.6, transparent:true });
+    // Línea vertical (Color Ámbar)
+    const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
     const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
     lineY.name = 'lineY'; engGroup.add(lineY);
     
-    // Sombra (Projection Plane)
-    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent:true, opacity:0.15, side:THREE.DoubleSide }));
+    // 🔥 NUEVA PROYECCIÓN DE SUELO (Marco cuadrado brillante) 🔥
+    // Usamos un RingGeometry cuadrado (4 segmentos) para hacer el marco
+    const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); 
+    frameGeo.rotateZ(Math.PI / 4); // Rotar para que sea cuadrado en vez de rombo
+    const frameMat = new THREE.MeshBasicMaterial({ 
+        color: 0xffaa00, // Ámbar
+        side: THREE.DoubleSide, 
+        transparent: true, 
+        opacity: 0.8,
+        depthWrite: false // Para que no parpadee con el grid
+    });
+    const shadow = new THREE.Mesh(frameGeo, frameMat);
     shadow.rotation.x = -Math.PI/2; 
     shadow.name = 'shadowPlane'; 
     engGroup.add(shadow);
 
+    // Etiquetas (El color se maneja en updateLabelText ahora)
     coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
     engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
-
     dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
-    dimLabels.w.material.color.setHex(0xffff00); 
     engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
     
     engGroup.visible = false;
@@ -307,19 +349,26 @@ function initEngineeringUI() {
 function createLabel(txt) {
     const cvs = document.createElement('canvas'); cvs.width=256; cvs.height=64;
     const tex = new THREE.CanvasTexture(cvs);
+    // depthTest:false para que siempre se vean encima
     const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
     const s = new THREE.Sprite(mat); s.scale.set(0.3, 0.075, 1);
     s.userData = { cvs, ctx: cvs.getContext('2d'), tex };
     return s;
 }
 
-function updateLabelText(sprite, text) {
+function updateLabelText(sprite, text, isDim = false) {
     const { ctx, tex } = sprite.userData;
     ctx.clearRect(0,0,256,64);
-    ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.roundRect(5,5,246,54,10); ctx.fill();
-    ctx.strokeStyle = "#00e5ff"; ctx.lineWidth=2; ctx.stroke();
-    ctx.fillStyle = "#fff"; ctx.font = "bold 36px monospace"; 
+    // Fondo semitransparente ámbar oscuro
+    ctx.fillStyle = "rgba(20, 15, 0, 0.8)"; 
+    ctx.roundRect(5,5,246,54,12); ctx.fill();
+    // Borde ámbar neón
+    ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00"; 
+    ctx.lineWidth=3; ctx.stroke();
+    // Texto blanco con brillo ámbar
+    ctx.fillStyle = "#fff"; ctx.font = "bold 34px 'Fira Code', monospace"; 
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.shadowColor = isDim ? "#ffff00" : "#ffaa00"; ctx.shadowBlur = 10;
     ctx.fillText(text, 128, 32);
     tex.needsUpdate = true;
 }
@@ -338,7 +387,7 @@ function updateEngineeringVisuals() {
     engGroup.visible = true;
     const P = obj.mesh.position;
     const S = obj.mesh.scale;
-    const R = obj.mesh.rotation;
+    // const R = obj.mesh.rotation; // Ya no necesitamos R para el marco cuadrado
     
     let baseW = obj.originalAspect || 1; let baseH = 1;
     let realW = baseW * S.x; let realH = baseH * S.y;
@@ -348,16 +397,17 @@ function updateEngineeringVisuals() {
     lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
     lineY.computeLineDistances();
 
-    // Sombra Sincronizada
+    // Actualización del Marco de Suelo (Proyección)
     const shadow = engGroup.getObjectByName('shadowPlane');
-    shadow.position.set(P.x, 0.01, P.z);
-    shadow.rotation.set(-Math.PI/2, 0, R.y); // Rota en Z porque esta acostado
-    shadow.scale.set(realW, 0.1, 1); // 0.1 de grosor visual para "panel"
+    shadow.position.set(P.x, 0.005, P.z); // Apenas por encima del suelo para evitar Z-fighting
+    // Escalamos el marco para que sea un poco más grande que el objeto horizontalmente
+    const frameScale = Math.max(realW, 0.5) * 1.1; 
+    shadow.scale.set(frameScale, frameScale, 1);
 
     // Coordenadas
     if(document.getElementById('showCoords').checked) {
         coordLabels.x.visible = true; coordLabels.y.visible = true; coordLabels.z.visible = true;
-        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); updateLabelText(coordLabels.y, "H: " + formatUnit(P.y));
+        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
         coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
         coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
     } else {
@@ -366,24 +416,73 @@ function updateEngineeringVisuals() {
 
     // Dimensiones (Scale)
     dimLabels.w.visible = true; dimLabels.h.visible = true;
-    dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.15, 0));
-    updateLabelText(dimLabels.w, "W: " + formatUnit(realW));
+    dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0));
+    updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true); // true para color amarillo distintivo
     
-    dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.15, 0, 0));
-    updateLabelText(dimLabels.h, "H: " + formatUnit(realH));
+    dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0));
+    updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
 }
 
+// 🔥 NUEVO GRID HOLOGRÁFICO (SHADER) 🔥
 function updateGrid() {
     const old = scene.getObjectByName("grid"); if(old) scene.remove(old);
     if(!document.getElementById('showGrid').checked) return;
-    let sz = 10, d = 10;
-    if(currentUnit==='ft') { sz = 3.048; d = 10; }
-    gridHelper = new THREE.GridHelper(sz, d, 0x444444, 0x222222);
-    gridHelper.name = "grid"; scene.add(gridHelper);
+
+    // Configuración del Grid
+    let gridSize = 15; // Más grande para que cubra más habitación
+    let divisions = 15;
+    if(currentUnit==='ft') { gridSize = 15*0.3048; divisions = 15; }
+    const colorGrid = new THREE.Color(0xffaa00); // Ámbar
+
+    const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
+    const material = new THREE.ShaderMaterial({
+        transparent: true,
+        side: THREE.DoubleSide,
+        depthWrite: false, // Crucial para AR
+        blending: THREE.AdditiveBlending, // Para que brille más
+        uniforms: {
+            uColor: { value: colorGrid },
+            uDivisions: { value: divisions }
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            }
+        `,
+        fragmentShader: `
+            varying vec2 vUv;
+            uniform vec3 uColor;
+            uniform float uDivisions;
+
+            void main() {
+                // Cálculo de líneas de grid anti-aliased
+                vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions);
+                float line = min(grid.x, grid.y);
+                float alpha = 1.0 - min(line, 1.0);
+
+                // Hacer las líneas más brillantes y definidas
+                alpha = pow(alpha, 0.3); 
+
+                // Vignette (Desvanecimiento radial)
+                float dist = distance(vUv, vec2(0.5));
+                float mask = 1.0 - smoothstep(0.2, 0.5, dist); // Ajustar para el radio de desvanecimiento
+
+                gl_FragColor = vec4(uColor, alpha * mask * 0.6); // 0.6 es la opacidad base máxima
+            }
+        `
+    });
+
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI / 2;
+    mesh.position.y = 0.001; // Ligeramente sobre el piso real
+    mesh.name = "grid";
+    scene.add(mesh);
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (STABLE V16)
+// 🎮 CONTROLES XR (STABLE V16 - Sin Cambios)
 // ==========================================
 function setupXRControllers() {
     controller1 = renderer.xr.getController(0); 
@@ -400,8 +499,10 @@ function setupXRControllers() {
     controllerGrip1 = renderer.xr.getControllerGrip(0); controllerGrip1.add(fac.createControllerModel(controllerGrip1)); scene.add(controllerGrip1);
     controllerGrip2 = renderer.xr.getControllerGrip(1); controllerGrip2.add(fac.createControllerModel(controllerGrip2)); scene.add(controllerGrip2);
 
+    // Rayos de los controles (Color Ámbar)
     const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]);
-    const line = new THREE.Line(geo); line.scale.z = 5;
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, opacity: 0.5, transparent: true });
+    const line = new THREE.Line(geo, lineMat); line.scale.z = 5;
     controller1.add(line.clone()); controller2.add(line.clone());
     raycaster = new THREE.Raycaster();
 }
@@ -420,14 +521,12 @@ function handleStableControls() {
         const ay = gp.axes[3];
 
         if(src.handedness === 'left' && grip) {
-            // IZQ: Elevación (Y) / Escala (X)
             if(Math.abs(ay) > 0.1) {
                 obj.mesh.position.y -= ay * 0.02; 
                 if(obj.mesh.position.y < 0) obj.mesh.position.y = 0;
             }
             if(Math.abs(ax) > 0.1) {
                 let scaleF = 1 + (ax * 0.02);
-                // PROTECCIÓN ANTI-CRASH (NaN/Infinity)
                 if(scaleF < 0.1) scaleF = 0.1;
                 obj.mesh.scale.multiplyScalar(scaleF);
                 obj.mesh.scale.clampScalar(0.05, 50.0);
@@ -435,7 +534,6 @@ function handleStableControls() {
         }
 
         if(src.handedness === 'right' && grip) {
-            // DER: Rayo Tractor (Y) / Rotación Y (X)
             if(Math.abs(ay) > 0.1) {
                 const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize();
                 dir.y = 0; 
@@ -448,7 +546,6 @@ function handleStableControls() {
     }
 }
 
-// LOGICA SELECCIÓN BASICA
 function onGripStart(e) {
     const c = e.target; const hits = getIntersections(c);
     if(hits.length > 0) { const o = hits[0].object; c.attach(o); c.userData.selected = o; }
@@ -469,7 +566,7 @@ function getIntersections(c) {
 }
 
 // ==========================================
-// 📦 LOADERS
+// 📦 LOADERS (Sin Cambios)
 // ==========================================
 async function addAsset(url, type, name, isGif=false, isRestore=false) {
   if(!isRestore) document.getElementById('loader').style.display='grid';
