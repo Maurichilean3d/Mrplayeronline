@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v20.3 | Bulletproof</title>
+  <title>MR Studio Diamond v20.4 | Depth Engineered</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -53,7 +53,7 @@
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')" style="display:flex;">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>STUDIO DIAMOND v20.3 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
+  <h2>STUDIO DIAMOND v20.4 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
 
   <div class="sec-head">📐 Guías & Entorno</div>
   <div class="row">
@@ -141,13 +141,15 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 SHADERS
+// 🌑 SHADERS (DEPTH FIX WEBGL2 RG8)
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
 const depthFS = `#version 300 es
 precision highp float; precision highp sampler2D; in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj; out vec4 outColor;
-float decode(vec4 la){ return (la.r * 255.0 * 256.0 + la.a * 255.0); }
+// Adaptado para leer RG en lugar de RA/LA
+float decode(vec4 rg){ return (rg.r * 255.0 * 256.0 + rg.g * 255.0); }
 void main(){ 
   float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters; if(zMeters <= 0.0) discard;
   float z = -zMeters; float clipZ = uProj[2][2] * z + uProj[3][2]; float clipW = uProj[2][3] * z + uProj[3][3];
@@ -374,7 +376,7 @@ function updateGrid() {
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (BULLETPROOF FIXED V3)
+// 🎮 CONTROLES XR (LOGIC FIX: GRIP SELECCIONA)
 // ==========================================
 function setupXRControllers() {
     controller1 = renderer.xr.getController(0); 
@@ -409,15 +411,11 @@ function handleStableControls() {
     const gp = src.gamepad;
     if (!gp) continue;
 
-    // 🔒 SAFE GRIP
     const grip = gp.buttons?.[1]?.pressed === true;
-
-    // 🔒 SAFE AXES: Fallback inteligente si no existen [2] y [3]
     const axes = gp.axes || [];
     let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
     let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
 
-    // 🔒 SANITIZE: Nunca permitir NaN o Infinito
     if (!Number.isFinite(ax)) ax = 0;
     if (!Number.isFinite(ay)) ay = 0;
 
@@ -428,9 +426,7 @@ function handleStableControls() {
       }
       if (Math.abs(ax) > 0.1) {
         let scaleF = 1 + (ax * 0.02);
-        // 🔒 CLAMP ABSOLUTO: Si scaleF está roto, forzar 1
         if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; 
-        
         obj.mesh.scale.multiplyScalar(scaleF);
         obj.mesh.scale.clampScalar(0.05, 50.0);
       }
@@ -450,8 +446,20 @@ function handleStableControls() {
 }
 
 function onGripStart(e) {
-    const c = e.target; const hits = getIntersections(c);
-    if(hits.length > 0) { const o = hits[0].object; c.attach(o); c.userData.selected = o; }
+    const c = e.target;
+    const hits = getIntersections(c);
+    
+    // 🔥 LÓGICA MEJORADA: Grip = Selección + Agarre
+    if (hits.length > 0) {
+        const mesh = hits[0].object;
+        const id = mesh.userData?.id;
+        
+        if (id) {
+            selectObject(id); // Forzar selección al agarrar
+            c.attach(mesh);
+            c.userData.selected = mesh;
+        }
+    }
 }
 function onGripEnd(e) {
     const c = e.target;
@@ -529,8 +537,9 @@ function animate(time, frame) {
           for(const view of pose.views) {
               const dInfo = xrGlBinding.getDepthInformation(view);
               if(dInfo) {
+                  // 🔥 DEPTH FIX WEBGL2 RG8
                   gl.bindTexture(gl.TEXTURE_2D, depthTex);
-                  gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE_ALPHA, dInfo.width, dInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, dInfo.data);
+                  gl.texImage2D(gl.TEXTURE_2D,0,gl.RG8, dInfo.width, dInfo.height, 0, gl.RG, gl.UNSIGNED_BYTE, dInfo.data);
                   gl.useProgram(depthProgram);
                   gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
                   gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
@@ -548,25 +557,62 @@ function setupVR() {
       if(ok) {
           const btn = document.getElementById('vrBtn'); btn.style.display='block';
           btn.onclick = async () => {
-              occlusionEnabled = document.getElementById('checkOcclusion').checked;
-              const feat = ['local-floor']; const opt = ['dom-overlay'];
-              if(occlusionEnabled) { opt.push('depth-sensing'); }
-              xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures:feat, optionalFeatures:opt, domOverlay:{root:document.body}, depthSensing:{usagePreference:['cpu-optimized'], dataFormatPreference:['luminance-alpha']} });
-              renderer.xr.setSession(xrSession); xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+              const wantDepth = document.getElementById('checkOcclusion').checked;
+              
+              const requiredFeatures = ['local-floor'];
+              const optionalFeatures = ['dom-overlay'];
+              
+              // 🔥 STRICT: Si pide depth, es Requerido (así falla si no hay soporte)
+              if (wantDepth) requiredFeatures.push('depth-sensing'); 
+
+              try {
+                  xrSession = await navigator.xr.requestSession('immersive-ar', { 
+                      requiredFeatures, 
+                      optionalFeatures, 
+                      domOverlay:{root:document.body}, 
+                      depthSensing: wantDepth ? { usagePreference:['cpu-optimized'], dataFormatPreference:['luminance-alpha'] } : undefined 
+                  });
+              } catch(e) {
+                  alert("ERROR: Este dispositivo no soporta Depth Occlusion.");
+                  return;
+              }
+
+              renderer.xr.setSession(xrSession); 
+              xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+              
+              occlusionEnabled = wantDepth;
               if(occlusionEnabled) initDepthOcclusion(xrSession);
           };
       }
   });
 }
+
 function initDepthOcclusion(s) {
-    const gl=renderer.getContext(); xrGlBinding=new XRWebGLBinding(s,gl);
+    const gl=renderer.getContext(); 
+    xrGlBinding=new XRWebGLBinding(s,gl);
+
     const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,depthVS); gl.compileShader(vs);
     const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs,depthFS); gl.compileShader(fs);
     depthProgram=gl.createProgram(); gl.attachShader(depthProgram,vs); gl.attachShader(depthProgram,fs); gl.linkProgram(depthProgram);
+
+    // 🔥 VAO/VBO FIX: Atributos explícitos para WebGL2
     depthVao=gl.createVertexArray(); gl.bindVertexArray(depthVao);
     const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+    
+    const loc = gl.getAttribLocation(depthProgram, 'aPos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
+
+    // 🔥 TEXTURE PARAMS FIX
     depthTex=gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, depthTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o) { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='gamma') u.uGamma.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; }}
@@ -580,7 +626,19 @@ window.saveSceneToDrive = () => { /* Logica guardar */ };
 window.loadSceneFromDrive = () => { /* Logica cargar */ };
 window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
 document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
-window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; } };
+
+// 🔥 DELETE FIX: Limpieza completa
+window.deleteActive=()=>{ 
+    const i=objects.findIndex(x=>x.id===activeId); 
+    if(i>-1) { 
+        scene.remove(objects[i].mesh); 
+        objects.splice(i,1); 
+    } 
+    activeId = null; // Reset ID
+    transformCtrl.detach(); 
+    document.getElementById('editorUI').style.display='none'; 
+    updateLayers();
+};
 window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
