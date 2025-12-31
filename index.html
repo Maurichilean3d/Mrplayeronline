@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v6.5 (Pro Tools Edition)</title>
+  <title>MR Studio Diamond v6.6 (Earth Projection)</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <style>
     * { box-sizing: border-box; user-select: none; }
@@ -115,7 +115,7 @@
 </div>
 
 <div class="ui-panel" id="ui">
-  <h2><span>MR Studio Diamond <span class="ver-badge">v6.5</span></span></h2>
+  <h2><span>MR Studio Diamond <span class="ver-badge">v6.6</span></span></h2>
 
   <div id="projectManager">
     <div class="sec-head">💾 Proyecto</div>
@@ -168,7 +168,7 @@
         <option value="sphere">Esfera</option>
         <option value="cube">Cubo</option>
         <option value="ovoid">Ovoide</option>
-        <option value="earth">Tierra (Y comprimida)</option>
+        <option value="earth">Tierra (Polos Achatados)</option>
       </select>
     </div>
 
@@ -295,7 +295,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-console.log('🚀 MR Studio Diamond v6.5 Pro iniciando...');
+console.log('🚀 MR Studio Diamond v6.6 Pro iniciando...');
 
 let scene, camera, renderer, xrSession;
 let objects = [];
@@ -931,10 +931,17 @@ function createMesh(proj, surface, tex, aspect) {
   if(proj === '360') {
     side = THREE.BackSide;
     if(surface === 'cube'){ geo = makeInside(new THREE.BoxGeometry(40, 40, 40, 1, 1, 1)); }
-    else { geo = makeInside(new THREE.SphereGeometry(20, 64, 64)); if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); if(surface === 'earth') geo.scale(1.0, 0.85, 1.0); }
+    else { 
+      geo = makeInside(new THREE.SphereGeometry(20, 64, 64)); 
+      if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
+      // === NUEVO: Lógica de Tierra (Polos Achatados) ===
+      if(surface === 'earth') geo.scale(1.0, 0.8, 1.0); 
+    }
   } else if(proj === '180') {
     side = THREE.BackSide; geo = makeInside(new THREE.SphereGeometry(20, 64, 64, 0, Math.PI));
-    if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); if(surface === 'earth') geo.scale(1.0, 0.85, 1.0); geo.rotateY(-Math.PI/2);
+    if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
+    if(surface === 'earth') geo.scale(1.0, 0.8, 1.0); 
+    geo.rotateY(-Math.PI/2);
   } else { geo = new THREE.PlaneGeometry(aspect, 1); }
 
   const mat = new THREE.ShaderMaterial({
