@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v9.0 | Photo Engine</title>
+  <title>MR Studio Diamond v9.2 | Native Chroma Fix</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -39,6 +39,10 @@
     input[type=checkbox] { width: 14px; height: 14px; accent-color: #6c5ce7; cursor: pointer; }
     .val { width: 35px; text-align: right; font-size: 9px; color: #a29bfe; font-family: monospace; }
     
+    /* Botones de colores para Chroma */
+    .color-btn { width: 25px; height: 25px; border-radius: 50%; border: 2px solid #555; cursor: pointer; transition: 0.2s; }
+    .color-btn:hover { transform: scale(1.1); border-color: white; }
+    
     select, input[type=url] { width: 100%; background: #1e1e24; border: 1px solid #333; color: #eee; padding: 6px; border-radius: 6px; font-size: 11px; outline: none; }
     
     button { flex: 1; padding: 8px; border-radius: 6px; border: none; font-size: 10px; font-weight: 700; cursor: pointer; color: white; background: #2d3436; transition: 0.2s; }
@@ -58,25 +62,28 @@
     #gStatus { font-size: 10px; color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
     .dot.on { background: #0F9D58; box-shadow: 0 0 5px #0F9D58; }
+    
+    /* Indicador de color actual */
+    #currentColorBox { width: 100%; height: 10px; border-radius: 4px; background: #00ff00; margin-bottom: 5px; border: 1px solid #555; }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO PHOTO ENGINE...</div>
+<div class="loader" id="loader">CARGANDO v9.2...</div>
 <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
 <div class="ui-panel" id="ui">
   <h2>
-      <span>💎 DIAMOND v9.0</span>
+      <span>💎 DIAMOND v9.2</span>
       <button style="width:auto; padding:4px 8px; background:transparent; font-size:16px;" onclick="toggleUIPanel()">×</button>
   </h2>
 
   <div id="gStatus"><div class="dot" id="gDot"></div> <span id="gText">Nube Desconectada</span></div>
   <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive-btn">🔑 CONECTAR DRIVE</button></div>
   <div class="row" id="driveActions" style="display:none; gap:5px;">
-      <button onclick="saveSceneToDrive()">💾 GUARDAR PROYECTO</button>
-      <button onclick="loadSceneFromDrive()">📂 CARGAR NUBE</button>
+      <button onclick="saveSceneToDrive()">💾 GUARDAR</button>
+      <button onclick="loadSceneFromDrive()">📂 CARGAR</button>
   </div>
 
   <div class="sec-head">📥 Importar Contenido</div>
@@ -104,7 +111,6 @@
     <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
     <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
     <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
-    <div class="row"><label>Emisión (Luz)</label><input type="range" id="emissive" min="0" max="2" step="0.1" value="0"><span class="val" id="v_emissive">0</span></div>
     
     <div class="row" style="margin-top:5px;">
        <label style="flex:0.5; color:#f55;">R</label><input type="range" id="uRed" min="0" max="2" step="0.1" value="1">
@@ -113,12 +119,11 @@
     </div>
 
     <div class="sec-head">📸 Efectos de Lente</div>
-    <div class="row"><label>Desenfoque (Blur)</label><input type="range" id="blur" min="0" max="0.01" step="0.0001" value="0"><span class="val" id="v_blur">0</span></div>
-    <div class="row"><label>Borde Suave (Vignette)</label><input type="range" id="vignette" min="0" max="2" step="0.1" value="0"><span class="val" id="v_vignette">0</span></div>
-    <div class="row"><label>Grano (Noise)</label><input type="range" id="noise" min="0" max="0.3" step="0.01" value="0"><span class="val" id="v_noise">0</span></div>
-    <div class="row"><label>Opacidad Global</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+    <div class="row"><label>Desenfoque</label><input type="range" id="blur" min="0" max="0.01" step="0.0001" value="0"><span class="val" id="v_blur">0</span></div>
+    <div class="row"><label>Vignette</label><input type="range" id="vignette" min="0" max="2" step="0.1" value="0"><span class="val" id="v_vignette">0</span></div>
+    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
 
-    <div class="sec-head">🛠️ Herramientas</div>
+    <div class="sec-head">🛠️ Chroma Key (MR Fix)</div>
     <select id="projSelect" onchange="updateProjection()" style="margin-bottom:5px;">
       <option value="plane">Plano Standard</option>
       <option value="curved">Pantalla Curva IMAX</option>
@@ -126,9 +131,24 @@
       <option value="360">Entorno 360°</option>
     </select>
     
-    <div class="row"><label><input type="checkbox" id="chromaToggle"> Chroma Key</label> 
-    <input type="color" id="pickerColor" value="#00ff00" style="width:30px; border:none; padding:0;"></div>
-    <div id="chromaPanel" style="display:none; padding-left:10px; border-left:2px solid #333;">
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar Chroma</label></div>
+    
+    <div id="chromaPanel" style="display:none; background:rgba(0,0,0,0.3); padding:8px; border-radius:6px; margin-top:5px;">
+        <div id="currentColorBox"></div>
+        
+        <div class="row" style="justify-content: space-around; margin-bottom:8px;">
+            <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
+            <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
+            <div class="color-btn" style="background:#ff00ff;" onclick="setChromaPreset(1,0,1)"></div>
+            <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
+        </div>
+
+        <div class="row"><label style="color:#f55">Key R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+        <div class="row"><label style="color:#5f5">Key G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+        <div class="row"><label style="color:#55f">Key B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        
+        <hr style="border:0; border-top:1px solid #444; margin:5px 0;">
+        
         <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.01"></div>
         <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.01"></div>
     </div>
@@ -157,6 +177,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
+import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
 // ==========================================
 // 🔑 CONFIGURACIÓN GOOGLE (RELLENA ESTO)
@@ -166,48 +187,33 @@ const API_KEY = '';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🎨 PRO SHADER: EL MOTOR GRÁFICO NUEVO
+// 🎨 PRO SHADER: MOTOR GRÁFICO
 // ==========================================
-const vShader = `
-varying vec2 vUv; 
-void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
-`;
+const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 
 const fShader = `
 uniform sampler2D map;
-uniform float uAspect; // Para calcular blur correcto
-
-// Color Grading
+uniform float uAspect; 
 uniform float uBrightness;
 uniform float uContrast;
 uniform float uSaturation;
-uniform vec3 uTint; // RGB
+uniform vec3 uTint; 
 uniform float uEmissive;
-
-// Lens Effects
 uniform float uBlur;
 uniform float uVignette;
 uniform float uNoise;
-uniform float uTime; // Para animar ruido
-
-// Standard
+uniform float uTime;
 uniform float uOpacity;
 uniform bool chromaOn;
 uniform vec3 k1; 
 uniform float sim1; 
 uniform float smooth1;
-
 varying vec2 vUv;
 
-// Función de Ruido simple
-float random(vec2 st) {
-    return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123);
-}
+float random(vec2 st) { return fract(sin(dot(st.xy, vec2(12.9898,78.233))) * 43758.5453123); }
 
 void main() {
   vec4 texColor = vec4(0.0);
-  
-  // 1. BLUR (5-Tap Gaussian simplificado)
   if (uBlur > 0.0) {
       float off = uBlur * 0.05;
       texColor += texture2D(map, vUv) * 0.3;
@@ -219,7 +225,6 @@ void main() {
       texColor = texture2D(map, vUv);
   }
 
-  // 2. CHROMA KEY
   float alpha = texColor.a;
   if(chromaOn) {
     float d = distance(texColor.rgb, k1);
@@ -227,44 +232,27 @@ void main() {
     alpha *= k;
   }
 
-  // 3. COLOR GRADING CHAIN
   vec3 col = texColor.rgb;
-  
-  // RGB Tint
   col *= uTint;
-  
-  // Brillo
   col += uBrightness;
-  
-  // Contraste
   col = (col - 0.5) * uContrast + 0.5;
-  
-  // Saturación
   float gray = dot(col, vec3(0.299, 0.587, 0.114));
   col = mix(vec3(gray), col, uSaturation);
-  
-  // Emisión (Suma de luz)
   col += vec3(uEmissive * 0.5);
 
-  // 4. LENS EFFECTS
-  
-  // Noise / Film Grain
   if (uNoise > 0.0) {
      float grain = random(vUv + mod(uTime, 10.0));
      col += (grain - 0.5) * uNoise;
   }
 
-  // Vignette (Borde Suave)
   if (uVignette > 0.0) {
-     vec2 dist = (vUv - 0.5) * vec2(1.0, 1.0/uAspect); // Corregir por aspecto
+     vec2 dist = (vUv - 0.5) * vec2(1.0, 1.0/uAspect);
      float len = dot(dist, dist) * uVignette * 4.0;
      col *= (1.0 - smoothstep(0.2, 1.0, len));
-     // Reducir alpha en bordes extremos para que desaparezca suave
      alpha *= (1.0 - smoothstep(0.5, 1.0, len)); 
   }
 
   alpha *= uOpacity;
-
   gl_FragColor = vec4(col, alpha);
   if(alpha < 0.01) discard; 
 }
@@ -276,6 +264,12 @@ void main() {
 let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null;
 let clock = new THREE.Clock();
+
+// Variables XR
+let controller1, controller2;
+let controllerGrip1, controllerGrip2;
+let raycaster;
+const tempMatrix = new THREE.Matrix4();
 
 function init() {
   scene = new THREE.Scene();
@@ -297,29 +291,106 @@ function init() {
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
   
+  setupXRControllers();
   setupVR();
   renderer.setAnimationLoop(animate);
   
-  // UI Listeners
-  document.getElementById('pickerColor').addEventListener('input', updateMaterial);
+  // LISTENERS PARA LOS NUEVOS SLIDERS DE CHROMA
+  document.getElementById('keyR').addEventListener('input', updateChromaManual);
+  document.getElementById('keyG').addEventListener('input', updateChromaManual);
+  document.getElementById('keyB').addEventListener('input', updateChromaManual);
+
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('checkBillboard').addEventListener('change', (e) => {
       const o = objects.find(obj => obj.id === activeId);
       if(o) { o.billboard = e.target.checked; if(!o.billboard) o.mesh.rotation.set(0,0,0); }
   });
   
-  // Bind all sliders generically
   document.querySelectorAll('input[type=range]').forEach(input => {
+      if(input.id.startsWith('key')) return; // Saltamos los de chroma manuales pues tienen su propia fn
       input.addEventListener('input', (e) => {
          const val = parseFloat(e.target.value);
-         document.getElementById('v_' + e.target.id).innerText = val.toFixed(2);
+         const display = document.getElementById('v_' + e.target.id);
+         if(display) display.innerText = val.toFixed(2);
          updateMaterialParam(e.target.id, val);
       });
   });
+  
+  // Función Global para los botones de colores
+  window.setChromaPreset = (r, g, b) => {
+      document.getElementById('keyR').value = r;
+      document.getElementById('keyG').value = g;
+      document.getElementById('keyB').value = b;
+      updateChromaManual();
+  };
+}
+
+function updateChromaManual() {
+    const obj = objects.find(o => o.id === activeId);
+    if(!obj) return;
+    
+    const r = parseFloat(document.getElementById('keyR').value);
+    const g = parseFloat(document.getElementById('keyG').value);
+    const b = parseFloat(document.getElementById('keyB').value);
+    
+    // Actualizar Shader
+    obj.mesh.material.uniforms.k1.value.setRGB(r, g, b);
+    
+    // Actualizar Visualizador UI
+    const hex = new THREE.Color(r, g, b).getHexString();
+    document.getElementById('currentColorBox').style.backgroundColor = '#' + hex;
+}
+
+function setupXRControllers() {
+    controller1 = renderer.xr.getController(0);
+    controller1.addEventListener('selectstart', onSelectStart);
+    scene.add(controller1);
+
+    controller2 = renderer.xr.getController(1);
+    controller2.addEventListener('selectstart', onSelectStart);
+    scene.add(controller2);
+
+    const controllerModelFactory = new XRControllerModelFactory();
+    controllerGrip1 = renderer.xr.getControllerGrip(0);
+    controllerGrip1.add(controllerModelFactory.createControllerModel(controllerGrip1));
+    scene.add(controllerGrip1);
+
+    controllerGrip2 = renderer.xr.getControllerGrip(1);
+    controllerGrip2.add(controllerModelFactory.createControllerModel(controllerGrip2));
+    scene.add(controllerGrip2);
+
+    const geometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, -1)]);
+    const line = new THREE.Line(geometry);
+    line.name = 'line';
+    line.scale.z = 5;
+
+    controller1.add(line.clone());
+    controller2.add(line.clone());
+
+    raycaster = new THREE.Raycaster();
+}
+
+function onSelectStart(event) {
+    const controller = event.target;
+    const intersections = getIntersections(controller);
+    if (intersections.length > 0) {
+        const object = intersections[0].object;
+        if(object.userData && object.userData.id) {
+            selectObject(object.userData.id);
+        }
+    }
+}
+
+function getIntersections(controller) {
+    tempMatrix.identity().extractRotation(controller.matrixWorld);
+    raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
+    raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix);
+    const meshGroup = objects.map(o => o.mesh);
+    return raycaster.intersectObjects(meshGroup, false);
 }
 
 // ==========================================
-// 📦 ASSET LOADER MEJORADO
+// 📦 ASSET LOADER
 // ==========================================
 async function addAsset(url, type, name, isGif = false, isRestore = false) {
   if(!isRestore) toggleLoader(true);
@@ -353,42 +424,31 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
 
     const aspect = video ? video.videoWidth/video.videoHeight : (tex.image ? tex.image.width/tex.image.height : 1.77);
 
-    // NUEVO MATERIAL CON UNIFORMS EXTENDIDOS
     const mat = new THREE.ShaderMaterial({
       uniforms: { 
         map: { value: tex }, 
         uAspect: { value: aspect },
         uTime: { value: 0 },
         // Grading
-        uBrightness: { value: 0.0 },
-        uContrast: { value: 1.0 },
-        uSaturation: { value: 1.0 },
-        uTint: { value: new THREE.Vector3(1,1,1) },
-        uEmissive: { value: 0.0 },
-        uOpacity: { value: 1.0 },
+        uBrightness: { value: 0.0 }, uContrast: { value: 1.0 }, uSaturation: { value: 1.0 },
+        uTint: { value: new THREE.Vector3(1,1,1) }, uEmissive: { value: 0.0 }, uOpacity: { value: 1.0 },
         // Effects
-        uBlur: { value: 0.0 },
-        uVignette: { value: 0.0 },
-        uNoise: { value: 0.0 },
+        uBlur: { value: 0.0 }, uVignette: { value: 0.0 }, uNoise: { value: 0.0 },
         // Chroma
-        chromaOn: { value: false }, 
-        k1: { value: new THREE.Color(0,1,0) }, 
-        sim1: { value: 0.4 }, 
-        smooth1: { value: 0.08 }
+        chromaOn: { value: false }, k1: { value: new THREE.Color(0,1,0) }, sim1: { value: 0.4 }, smooth1: { value: 0.08 }
       },
-      vertexShader: vShader, 
-      fragmentShader: fShader, 
-      transparent: true, 
-      side: THREE.DoubleSide,
-      depthWrite: false
+      vertexShader: vShader, fragmentShader: fShader, transparent: true, side: THREE.DoubleSide, depthWrite: false
     });
 
     const geometry = new THREE.PlaneGeometry(aspect * 2, 2); 
     mesh = new THREE.Mesh(geometry, mat);
     mesh.position.set(0, 1.6, -2);
     
+    const objId = Math.random().toString(36).substr(2,9);
+    mesh.userData.id = objId; // ID para Raycaster
+    
     newObj = { 
-        id: Math.random().toString(36).substr(2,9), 
+        id: objId, 
         name, mesh, video, gifData, type, 
         billboard: false,
         originalAspect: aspect,
@@ -407,7 +467,7 @@ async function addAsset(url, type, name, isGif = false, isRestore = false) {
 }
 
 // ==========================================
-// 🎮 UPDATE LOOP & LOGIC
+// 🎮 UPDATE LOOP
 // ==========================================
 function animate(time) {
   const dt = clock.getDelta();
@@ -415,17 +475,12 @@ function animate(time) {
   orbit.update();
   
   objects.forEach(obj => {
-      // Billboard
       if(obj.billboard && obj.mesh) {
           obj.mesh.lookAt(camera.position.x, obj.mesh.position.y, camera.position.z);
       }
-      
-      // Update Time Uniform for Noise
       if(obj.mesh && obj.mesh.material.uniforms.uTime) {
           obj.mesh.material.uniforms.uTime.value = elapsedTime;
       }
-      
-      // GIF Update
       if (obj.gifData && obj.gifData.playing) {
         const g = obj.gifData;
         if (performance.now() > g.nextTime) {
@@ -446,26 +501,21 @@ function updateMaterialParam(id, val) {
     if(!obj) return;
     const u = obj.mesh.material.uniforms;
 
-    // Mapeo de IDs de Inputs a Uniforms
     if(id === 'scale') obj.mesh.scale.setScalar(val);
     else if(id === 'posY') obj.mesh.position.y = val;
     else if(id === 'posZ') obj.mesh.position.z = val;
     else if(id === 'rotY') obj.mesh.rotation.y = val;
-    
     else if(id === 'brightness') u.uBrightness.value = val;
     else if(id === 'contrast') u.uContrast.value = val;
     else if(id === 'saturation') u.uSaturation.value = val;
     else if(id === 'emissive') u.uEmissive.value = val;
     else if(id === 'opacity') u.uOpacity.value = val;
-    
     else if(id === 'blur') u.uBlur.value = val;
     else if(id === 'vignette') u.uVignette.value = val;
     else if(id === 'noise') u.uNoise.value = val;
-    
     else if(id === 'k1sim') u.sim1.value = val;
     else if(id === 'k1smooth') u.smooth1.value = val;
 
-    // RGB Tint (Vector3)
     if(id === 'uRed' || id === 'uGreen' || id === 'uBlue') {
         u.uTint.value.set(
             document.getElementById('uRed').value,
@@ -479,10 +529,15 @@ function updateMaterial() {
     const obj = objects.find(o => o.id === activeId);
     if(!obj) return;
     const u = obj.mesh.material.uniforms;
-    
     u.chromaOn.value = document.getElementById('chromaToggle').checked;
     document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
-    u.k1.value.set(document.getElementById('pickerColor').value);
+    
+    // Al abrir el panel, sincronizamos los sliders con el valor actual del material
+    const currentK1 = u.k1.value;
+    document.getElementById('keyR').value = currentK1.r;
+    document.getElementById('keyG').value = currentK1.g;
+    document.getElementById('keyB').value = currentK1.b;
+    updateChromaManual();
 }
 
 function selectObject(id) {
@@ -493,24 +548,25 @@ function selectObject(id) {
   document.getElementById('editorUI').style.display = 'block';
   updateLayers();
 
-  // SET UI VALUES FROM OBJECT
   const u = obj.mesh.material.uniforms;
   const setVal = (domId, val) => {
-      document.getElementById(domId).value = val;
-      document.getElementById('v_' + domId).innerText = (typeof val === 'number') ? val.toFixed(2) : val;
+      const el = document.getElementById(domId);
+      if(el) {
+          el.value = val;
+          const disp = document.getElementById('v_' + domId);
+          if(disp) disp.innerText = (typeof val === 'number') ? val.toFixed(2) : val;
+      }
   };
 
   setVal('scale', obj.mesh.scale.x);
   setVal('posY', obj.mesh.position.y);
   setVal('posZ', obj.mesh.position.z);
   setVal('rotY', obj.mesh.rotation.y);
-
   setVal('brightness', u.uBrightness.value);
   setVal('contrast', u.uContrast.value);
   setVal('saturation', u.uSaturation.value);
   setVal('emissive', u.uEmissive.value);
   setVal('opacity', u.uOpacity.value);
-  
   setVal('blur', u.uBlur.value);
   setVal('vignette', u.uVignette.value);
   setVal('noise', u.uNoise.value);
@@ -523,12 +579,19 @@ function selectObject(id) {
   document.getElementById('chromaToggle').checked = u.chromaOn.value;
   setVal('k1sim', u.sim1.value);
   setVal('k1smooth', u.smooth1.value);
+  
   document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
-  document.getElementById('pickerColor').value = '#' + u.k1.value.getHexString();
+  
+  // Sincronizar Sliders Chroma
+  const k1 = u.k1.value;
+  document.getElementById('keyR').value = k1.r;
+  document.getElementById('keyG').value = k1.g;
+  document.getElementById('keyB').value = k1.b;
+  updateChromaManual();
 }
 
 // ==========================================
-// ☁️ PERSISTENCIA MEJORADA
+// ☁️ PERSISTENCIA
 // ==========================================
 window.saveSceneToDrive = () => {
     if(objects.length === 0) return;
@@ -536,7 +599,6 @@ window.saveSceneToDrive = () => {
     const sceneData = objects.map(o => ({
         type: o.type, url: o.sourceUrl, name: o.name,
         transform: { pos: o.mesh.position.toArray(), rot: o.mesh.rotation.toArray(), scl: o.mesh.scale.toArray() },
-        // GUARDAMOS LOS NUEVOS PARÁMETROS
         settings: {
             billboard: o.billboard,
             opacity: o.mesh.material.uniforms.uOpacity.value,
@@ -555,9 +617,8 @@ window.saveSceneToDrive = () => {
         }
     }));
     
-    // ... (El código de subida es igual que antes, solo cambia el JSON)
     const fileContent = JSON.stringify(sceneData);
-    const metadata = { 'name': 'diamond_pro_v9.json', 'mimeType': 'application/json' };
+    const metadata = { 'name': 'diamond_xr_v9.json', 'mimeType': 'application/json' };
     const multipart = `\r\n--foo\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(metadata)}\r\n--foo\r\nContent-Type: application/json\r\n\r\n${fileContent}\r\n--foo--`;
 
     gapi.client.request({
@@ -581,7 +642,6 @@ async function reconstructScene(data) {
             obj.mesh.rotation.fromArray(item.transform.rot);
             obj.mesh.scale.fromArray(item.transform.scl);
             
-            // RESTAURAR PARAMETROS PRO
             const u = obj.mesh.material.uniforms;
             const s = item.settings;
             obj.billboard = s.billboard;
