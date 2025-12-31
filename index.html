@@ -3,133 +3,127 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v23.0 | Restored Core</title>
+  <title>MR Studio Diamond v21.0 | Depth Master</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    :root { --main: #ffaa00; --bg: rgba(20, 20, 25, 0.9); --glass: blur(20px); }
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', sans-serif; }
+    /* =========================================
+       ESTILO "AMBER GLASS" (v20 UI)
+    ========================================= */
+    :root { --main-color: #ffaa00; --bg-glass: rgba(20, 20, 25, 0.85); --border-glass: rgba(255, 170, 0, 0.3); --text-glow: 0 0 8px rgba(255, 170, 0, 0.6); }
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
-    #c { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+    #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
-    .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 90vh; 
-      background: var(--bg); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
-      border: 1px solid rgba(255, 170, 0, 0.3); border-radius: 20px; padding: 15px; 
-      overflow-y: auto; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      transition: transform 0.3s ease;
-    }
+    .ui-panel { position: fixed; left: 20px; top: 20px; width: 350px; max-height: 90vh; background: var(--bg-glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--border-glass); border-radius: 24px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
     .ui-panel.minimized { transform: translateX(-450px); }
     
-    h2 { margin: 0 0 15px 0; color: var(--main); font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; display:flex; justify-content:space-between; }
-    .sec-head { font-size: 11px; font-weight: 800; color: #888; margin: 15px 0 5px 0; text-transform: uppercase; letter-spacing: 1px; }
-    
-    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
-    label { flex: 1; color: #ccc; cursor: pointer; }
-    input[type=range] { flex: 2; accent-color: var(--main); height: 4px; border-radius: 2px; }
-    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main); }
-    .val { width: 35px; text-align: right; color: var(--main); font-family: monospace; }
-    select, button { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 8px; border-radius: 6px; outline: none; }
-    
-    button { flex: 1; font-weight: bold; cursor: pointer; transition: 0.2s; }
-    button:hover { background: var(--main); color: #000; }
-    button.danger { background: rgba(255, 50, 50, 0.2); border-color: rgba(255, 50, 50, 0.5); }
-    
-    .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; }
-    .layer-item { padding: 8px; font-size: 11px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-    .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main); color: #fff; }
-    
-    #videoControls {
-      position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-      background: var(--bg); backdrop-filter: var(--glass); border-radius: 12px;
-      padding: 10px 20px; display: none; z-index: 150; border: 1px solid rgba(255,255,255,0.2);
-      width: 300px;
-    }
-    #videoControls.show { display: block; }
-    .vid-bar { height: 5px; background: #333; margin: 10px 0; border-radius: 3px; overflow: hidden; }
-    .vid-fill { height: 100%; background: var(--main); width: 0%; }
-    
-    #loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main); font-weight: 900; letter-spacing: 3px; }
-    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: var(--main); color: #000; border-radius: 30px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 20px rgba(255, 170, 0, 0.5); }
-    
-    .chroma-presets { display: flex; gap: 5px; margin: 10px 0; }
-    .cp { width: 25px; height: 25px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.2); cursor: pointer; }
+    h2 { margin: 0 0 20px 0; font-size: 16px; color: var(--main-color); font-weight: 800; letter-spacing: 2px; border-bottom: 2px solid var(--border-glass); padding-bottom: 12px; display: flex; justify-content: space-between; text-shadow: var(--text-glow); }
+    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 500; }
+    input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow); }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
+    .val { width: 36px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: bold; text-shadow: var(--text-glow); }
+    select, input[type=url] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; }
+    button { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; color: #000; background: var(--main-color); transition: 0.25s; font-size: 11px; text-transform: uppercase; box-shadow: var(--text-glow); }
+    button:hover { background: #ffc74f; }
+    button:active { transform: scale(0.97); }
+    button.danger { background: #ff3333; color: white; }
+    button.drive { background: #00C853; color: white; }
+    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
+    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 44px; height: 44px; border-radius: 50%; background: var(--bg-glass); backdrop-filter: blur(20px); border: 2px solid var(--main-color); color: var(--main-color); font-weight:bold; cursor: pointer; display: none; box-shadow: var(--text-glow); font-size: 20px; align-items: center; justify-content: center;}
+    #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 50px; background: var(--main-color); color: #000; border-radius: 50px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff; font-size: 14px; letter-spacing: 2px; }
+    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main-color); font-weight: 900; letter-spacing: 4px; font-size: 24px; text-shadow: var(--text-glow); }
+    .color-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); }
+    #currentColorBox { width: 100%; height: 12px; border-radius: 6px; background: #0f0; margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.3); }
+    .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; margin-bottom: 15px; border: 1px solid var(--border-glass); }
+    .layer-item { padding: 8px 10px; font-size: 11px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; transition: 0.2s; border-left: 3px solid transparent; font-weight: 600; }
+    .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main-color); color: #fff; }
+    #chromaPanel { background: rgba(0,0,0,0.2); border-radius: 12px; padding: 12px; border: 1px solid var(--border-glass); }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div id="loader">CARGANDO...</div>
-<button style="position:fixed; top:20px; left:20px; z-index:101; width:40px;" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
-
-<div id="videoControls">
-  <div style="display:flex; justify-content:center; gap:15px;">
-    <button onclick="mediaAction('play')">▶</button>
-    <button onclick="mediaAction('pause')">⏸</button>
-    <button onclick="mediaAction('stop')">⏹</button>
-  </div>
-  <div class="vid-bar"><div class="vid-fill" id="vidFill"></div></div>
-</div>
+<div class="loader" id="loader">CARGANDO...</div>
+<button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')" style="display:flex;">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>STUDIO DIAMOND v23.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>STUDIO DIAMOND v21.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
 
-  <div class="sec-head">📂 Archivos</div>
+  <div class="sec-head">📐 Guías & Entorno</div>
   <div class="row">
-    <button onclick="document.getElementById('fileInput').click()">📁 ABRIR ARCHIVOS</button>
-    <button onclick="handleAuthClick()">☁️ DRIVE</button>
+      <select id="unitSystem" onchange="updateUnits()">
+          <option value="m">Metros (m)</option>
+          <option value="cm">Centímetros (cm)</option>
+          <option value="ft">Pies (ft)</option>
+      </select>
   </div>
-  <input type="file" id="fileInput" multiple style="display:none;" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj">
+  <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
+  <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
+  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
+
+  <div class="sec-head">☁️ Nube</div>
+  <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">CONECTAR DRIVE</button></div>
+  <div class="row" id="driveActions" style="display:none; gap:8px;">
+      <button onclick="saveSceneToDrive()" class="secondary">GUARDAR</button>
+      <button onclick="loadSceneFromDrive()" class="secondary">CARGAR</button>
+  </div>
+
+  <div class="sec-head">📥 Importar</div>
+  <div class="row">
+    <input type="url" id="webUrl" placeholder="URL Video/Imagen">
+    <button onclick="loadFromWeb()" style="flex:0 0 40px;">+</button>
+  </div>
+  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR LOCAL</button>
+  <input type="file" id="fileInput" multiple style="display:none;">
   
-  <div class="sec-head">Capas</div>
+  <div class="sec-head">Capas Activas</div>
   <div id="layerList" class="layer-list"></div>
 
   <div id="editorUI" style="display:none;">
-    <div class="sec-head">📍 Geometría</div>
-    <div class="row">
-      <select id="projSelect" onchange="updateObj('mode', this.value)">
-        <option value="plane">Plano 2D</option>
-        <option value="360_sphere">Esfera 360°</option>
-        <option value="180_sphere">Domo 180°</option>
-        <option value="360_cube">Cubo Skybox</option>
-      </select>
-    </div>
-    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.1" max="10" step="0.1"><span class="val" id="v_scale">1.0</span></div>
-    <div class="row"><label>Distancia</label><input type="range" id="dist" min="0" max="10" step="0.1"><span class="val" id="v_dist">2.0</span></div>
-    <div class="row"><label>Altura</label><input type="range" id="height" min="-2" max="5" step="0.1"><span class="val" id="v_height">1.6</span></div>
-    <div class="row"><label>Espejo</label><input type="checkbox" id="flipX" onchange="updateObj('flipX', this.checked)"></div>
-
-    <div class="sec-head">🎨 Imagen</div>
-    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05"><span class="val" id="v_brightness">0</span></div>
-    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1"><span class="val" id="v_contrast">1</span></div>
-    <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1"><span class="val" id="v_saturation">1</span></div>
-
-    <div class="sec-head">🛠️ Chroma Key</div>
-    <div class="row"><label><input type="checkbox" id="chromaEnabled" onchange="updateObj('chromaEnabled', this.checked)"> Activar</label></div>
-    <div id="chromaPanel">
-        <div class="chroma-presets">
-            <div class="cp" style="background:#0f0" onclick="setChroma(0,1,0)"></div>
-            <div class="cp" style="background:#00f" onclick="setChroma(0,0,1)"></div>
-            <div class="cp" style="background:#f00" onclick="setChroma(1,0,0)"></div>
-            <div class="cp" style="background:#000" onclick="setChroma(0,0,0)"></div>
-            <div class="cp" style="background:#fff" onclick="setChroma(1,1,1)"></div>
+    <div class="sec-head">🎨 Ajustes de Imagen</div>
+    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
+    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
+    <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
+    <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
+    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+    
+    <div class="sec-head">🛠️ Chroma Key Avanzado</div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir Máscara</label></div>
+    <div id="chromaPanel" style="display:none;">
+        <div id="currentColorBox"></div>
+        <div class="row" style="justify-content: space-around; margin-bottom:15px;">
+            <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
+            <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
+            <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
         </div>
-        <div class="row"><label>Similitud</label><input type="range" id="sim" min="0" max="0.8" step="0.001"><span class="val" id="v_sim">0.4</span></div>
-        <div class="row"><label>Suave</label><input type="range" id="smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_smooth">0.08</span></div>
+        <div class="row"><label>Tolerancia</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
+        <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
         <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
+        <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
+            <div class="row"><label style="color:#f66">Rojo</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+            <div class="row"><label style="color:#6f6">Verde</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+            <div class="row"><label style="color:#66f">Azul</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        </div>
     </div>
-
-    <button class="danger" onclick="deleteActive()" style="margin-top:15px;">🗑️ ELIMINAR CAPA</button>
+    
+    <div class="row" style="margin-top:20px; gap:8px;">
+        <button onclick="mediaAction('play')" class="secondary">▶ REPRODUCIR</button>
+        <button onclick="mediaAction('pause')" class="secondary">⏸ PAUSAR</button>
+    </div>
+     <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:5px;">🗑️ ELIMINAR OBJETO</button>
   </div>
 
-  <div class="sec-head">⚙️ Global</div>
-  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Grid</label></div>
-  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
+  <div class="sec-head">⚙️ Realidad Mixta</div>
+  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Lidar (Depth API)</label></div>
 </div>
 
-<button id="vrBtn">INICIAR MR</button>
+<button id="vrBtn">INICIAR EXPERIENCIA MR</button>
 
 <script type="importmap">
 { "imports": {
@@ -140,21 +134,22 @@
 
 <script type="module">
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
+const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
 // ==========================================
-// 🌑 SHADERS (Combinación v22 + v4.3)
+// 🌑 SHADERS (DEPTH FIX v21: RG8 Format)
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
+
 const depthFS = `#version 300 es
 precision highp float; precision highp sampler2D; in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj; out vec4 outColor;
-float decode(vec4 rg){ return (rg.r * 255.0 * 256.0 + rg.g * 255.0); } // RG8 Decode
+// FIX: WebGL2 RG8 decode (R=High byte, G=Low byte for packed depth)
+float decode(vec4 rg){ return (rg.r * 255.0 * 256.0 + rg.g * 255.0); }
 void main(){ 
   float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters; if(zMeters <= 0.0) discard;
   float z = -zMeters; float clipZ = uProj[2][2] * z + uProj[3][2]; float clipW = uProj[2][3] * z + uProj[3][3];
@@ -163,13 +158,9 @@ void main(){
 
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
-uniform sampler2D map; 
-uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
-uniform bool chromaEnabled, chromaInvert; 
-uniform vec3 keyColor; 
-uniform float sim, smooth, despill;
+uniform sampler2D map; uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
+uniform bool chromaOn, chromaInvert; uniform vec3 k1; uniform float sim1, smooth1, despill;
 varying vec2 vUv;
-
 vec3 rgb2hsv(vec3 c) {
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
     vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
@@ -177,32 +168,24 @@ vec3 rgb2hsv(vec3 c) {
     float d = q.x - min(q.w, q.y); float e = 1.0e-10;
     return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
-
 void main() {
-  vec4 tex = texture2D(map, vUv);
-  vec3 col = tex.rgb;
-  float alpha = tex.a * uOpacity;
-
-  if(chromaEnabled) {
-      vec3 hsv = rgb2hsv(col); vec3 kHsv = rgb2hsv(keyColor);
+  vec4 tex = texture2D(map, vUv); vec3 col = tex.rgb; float alpha = tex.a * uOpacity;
+  if(chromaOn) {
+      vec3 hsv = rgb2hsv(col); vec3 kHsv = rgb2hsv(k1);
       float hueDist = abs(hsv.x - kHsv.x); if (hueDist > 0.5) hueDist = 1.0 - hueDist;
-      float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0));
-      float mask = smoothstep(sim, sim + smooth, dist);
-      
+      float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0) + pow(abs(hsv.z - kHsv.z) * 0.5, 2.0));
+      float mask = smoothstep(sim1, sim1 + smooth1, dist);
       if(!chromaInvert) {
           alpha *= mask;
           if(mask < 0.95 && despill > 0.0) {
-             // Simple Despill
-             if(keyColor.g > keyColor.r && keyColor.g > keyColor.b) col.g = mix(col.g, max(col.r, col.b), (1.0-mask)*despill);
-             else if(keyColor.b > keyColor.r && keyColor.b > keyColor.g) col.b = mix(col.b, max(col.r, col.g), (1.0-mask)*despill);
+             if(k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
+             else if(k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
           }
       } else { alpha = (1.0 - mask) * uOpacity; col = vec3(1.0); }
   }
-
   col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
   float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation);
   col = pow(max(col, 0.0), vec3(1.0 / uGamma));
-
   gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
 }`;
 
@@ -212,311 +195,339 @@ void main() {
 let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null, clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null, occlusionEnabled = false;
-let controller1, controller2;
+
+let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
 const tempMatrix = new THREE.Matrix4();
-const CLIENT_ID = ''; const API_KEY = '';
+let lastUIUpdate = 0; 
+
+let engGroup; 
+let coordLabels = { x:null, y:null, z:null };
+let dimLabels = { w:null, h:null, d:null };
+let currentUnit = 'm';
 
 function init() {
   scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0xffffff, 1.2)); 
-  const dl = new THREE.DirectionalLight(0xffffff, 1.5); dl.position.set(2,5,2); scene.add(dl);
-  
+  scene.add(new THREE.AmbientLight(0xffedd5, 1.2)); 
   camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500);
   camera.position.set(0, 1.6, 2);
 
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.xr.enabled = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace; 
 
   orbit = new OrbitControls(camera, renderer.domElement);
+  
   transformCtrl = new TransformControls(camera, renderer.domElement);
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
   
+  initEngineeringUI();
   updateGrid(); 
   setupXRControllers();
   setupVR();
-  initMousePick();
   
   renderer.setAnimationLoop(animate);
   
-  // UI Binds
-  document.getElementById('fileInput').addEventListener('change', handleFileSelect);
-  
-  // Mapeo automático de inputs a propiedades de objeto
-  const uiMap = [
-      {id:'scale', k:'scale'}, {id:'dist', k:'dist'}, {id:'height', k:'height'},
-      {id:'brightness', k:'brightness'}, {id:'contrast', k:'contrast'}, {id:'saturation', k:'saturation'},
-      {id:'sim', k:'sim'}, {id:'smooth', k:'smooth'}, {id:'despill', k:'despill'}
-  ];
-  uiMap.forEach(m => {
-      document.getElementById(m.id).addEventListener('input', e => {
-          updateObj(m.k, parseFloat(e.target.value));
-          document.getElementById('v_'+m.id).innerText = parseFloat(e.target.value).toFixed(2);
+  document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
+  document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
+  document.querySelectorAll('input[type=range]').forEach(i => {
+      if(!i.id.startsWith('key')) i.addEventListener('input', e => {
+          const val = parseFloat(e.target.value);
+          const lbl = document.getElementById('v_' + e.target.id);
+          if(lbl) lbl.innerText = val.toFixed(3);
+          updateMaterialParam(e.target.id, val);
       });
   });
-}
-
-function defSettings() {
-    return {
-        mode: 'plane', scale: 1, dist: 2, height: 1.6, flipX: false,
-        chromaEnabled: false, chromaInvert: false, keyColor: [0,1,0],
-        sim: 0.4, smooth: 0.08, despill: 0.5,
-        brightness: 0, contrast: 1, saturation: 1, gamma: 1
-    };
-}
-
-// ==========================================
-// 📦 LOADERS ROBUSTOS (v23)
-// ==========================================
-async function handleFileSelect(e) {
-    if(!e.target.files.length) return;
-    document.getElementById('loader').style.display='flex';
-    for(const f of e.target.files) {
-        const url = URL.createObjectURL(f);
-        const n = f.name.toLowerCase();
-        try {
-            if(n.match(/\.(glb|gltf)$/)) await load3D(url, n, 'gltf');
-            else if(n.match(/\.fbx$/)) await load3D(url, n, 'fbx');
-            else if(n.match(/\.obj$/)) await load3D(url, n, 'obj');
-            else if(n.match(/\.gif$/)) await loadGif(f, n);
-            else if(f.type.startsWith('video/') || n.includes('360')) await loadVideo(url, n);
-            else if(f.type.startsWith('image/')) await loadImg(url, n);
-        } catch(err) { console.error(err); alert("Error archivo: "+n); }
-    }
-    document.getElementById('loader').style.display='none';
-    e.target.value = '';
-}
-
-async function loadVideo(url, name) {
-    const vid = document.createElement('video');
-    vid.src = url; vid.crossOrigin = 'anonymous'; vid.loop = true; vid.muted = true; vid.playsInline = true;
-    try { await vid.play(); } catch(e) { console.log("Click play needed"); } // Autoplay fix
-    const tex = new THREE.VideoTexture(vid); tex.colorSpace = THREE.SRGBColorSpace;
-    let mode = 'plane'; if(name.includes('360')) mode='360_sphere';
-    const ar = vid.videoWidth/vid.videoHeight || 1.77;
-    createObject(mode, tex, ar, name, 'video', vid);
-}
-
-async function loadImg(url, name) {
-    const tex = await new THREE.TextureLoader().loadAsync(url); tex.colorSpace = THREE.SRGBColorSpace;
-    createObject('plane', tex, tex.image.width/tex.image.height, name, 'image');
-}
-
-async function loadGif(file, name) {
-    const buf = await file.arrayBuffer();
-    const r = new window.Omggif.GifReader(new Uint8Array(buf));
-    const cvs=document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
-    const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
-    const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
-    const obj = createObject('plane', tex, r.width/r.height, name, 'gif');
-    obj.gifData = {r, ctx, dat, tex, f:0, nextTime:0};
-}
-
-async function load3D(url, name, type) {
-    let m;
-    if(type==='gltf') m=(await new GLTFLoader().loadAsync(url)).scene;
-    else if(type==='fbx') m=await new FBXLoader().loadAsync(url);
-    else m=await new OBJLoader().loadAsync(url);
-    const box = new THREE.Box3().setFromObject(m); const sz = box.getSize(new THREE.Vector3()).length();
-    const sc = (sz>0 && sz<1000) ? 2/sz : 1; m.scale.setScalar(sc); m.position.set(0, 1, -2);
-    m.traverse(c=>{ if(c.isMesh){ c.material.transparent=true; c.material.depthWrite=true; }});
-    const obj = { id: Math.random().toString(36).substr(2,9), mesh:m, name, type:'model', settings: defSettings() };
-    objects.push(obj); scene.add(m); selectObject(obj.id); updateLayers();
+  ['keyR', 'keyG', 'keyB'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateChromaManual);
+  });
+  window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
+  window.updateGrid = updateGrid;
+  window.setChromaPreset = (r,g,b) => { 
+      document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; 
+      updateChromaManual(); 
+  };
 }
 
 // ==========================================
-// 🧠 LÓGICA DE OBJETOS (Recuperada de v4.3)
+// 📐 VISUALES
 // ==========================================
-function createObject(mode, tex, ar, name, type, video=null) {
-    let geo;
-    if(mode.includes('360')) geo = new THREE.SphereGeometry(20, 64, 64);
-    else if(mode.includes('180')) { geo = new THREE.SphereGeometry(20, 64, 64, 0, Math.PI); geo.rotateY(-Math.PI/2); }
-    else if(mode.includes('cube')) geo = new THREE.BoxGeometry(30,30,30);
-    else geo = new THREE.PlaneGeometry(ar, 1);
+function initEngineeringUI() {
+    engGroup = new THREE.Group();
+    scene.add(engGroup);
     
-    if(mode.includes('360') || mode.includes('180') || mode.includes('cube')) geo.scale(-1,1,1); 
+    const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
+    const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
+    lineY.name = 'lineY'; engGroup.add(lineY);
+    
+    const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); 
+    frameGeo.rotateZ(Math.PI / 4); 
+    const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, side: THREE.DoubleSide, transparent: true, opacity: 0.8, depthWrite: false });
+    const shadow = new THREE.Mesh(frameGeo, frameMat);
+    shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
 
+    coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
+    engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
+    dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
+    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
+    
+    engGroup.visible = false;
+}
+
+function createLabel(txt) {
+    const cvs = document.createElement('canvas'); cvs.width=256; cvs.height=64;
+    const tex = new THREE.CanvasTexture(cvs);
+    const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
+    const s = new THREE.Sprite(mat); s.scale.set(0.3, 0.075, 1);
+    s.userData = { cvs, ctx: cvs.getContext('2d'), tex, lastText: null }; 
+    return s;
+}
+
+function updateLabelText(sprite, text, isDim = false) {
+    if (sprite.userData.lastText === text) return;
+    sprite.userData.lastText = text;
+
+    const { ctx, tex } = sprite.userData;
+    ctx.clearRect(0,0,256,64);
+    ctx.fillStyle = "rgba(20, 15, 0, 0.8)"; ctx.roundRect(5,5,246,54,12); ctx.fill();
+    ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00"; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 34px 'Fira Code', monospace"; 
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.shadowColor = isDim ? "#ffff00" : "#ffaa00"; ctx.shadowBlur = 10;
+    ctx.fillText(text, 128, 32);
+    tex.needsUpdate = true;
+}
+
+function formatUnit(val) {
+    if(currentUnit==='cm') return (val*100).toFixed(0)+'cm';
+    if(currentUnit==='ft') return (val*3.28).toFixed(2)+'ft';
+    return val.toFixed(2)+'m';
+}
+
+function updateEngineeringVisuals() {
+    if(!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
+    const obj = objects.find(o => o.id === activeId);
+    if(!obj) return;
+
+    engGroup.visible = true;
+    const P = obj.mesh.position; const S = obj.mesh.scale;
+    let baseW = obj.originalAspect || 1; let baseH = 1;
+    let realW = baseW * S.x; let realH = baseH * S.y;
+
+    const lineY = engGroup.getObjectByName('lineY');
+    lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
+    lineY.computeLineDistances();
+
+    const shadow = engGroup.getObjectByName('shadowPlane');
+    shadow.position.set(P.x, 0.005, P.z); 
+    const frameScale = Math.max(realW, 0.5) * 1.1; 
+    shadow.scale.set(frameScale, frameScale, 1);
+
+    dimLabels.w.visible = true; dimLabels.h.visible = true;
+    dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0));
+    dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0));
+
+    if(document.getElementById('showCoords').checked) {
+        coordLabels.x.visible = true; coordLabels.y.visible = true; coordLabels.z.visible = true;
+        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z);
+        coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); 
+        coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); 
+    } else {
+        coordLabels.x.visible = false; coordLabels.y.visible = false; coordLabels.z.visible = false;
+    }
+
+    const now = performance.now();
+    if (now - lastUIUpdate > 100) { 
+        updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true);
+        updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
+        if(document.getElementById('showCoords').checked) {
+            updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
+            updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
+            updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
+        }
+        lastUIUpdate = now;
+    }
+}
+
+function updateGrid() {
+    const old = scene.getObjectByName("grid"); if(old) scene.remove(old);
+    if(!document.getElementById('showGrid').checked) return;
+    let gridSize = 15; let divisions = 15;
+    if(currentUnit==='ft') { gridSize = 15*0.3048; divisions = 15; }
+    const colorGrid = new THREE.Color(0xffaa00);
+    const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
+    const material = new THREE.ShaderMaterial({
+        transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+        uniforms: { uColor: { value: colorGrid }, uDivisions: { value: divisions } },
+        vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions;
+            void main() {
+                vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions);
+                float line = min(grid.x, grid.y);
+                float alpha = 1.0 - min(line, 1.0); alpha = pow(alpha, 0.3); 
+                float dist = distance(vUv, vec2(0.5)); float mask = 1.0 - smoothstep(0.2, 0.5, dist);
+                gl_FragColor = vec4(uColor, alpha * mask * 0.6);
+            }`
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.001; mesh.name = "grid"; scene.add(mesh);
+}
+
+// ==========================================
+// 🎮 CONTROLES XR (Grip = Select + Hold)
+// ==========================================
+function setupXRControllers() {
+    controller1 = renderer.xr.getController(0); 
+    controller1.addEventListener('selectstart', onSelect); 
+    controller1.addEventListener('squeezestart', onGripStart); 
+    controller1.addEventListener('squeezeend', onGripEnd);
+    scene.add(controller1);
+
+    controller2 = renderer.xr.getController(1); 
+    controller2.addEventListener('selectstart', onSelect);
+    scene.add(controller2);
+
+    const fac = new XRControllerModelFactory();
+    controllerGrip1 = renderer.xr.getControllerGrip(0); controllerGrip1.add(fac.createControllerModel(controllerGrip1)); scene.add(controllerGrip1);
+    controllerGrip2 = renderer.xr.getControllerGrip(1); controllerGrip2.add(fac.createControllerModel(controllerGrip2)); scene.add(controllerGrip2);
+
+    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]);
+    const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, opacity: 0.5, transparent: true });
+    const line = new THREE.Line(geo, lineMat); line.scale.z = 5;
+    controller1.add(line.clone()); controller2.add(line.clone());
+    raycaster = new THREE.Raycaster();
+}
+
+function handleStableControls() {
+  const s = renderer.xr.getSession();
+  if (!s || !activeId) return;
+
+  const obj = objects.find(o => o.id === activeId);
+  if (!obj) return;
+
+  for (const src of s.inputSources) {
+    const gp = src.gamepad;
+    if (!gp) continue;
+
+    const grip = gp.buttons?.[1]?.pressed === true;
+    const axes = gp.axes || [];
+    let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
+    let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
+
+    if (!Number.isFinite(ax)) ax = 0;
+    if (!Number.isFinite(ay)) ay = 0;
+
+    if (src.handedness === 'left' && grip) {
+      if (Math.abs(ay) > 0.1) {
+        obj.mesh.position.y -= ay * 0.02;
+        if (obj.mesh.position.y < 0) obj.mesh.position.y = 0;
+      }
+      if (Math.abs(ax) > 0.1) {
+        let scaleF = 1 + (ax * 0.02);
+        if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; 
+        obj.mesh.scale.multiplyScalar(scaleF);
+        obj.mesh.scale.clampScalar(0.05, 50.0);
+      }
+    }
+
+    if (src.handedness === 'right' && grip) {
+      if (Math.abs(ay) > 0.1) {
+        const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize();
+        dir.y = 0;
+        obj.mesh.position.addScaledVector(dir, ay * -0.05);
+      }
+      if (Math.abs(ax) > 0.1) {
+        obj.mesh.rotation.y -= ax * 0.05;
+      }
+    }
+  }
+}
+
+function onGripStart(e) {
+    const c = e.target;
+    const hits = getIntersections(c);
+    
+    if (hits.length > 0) {
+        const mesh = hits[0].object;
+        const id = mesh.userData?.id;
+        
+        if (id) {
+            selectObject(id); 
+            c.attach(mesh);
+            c.userData.selected = mesh;
+        }
+    }
+}
+function onGripEnd(e) {
+    const c = e.target;
+    if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; }
+}
+function onSelect(e) {
+    const hits = getIntersections(e.target);
+    if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id);
+}
+function getIntersections(c) {
+    tempMatrix.identity().extractRotation(c.matrixWorld);
+    raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
+    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix);
+    return raycaster.intersectObjects(objects.map(o=>o.mesh), false);
+}
+
+// ==========================================
+// 📦 LOADERS
+// ==========================================
+async function addAsset(url, type, name, isGif=false, isRestore=false) {
+  if(!isRestore) document.getElementById('loader').style.display='grid';
+  let tex, mesh, gifData=null, video=null, newObj=null;
+  try {
+    if(isGif) {
+        const buf = await (await fetch(url)).arrayBuffer();
+        const r = new window.Omggif.GifReader(new Uint8Array(buf));
+        const cvs=document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
+        const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
+        tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
+        gifData={r, ctx, dat, tex, f:0, nextTime:0, playing:true};
+    } else if(type==='video') {
+        video=document.createElement('video'); video.src=url; video.crossOrigin='anonymous'; video.loop=true; video.muted=true; video.playsInline=true;
+        await video.play(); tex=new THREE.VideoTexture(video); tex.colorSpace=THREE.SRGBColorSpace;
+    } else {
+        tex=await new THREE.TextureLoader().loadAsync(url); tex.colorSpace=THREE.SRGBColorSpace;
+    }
+    const ar = video ? video.videoWidth/video.videoHeight : (tex.image?tex.image.width/tex.image.height:1.77);
     const mat = new THREE.ShaderMaterial({
         uniforms: { 
             map:{value:tex}, uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uGamma:{value:1}, uOpacity:{value:1},
-            chromaEnabled:{value:false}, chromaInvert:{value:false}, keyColor:{value:new THREE.Color(0,1,0)}, 
-            sim:{value:0.4}, smooth:{value:0.08}, despill:{value:0.5}
+            chromaOn:{value:false}, chromaInvert:{value:false}, k1:{value:new THREE.Color(0,1,0)}, sim1:{value:0.4}, smooth1:{value:0.08}, despill:{value:0.5} 
         },
-        vertexShader: vShader, fragmentShader: fShader, transparent:true, side:THREE.DoubleSide
+        vertexShader: vShader, fragmentShader: fShader, transparent:true, side:THREE.DoubleSide, depthWrite:false
     });
-    const mesh = new THREE.Mesh(geo, mat);
-    
-    const obj = { id: Math.random().toString(36).substr(2,9), mesh, name, type, video, originalAspect:ar, texture:tex, settings: defSettings() };
-    obj.settings.mode = mode;
-    
-    // Posicionamiento inicial
-    if(mode==='plane') mesh.position.set(0, 1.6, -2);
-    else mesh.position.set(0,0,0);
-
-    objects.push(obj); scene.add(mesh); selectObject(obj.id); updateLayers();
-    return obj;
+    mesh = new THREE.Mesh(new THREE.PlaneGeometry(ar, 1), mat);
+    mesh.position.set(0, 1.6, -2);
+    mesh.userData.id = Math.random().toString(36).substr(2,9);
+    newObj = { id:mesh.userData.id, name, mesh, video, gifData, type, billboard:false, originalAspect:ar, sourceUrl:url };
+    objects.push(newObj); scene.add(mesh);
+    if(!isRestore) selectObject(newObj.id);
+  } catch(e){ console.error(e); }
+  if(!isRestore) document.getElementById('loader').style.display='none';
+  return newObj;
 }
 
-// 🔥 ACTUALIZACIÓN DEL OBJETO (SINCRONIZA SETTINGS CON MESH/SHADER)
-window.updateObj = (k, v) => {
-    const o = objects.find(x=>x.id===activeId); if(!o) return;
-    o.settings[k] = v;
-    const s = o.settings; const m = o.mesh;
-
-    // Cambiar Geo (Proyección)
-    if(k === 'mode') {
-        scene.remove(m);
-        const copy = createObject(v, o.texture, o.originalAspect, o.name, o.type, o.video);
-        copy.mesh.rotation.copy(m.rotation);
-        // Mantener ID y settings antiguos
-        copy.id = o.id; copy.settings = s;
-        // Reemplazar en array
-        const idx = objects.findIndex(x=>x.id===activeId);
-        objects[idx] = copy;
-        selectObject(copy.id);
-        return;
-    }
-
-    // Transform
-    if(k==='scale' || k==='flipX') {
-        const dir = s.flipX ? -1 : 1;
-        m.scale.set(s.scale * dir, s.scale, s.scale);
-    }
-    if(s.mode === 'plane') {
-        if(k==='dist') m.position.z = -s.dist;
-        if(k==='height') m.position.y = s.height;
-    }
-
-    // Uniforms
-    if(o.type !== 'model' && m.material.uniforms) {
-        const u = m.material.uniforms;
-        u.chromaEnabled.value = s.chromaEnabled;
-        u.chromaInvert.value = s.chromaInvert;
-        u.keyColor.value.fromArray(s.keyColor);
-        u.sim.value = s.sim; u.smooth.value = s.smooth; u.despill.value = s.despill;
-        u.uBrightness.value = s.brightness; u.uContrast.value = s.contrast; u.uSaturation.value = s.saturation;
-    }
-};
-
-window.setChroma = (r,g,b) => {
-    const o = objects.find(x=>x.id===activeId);
-    if(o) { o.settings.keyColor = [r,g,b]; updateObj('force_update', 0); }
-};
-
-// ==========================================
-// 🖱️ INTERACCIÓN
-// ==========================================
-function selectObject(id){ 
-    activeId=id; 
-    const o=objects.find(x=>x.id===id);
-    if(o){ 
-        transformCtrl.attach(o.mesh); 
-        document.getElementById('editorUI').style.display='block';
-        
-        // Sincronizar UI con Settings
-        const s = o.settings;
-        const setUI = (eid, val) => { const el=document.getElementById(eid); if(el) el.value=val; };
-        
-        if(o.type !== 'model') {
-            document.getElementById('projSelect').value = s.mode;
-            document.getElementById('chromaPanel').style.display = s.chromaEnabled ? 'block' : 'none';
-            document.getElementById('chromaToggle').checked = s.chromaEnabled;
-            setUI('sim', s.sim); setUI('smooth', s.smooth); setUI('despill', s.despill);
-        }
-        
-        setUI('scale', s.scale); setUI('dist', s.dist); setUI('height', s.height);
-        setUI('brightness', s.brightness);
-        
-        // Video Controls
-        const vCtrl = document.getElementById('videoControls');
-        if(o.video) {
-            vCtrl.classList.add('show');
-            // Update loop para barra
-        } else {
-            vCtrl.classList.remove('show');
-        }
-    } else {
-        transformCtrl.detach();
-        document.getElementById('editorUI').style.display='none';
-        document.getElementById('videoControls').classList.remove('show');
-    }
-    updateLayers();
-}
-
-function updateLayers() { 
-    const l=document.getElementById('layerList'); l.innerHTML=''; 
-    objects.forEach(o=>{ 
-        const d=document.createElement('div'); 
-        d.className=`layer-item ${o.id===activeId?'active':''}`; 
-        d.innerText=(o.type=='model'?'📦 ':'🎬 ')+o.name.slice(0,15); 
-        d.onclick=()=>selectObject(o.id); 
-        l.appendChild(d); 
-    }); 
-}
-
-window.deleteActive = () => {
-    const i = objects.findIndex(x=>x.id===activeId);
-    if(i>-1) {
-        scene.remove(objects[i].mesh);
-        if(objects[i].video) objects[i].video.pause();
-        objects.splice(i,1);
-        selectObject(null);
-    }
-}
-
-window.mediaAction = (act) => {
-    const o = objects.find(x=>x.id===activeId);
-    if(o && o.video) {
-        if(act==='play') o.video.play();
-        if(act==='pause') o.video.pause();
-        if(act==='stop') { o.video.pause(); o.video.currentTime=0; }
-    }
-}
-
-function initMousePick(){
-    const ray = new THREE.Raycaster();
-    renderer.domElement.addEventListener('pointerdown', (e)=>{
-        if(xrSession) return;
-        const r = renderer.domElement.getBoundingClientRect();
-        const m = new THREE.Vector2(((e.clientX-r.left)/r.width)*2-1, -((e.clientY-r.top)/r.height)*2+1);
-        ray.setFromCamera(m, camera);
-        const hits = ray.intersectObjects(objects.map(o=>o.mesh));
-        if(hits.length) {
-            const f = objects.find(o=>o.mesh===hits[0].object);
-            if(f) selectObject(f.id);
-        }
-    });
-}
-
-// ==========================================
-// 🕶️ XR & LOOP
-// ==========================================
 function animate(time, frame) {
   const dt = clock.getElapsedTime();
   orbit.update();
   handleStableControls();
+  updateEngineeringVisuals();
   
-  // GIF Update
   objects.forEach(o => {
-      if(o.type==='gif' && o.gifData) {
-          const g=o.gifData;
-          if(performance.now() > g.nextTime) {
-              g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data); g.ctx.putImageData(g.dat,0,0);
-              g.tex.needsUpdate=true; g.nextTime=performance.now()+100; g.f=(g.f+1)%g.r.numFrames();
-          }
-      }
-      // Video Bar Update
-      if(o.id === activeId && o.video && !o.video.paused) {
-          const pct = (o.video.currentTime/o.video.duration)*100;
-          const bar = document.getElementById('vidFill');
-          if(bar) bar.style.width = pct+'%';
+      if(o.billboard) o.mesh.lookAt(camera.position.x, o.mesh.position.y, camera.position.z);
+      if(o.gifData && o.gifData.playing && performance.now() > o.gifData.nextTime) {
+          const g=o.gifData; g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data); g.ctx.putImageData(g.dat,0,0);
+          g.tex.needsUpdate=true; g.nextTime=performance.now()+100; g.f=(g.f+1)%g.r.numFrames();
       }
   });
 
-  // Occlusion Pass
   if(frame && occlusionEnabled && xrGlBinding) {
       const pose = frame.getViewerPose(xrRefSpace);
       if(pose) {
@@ -525,6 +536,7 @@ function animate(time, frame) {
           for(const view of pose.views) {
               const dInfo = xrGlBinding.getDepthInformation(view);
               if(dInfo) {
+                  // 🔥 DEPTH FIX V21: Usando formato RG8 (WebXR standard en WebGL2)
                   gl.bindTexture(gl.TEXTURE_2D, depthTex);
                   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG8, dInfo.width, dInfo.height, 0, gl.RG, gl.UNSIGNED_BYTE, dInfo.data);
                   gl.useProgram(depthProgram);
@@ -539,106 +551,88 @@ function animate(time, frame) {
   renderer.render(scene, camera);
 }
 
+// 🔥 CONFIGURACIÓN ROBUSTA DE SESIÓN (ESTILO V5.0)
 function setupVR() {
   if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok => {
       if(ok) {
           const btn = document.getElementById('vrBtn'); btn.style.display='block';
           btn.onclick = async () => {
               const wantDepth = document.getElementById('checkOcclusion').checked;
-              const required = ['local-floor']; 
-              if(wantDepth) required.push('depth-sensing');
+              
+              const requiredFeatures = ['local-floor'];
+              const optionalFeatures = ['dom-overlay'];
+              
+              // Pedimos depth-sensing solo si el usuario lo marcó
+              if (wantDepth) requiredFeatures.push('depth-sensing'); 
+
               try {
                   xrSession = await navigator.xr.requestSession('immersive-ar', { 
-                      requiredFeatures: required, optionalFeatures: ['dom-overlay'], domOverlay:{root:document.body}, 
-                      depthSensing: wantDepth ? { usagePreference: ["gpu-optimized", "cpu-optimized"], dataFormatPreference: ["luminance-alpha"] } : undefined 
+                      requiredFeatures, 
+                      optionalFeatures, 
+                      domOverlay:{root:document.body}, 
+                      depthSensing: wantDepth ? { 
+                        // 🔥 Compatibilidad ampliada (copiado de v5.0)
+                        usagePreference: ["gpu-optimized", "cpu-optimized"], 
+                        dataFormatPreference: ["luminance-alpha"] 
+                      } : undefined 
                   });
-              } catch(e) { alert("Error AR: " + e.message); return; }
-              renderer.xr.setSession(xrSession); xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
-              occlusionEnabled = wantDepth; if(occlusionEnabled) initDepthOcclusion(xrSession);
+              } catch(e) {
+                  console.error(e);
+                  alert("ERROR: No se pudo iniciar AR con Oclusión.");
+                  return;
+              }
+
+              renderer.xr.setSession(xrSession); 
+              xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+              
+              occlusionEnabled = wantDepth;
+              if(occlusionEnabled) initDepthOcclusion(xrSession);
           };
       }
   });
 }
 
 function initDepthOcclusion(s) {
-    const gl=renderer.getContext(); xrGlBinding=new XRWebGLBinding(s,gl);
+    const gl=renderer.getContext(); 
+    xrGlBinding=new XRWebGLBinding(s,gl);
+
     const vs=gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs,depthVS); gl.compileShader(vs);
     const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs,depthFS); gl.compileShader(fs);
     depthProgram=gl.createProgram(); gl.attachShader(depthProgram,vs); gl.attachShader(depthProgram,fs); gl.linkProgram(depthProgram);
+
+    // VAO Setup
     depthVao=gl.createVertexArray(); gl.bindVertexArray(depthVao);
     const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(depthProgram, 'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-    depthTex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, depthTex);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-}
-
-function setupXRControllers() {
-    controller1 = renderer.xr.getController(0); 
-    controller1.addEventListener('selectstart', onSelect); 
-    controller1.addEventListener('squeezestart', onGripStart); 
-    controller1.addEventListener('squeezeend', onGripEnd);
-    scene.add(controller1);
-    controller2 = renderer.xr.getController(1); 
-    controller2.addEventListener('selectstart', onSelect);
-    scene.add(controller2);
-    const fac = new XRControllerModelFactory();
-    const g1 = renderer.xr.getControllerGrip(0); g1.add(fac.createControllerModel(g1)); scene.add(g1);
-    const g2 = renderer.xr.getControllerGrip(1); g2.add(fac.createControllerModel(g2)); scene.add(g2);
-    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]), new THREE.LineBasicMaterial({ color: 0xffaa00 }));
-    controller1.add(line.clone()); controller2.add(line.clone());
-    raycaster = new THREE.Raycaster();
-}
-
-// SAFE CONTROLS v22 (Anti-Crash)
-function handleStableControls() {
-  const s = renderer.xr.getSession(); if (!s || !activeId) return;
-  const obj = objects.find(o => o.id === activeId); if (!obj) return;
-  for (const src of s.inputSources) {
-    const gp = src.gamepad; if (!gp) continue;
-    const grip = gp.buttons?.[1]?.pressed === true;
-    const axes = gp.axes || [];
-    let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
-    let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
-    if (!Number.isFinite(ax)) ax = 0; if (!Number.isFinite(ay)) ay = 0;
     
-    if (src.handedness === 'left' && grip) {
-      if (Math.abs(ay) > 0.1) { obj.mesh.position.y -= ay * 0.02; if (obj.mesh.position.y < 0) obj.mesh.position.y = 0; }
-      if (Math.abs(ax) > 0.1) { 
-          let scaleF = 1 + (ax * 0.02); if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; 
-          obj.settings.scale *= scaleF; // Update settings too
-          obj.mesh.scale.multiplyScalar(scaleF); 
-      }
-    }
-    if (src.handedness === 'right' && grip) {
-      if (Math.abs(ay) > 0.1) { const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize(); dir.y = 0; obj.mesh.position.addScaledVector(dir, ay * -0.05); }
-      if (Math.abs(ax) > 0.1) { obj.mesh.rotation.y -= ax * 0.05; }
-    }
-  }
+    const loc = gl.getAttribLocation(depthProgram, 'aPos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    gl.bindVertexArray(null);
+
+    // Texture Setup (RG8 for packed depth)
+    depthTex=gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, depthTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
-function onGripStart(e) {
-    const c = e.target; const hits = getIntersections(c);
-    if (hits.length > 0) {
-        const mesh = hits[0].object; 
-        const found = objects.find(o => o.mesh === mesh || o.mesh === mesh.parent);
-        if (found) { selectObject(found.id); c.attach(found.mesh); c.userData.selected = found.mesh; }
-    }
-}
-function onGripEnd(e) { const c = e.target; if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } }
-function onSelect(e) { const hits = getIntersections(e.target); if(hits.length>0) { const f=objects.find(o=>o.mesh===hits[0].object); if(f) selectObject(f.id); } }
-function getIntersections(c) {
-    tempMatrix.identity().extractRotation(c.matrixWorld); raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
-    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix);
-    return raycaster.intersectObjects(objects.map(o=>o.mesh), false);
-}
-function updateGrid() {
-    const old = scene.getObjectByName("grid"); if(old) scene.remove(old);
-    if(!document.getElementById('showGrid').checked) return;
-    const g = new THREE.GridHelper(20,20,0xffaa00,0x333333); g.name="grid"; g.position.y=0.01; scene.add(g);
-}
-window.handleAuthClick = () => { if(!CLIENT_ID) alert("Falta API KEY"); gapi.load('client:auth2', ()=>{ gapi.client.init({apiKey:API_KEY, clientId:CLIENT_ID, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope:SCOPES}).then(()=>gapi.auth2.getAuthInstance().signIn()); }); };
+function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o) { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='gamma') u.uGamma.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; }}
+function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); }}
+function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
+function selectObject(id){ activeId=id; const o=objects.find(x=>x.id===id); if(o){ transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value; document.getElementById('contrast').value=o.mesh.material.uniforms.uContrast.value; document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value; document.getElementById('gamma').value=o.mesh.material.uniforms.uGamma.value; document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value; document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value; document.getElementById('despill').value=o.mesh.material.uniforms.despill.value; updateMaterial(); updateLayers(); } }
+function updateLayers() { const l=document.getElementById('layerList'); l.innerHTML=''; objects.forEach(o=>{ const d=document.createElement('div'); d.className=`layer-item ${o.id===activeId?'active':''}`; d.innerText=(o.type=='video'?'🎬 ':'🖼️ ')+o.name.slice(0,15); d.onclick=()=>selectObject(o.id); l.appendChild(d); }); }
+window.toggleUIPanel = () => document.getElementById('ui').classList.toggle('minimized');
+window.handleAuthClick = () => { if(!CLIENT_ID) alert("Falta API KEY"); gapi.load('client:auth2', ()=>{ gapi.client.init({apiKey:API_KEY, clientId:CLIENT_ID, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope:SCOPES}).then(()=>gapi.auth2.getAuthInstance().signIn()).then(()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('driveActions').style.display='flex'; }); }); };
+window.saveSceneToDrive = () => { /* Logica guardar */ };
+window.loadSceneFromDrive = () => { /* Logica cargar */ };
+window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
+document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
+window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); activeId=null; transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
+window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
 </script>
