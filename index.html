@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v17.0 | Ultimate</title>
+  <title>MR Studio Diamond v18.0 | Stable Engineering</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -14,33 +14,35 @@
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
     .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 95vh; 
-      background: rgba(12, 12, 18, 0.94); backdrop-filter: blur(25px); 
+      position: fixed; left: 20px; top: 20px; width: 350px; max-height: 95vh; 
+      background: rgba(10, 10, 15, 0.95); backdrop-filter: blur(20px); 
       border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; 
-      padding: 16px; overflow-y: auto; z-index: 100; 
+      padding: 15px; overflow-y: auto; z-index: 100; 
       box-shadow: 0 20px 60px rgba(0,0,0,0.9);
       scrollbar-width: thin; scrollbar-color: #555 transparent;
       transition: transform 0.3s ease;
     }
     .ui-panel.minimized { transform: translateX(-420px); }
     
-    h2 { margin: 0 0 15px 0; font-size: 15px; color: #00e5ff; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; justify-content: space-between; }
+    h2 { margin: 0 0 15px 0; font-size: 15px; color: #00d2ff; font-weight: 700; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display: flex; justify-content: space-between; }
     .sec-head { font-size: 10px; font-weight: 800; color: #888; margin: 15px 0 6px 0; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
     
     .row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11px; }
     label { flex: 1; color: #ccc; cursor: pointer; white-space: nowrap; }
-    input[type=range] { flex: 2; height: 4px; accent-color: #00e5ff; background: #333; border-radius: 2px; }
-    input[type=checkbox] { width: 14px; height: 14px; accent-color: #00e5ff; cursor: pointer; }
-    .val { width: 32px; text-align: right; font-size: 9px; color: #00e5ff; font-family: monospace; }
+    input[type=range] { flex: 2; height: 4px; accent-color: #00d2ff; background: #333; border-radius: 2px; }
+    input[type=checkbox] { width: 14px; height: 14px; accent-color: #00d2ff; cursor: pointer; }
+    .val { width: 32px; text-align: right; font-size: 9px; color: #00d2ff; font-family: monospace; }
     
-    button { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: #000; background: #00e5ff; transition: 0.2s; font-size: 11px; }
+    select, input[type=url] { width: 100%; background: #222; border: 1px solid #444; color: #eee; padding: 6px; border-radius: 4px; outline: none; }
+    
+    button { flex: 1; padding: 10px; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; color: #000; background: #00d2ff; transition: 0.2s; font-size: 11px; }
     button:active { transform: scale(0.95); }
     button.danger { background: #ff4757; color: white; }
     button.drive { background: #2ecc71; color: white; }
 
-    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid #555; color: #00e5ff; font-weight:bold; cursor: pointer; display: none; }
-    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: #00e5ff; color: #000; border-radius: 30px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(0, 229, 255, 0.5); border: 2px solid white; }
-    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #00e5ff; font-weight: 900; letter-spacing: 2px; }
+    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid #444; color: #00d2ff; font-weight:bold; cursor: pointer; display: none; }
+    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: #00d2ff; color: #000; border-radius: 30px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 25px rgba(0, 210, 255, 0.5); border: 2px solid white; }
+    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #00d2ff; font-weight: 900; letter-spacing: 2px; }
     
     .color-btn { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid #444; transition: 0.2s; }
     .color-btn:hover { transform: scale(1.1); border-color: #fff; }
@@ -48,28 +50,28 @@
     
     .layer-list { max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; }
     .layer-item { padding: 6px; font-size: 10px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
-    .layer-item.active { background: rgba(0, 229, 255, 0.15); border-left: 3px solid #00e5ff; }
+    .layer-item.active { background: rgba(0, 210, 255, 0.15); border-left: 3px solid #00d2ff; }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO v17.0...</div>
+<div class="loader" id="loader">CARGANDO v18.0...</div>
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>DIAMOND v17.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>DIAMOND v18.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
 
-  <div class="sec-head">📐 Cotas & Unidades</div>
+  <div class="sec-head">📐 Arquitectura & Cotas</div>
   <div class="row">
-      <select id="unitSystem" onchange="updateUnits()" style="width:100%; padding:5px; background:#222; color:#fff; border:1px solid #444;">
+      <select id="unitSystem" onchange="updateUnits()">
           <option value="m">Metros (m)</option>
           <option value="cm">Centímetros (cm)</option>
           <option value="ft">Pies (ft)</option>
       </select>
   </div>
-  <div class="row"><label><input type="checkbox" id="showDims" checked> Mostrar Cotas</label></div>
-  <div class="row"><label><input type="checkbox" id="showCoords"> Mostrar Coordenadas</label></div>
+  <div class="row"><label><input type="checkbox" id="showDims" checked> Mostrar Cotas Dinámicas</label></div>
+  <div class="row"><label><input type="checkbox" id="showCoords" checked> Mostrar Coordenadas X/Y/Z</label></div>
   <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Grilla de Suelo</label></div>
 
   <div class="sec-head">☁️ Proyecto</div>
@@ -81,7 +83,7 @@
 
   <div class="sec-head">📥 Assets</div>
   <div class="row">
-    <input type="url" id="webUrl" placeholder="URL Video/Imagen" style="width:100%; padding:5px; background:#222; color:#fff; border:1px solid #444;">
+    <input type="url" id="webUrl" placeholder="URL Video/Imagen">
     <button onclick="loadFromWeb()" style="width:40px; margin-left:5px;">+</button>
   </div>
   <button onclick="document.getElementById('fileInput').click()" style="margin-top:5px; background:#333; color:#fff; border:1px solid #555;">📁 ABRIR LOCAL</button>
@@ -98,25 +100,22 @@
     <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
     <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
     
-    <div class="sec-head">🛠️ Chroma Key Pro</div>
-    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir Máscara</label></div>
-    
+    <div class="sec-head">🛠️ Chroma Key</div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir</label></div>
     <div id="chromaPanel" style="display:none; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px;">
         <div id="currentColorBox"></div>
         <div class="row" style="justify-content: space-around; margin-bottom:10px;">
             <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
             <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
-            <div class="color-btn" style="background:#ff00ff;" onclick="setChromaPreset(1,0,1)"></div>
             <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
         </div>
-        <div class="row"><label>Rango (Sim)</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
-        <div class="row"><label>Suavizado</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
-        <div class="row"><label title="Eliminar reflejo de color en bordes">Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
-        
-        <div style="margin-top:8px; border-top:1px solid #444; padding-top:5px;">
-            <div class="row"><label style="color:#f55">Key R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
-            <div class="row"><label style="color:#5f5">Key G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
-            <div class="row"><label style="color:#55f">Key B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
+        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
+        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
+        <div style="margin-top:5px; border-top:1px solid #444; padding-top:5px;">
+            <div class="row"><label style="color:#f55">R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+            <div class="row"><label style="color:#5f5">G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+            <div class="row"><label style="color:#55f">B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
         </div>
     </div>
     
@@ -163,7 +162,7 @@ void main(){
 }`;
 
 // ==========================================
-// 🎨 PRO SHADER (V5/V10 RESTAURADO + HSV)
+// 🎨 PRO SHADER (V17 - HSV)
 // ==========================================
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
@@ -174,7 +173,6 @@ uniform vec3 k1;
 uniform float sim1, smooth1, despill;
 varying vec2 vUv;
 
-// Función HSV para chroma preciso
 vec3 rgb2hsv(vec3 c) {
     vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
     vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
@@ -189,81 +187,47 @@ void main() {
   vec3 col = tex.rgb;
   float alpha = tex.a * uOpacity;
 
-  // CHROMA KEY AVANZADO (HSV + RGB mix)
   if(chromaOn) {
-      vec3 hsv = rgb2hsv(col);
-      vec3 kHsv = rgb2hsv(k1);
-      
-      float hueDist = abs(hsv.x - kHsv.x);
-      if (hueDist > 0.5) hueDist = 1.0 - hueDist;
-      float satDist = abs(hsv.y - kHsv.y);
-      float valDist = abs(hsv.z - kHsv.z);
-      
-      // Distancia ponderada
-      float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(satDist, 2.0) + pow(valDist * 0.5, 2.0));
-      
-      // Máscara suave
+      vec3 hsv = rgb2hsv(col); vec3 kHsv = rgb2hsv(k1);
+      float hueDist = abs(hsv.x - kHsv.x); if (hueDist > 0.5) hueDist = 1.0 - hueDist;
+      float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0) + pow(abs(hsv.z - kHsv.z) * 0.5, 2.0));
       float mask = smoothstep(sim1, sim1 + smooth1, dist);
       
       if(!chromaInvert) {
           alpha *= mask;
-          // DESPILL (Eliminación de reflejo)
           if(mask < 0.95 && despill > 0.0) {
-             if(k1.g > k1.r && k1.g > k1.b) { // Green Screen
-                 col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
-             } else if(k1.b > k1.r && k1.b > k1.g) { // Blue Screen
-                 col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
-             }
+             if(k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
+             else if(k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
           }
-      } else {
-          alpha = (1.0 - mask) * uOpacity; // Modo Invertido
-          col = vec3(1.0); // Máscara blanca
-      }
+      } else { alpha = (1.0 - mask) * uOpacity; col = vec3(1.0); }
   }
 
-  // AJUSTES DE IMAGEN
-  col += uBrightness;
-  col = (col - 0.5) * uContrast + 0.5;
-  float gray = dot(col, vec3(0.299, 0.587, 0.114));
-  col = mix(vec3(gray), col, uSaturation);
-  col = pow(max(col, 0.0), vec3(1.0 / uGamma)); // Gamma correction
+  col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
+  float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation);
+  col = pow(max(col, 0.0), vec3(1.0 / uGamma));
 
-  gl_FragColor = vec4(col, alpha);
-  if(alpha < 0.01) discard; 
+  gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
 }`;
 
 // ==========================================
-// ⚙️ SISTEMA PRINCIPAL
+// ⚙️ SISTEMA GLOBAL
 // ==========================================
 let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
-let objects = [], activeId = null;
-let clock = new THREE.Clock();
+let objects = [], activeId = null, clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null, occlusionEnabled = false;
-
-// Variables XR & UI
-let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
-const tempMatrix = new THREE.Matrix4();
+let controller1, controller2, controllerGrip1, controllerGrip2, raycaster, tempMatrix = new THREE.Matrix4();
 
 // UI INGENIERÍA
-let engGroup; 
-let coordLabels = { x:null, y:null, z:null };
-let dimLabels = { w:null, h:null, d:null };
-let gridHelper;
-let currentUnit = 'm';
+let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null };
+let gridHelper, currentUnit = 'm';
 
 function init() {
-  scene = new THREE.Scene();
-  scene.add(new THREE.AmbientLight(0xffffff, 1));
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500);
-  camera.position.set(0, 1.6, 2);
-
+  scene = new THREE.Scene(); scene.add(new THREE.AmbientLight(0xffffff, 1));
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500); camera.position.set(0, 1.6, 2);
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.xr.enabled = true;
+  renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio); renderer.xr.enabled = true;
 
   orbit = new OrbitControls(camera, renderer.domElement);
-  
   transformCtrl = new TransformControls(camera, renderer.domElement);
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
@@ -272,55 +236,48 @@ function init() {
   updateGrid(); 
   setupXRControllers();
   setupVR();
-  
   renderer.setAnimationLoop(animate);
   
-  // UI Bindings
+  // Eventos UI
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
-  
   document.querySelectorAll('input[type=range]').forEach(i => {
       if(!i.id.startsWith('key')) i.addEventListener('input', e => {
           const val = parseFloat(e.target.value);
           const lbl = document.getElementById('v_' + e.target.id);
-          if(lbl) lbl.innerText = val.toFixed(3); // Mayor precisión para chroma
+          if(lbl) lbl.innerText = val.toFixed(2);
           updateMaterialParam(e.target.id, val);
       });
   });
-  
-  // Manual RGB Sliders
-  ['keyR', 'keyG', 'keyB'].forEach(id => {
-      document.getElementById(id).addEventListener('input', updateChromaManual);
-  });
+  ['keyR', 'keyG', 'keyB'].forEach(id => document.getElementById(id).addEventListener('input', updateChromaManual));
 
   window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
-  window.setChromaPreset = (r,g,b) => { 
-      document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; 
-      updateChromaManual(); 
-  };
+  window.setChromaPreset = (r,g,b) => { document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; updateChromaManual(); };
 }
 
 // ==========================================
-// 📐 SISTEMA VISUAL (COTAS V16)
+// 📐 INGENIERÍA UI (COTAS RESTAURADAS)
 // ==========================================
 function initEngineeringUI() {
-    engGroup = new THREE.Group();
-    scene.add(engGroup);
+    engGroup = new THREE.Group(); scene.add(engGroup);
     
-    const lineMat = new THREE.LineDashedMaterial({ color: 0x00e5ff, dashSize: 0.1, gapSize: 0.05, opacity:0.6, transparent:true });
+    // Lineas
+    const lineMat = new THREE.LineDashedMaterial({ color: 0x00d2ff, dashSize: 0.1, gapSize: 0.05, opacity:0.6, transparent:true });
     const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
     lineY.name = 'lineY'; engGroup.add(lineY);
     
-    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent:true, opacity:0.1, side:THREE.DoubleSide }));
+    // Sombra
+    const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1,1), new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent:true, opacity:0.15, side:THREE.DoubleSide }));
     shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
 
+    // Etiquetas
     coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
     engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
 
-    dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
+    dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H");
     dimLabels.w.material.color.setHex(0xffff00); 
-    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
+    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h);
     
     engGroup.visible = false;
 }
@@ -331,15 +288,14 @@ function createLabel(txt) {
     const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
     const s = new THREE.Sprite(mat); s.scale.set(0.3, 0.075, 1);
     s.userData = { cvs, ctx: cvs.getContext('2d'), tex };
-    updateLabelText(s, txt);
     return s;
 }
 
 function updateLabelText(sprite, text) {
     const { ctx, tex } = sprite.userData;
     ctx.clearRect(0,0,256,64);
-    ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.roundRect(5,5,246,54,10); ctx.fill();
-    ctx.strokeStyle = "#00e5ff"; ctx.lineWidth=2; ctx.stroke();
+    ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillRect(0,0,256,64); // Fondo simple para rendimiento
+    ctx.strokeStyle = "#00d2ff"; ctx.lineWidth=3; ctx.strokeRect(2,2,252,60);
     ctx.fillStyle = "#fff"; ctx.font = "bold 36px monospace"; 
     ctx.textAlign = "center"; ctx.textBaseline = "middle";
     ctx.fillText(text, 128, 32);
@@ -353,39 +309,41 @@ function formatUnit(val) {
 }
 
 function updateEngineeringVisuals() {
-    if(!document.getElementById('showDims').checked) { engGroup.visible = false; return; }
-    if(!activeId) { engGroup.visible = false; return; }
+    if(!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
     const obj = objects.find(o => o.id === activeId);
     if(!obj) return;
 
     engGroup.visible = true;
     const P = obj.mesh.position;
     const S = obj.mesh.scale;
-    
-    let baseW = obj.originalAspect || 1; let baseH = 1;
-    let realW = baseW * S.x; let realH = baseH * S.y;
+    let baseW = obj.originalAspect || 1; let realW = baseW * S.x; let realH = S.y;
 
+    // Linea Piso
     const lineY = engGroup.getObjectByName('lineY');
     lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
     lineY.computeLineDistances();
 
+    // Sombra
     const shadow = engGroup.getObjectByName('shadowPlane');
     shadow.position.set(P.x, 0.01, P.z);
-    shadow.scale.set(realW, realW, 1);
+    shadow.scale.set(realW, realW*0.1, 1); // Adaptado
 
+    // Coordenadas
     if(document.getElementById('showCoords').checked) {
         coordLabels.x.visible = true; coordLabels.y.visible = true; coordLabels.z.visible = true;
-        coordLabels.y.position.set(P.x + 0.2, P.y/2, P.z); updateLabelText(coordLabels.y, "H: " + formatUnit(P.y));
-        coordLabels.x.position.set(P.x, 0.1, P.z + 0.2); updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
-        coordLabels.z.position.set(P.x + 0.2, 0.1, P.z); updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
+        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); updateLabelText(coordLabels.y, "H: " + formatUnit(P.y));
+        coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
+        coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
     } else {
         coordLabels.x.visible = false; coordLabels.y.visible = false; coordLabels.z.visible = false;
     }
 
+    // Dimensiones (Scale)
+    dimLabels.w.visible = true; dimLabels.h.visible = true;
     dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.15, 0));
-    updateLabelText(dimLabels.w, "↔ " + formatUnit(realW));
+    updateLabelText(dimLabels.w, "W: " + formatUnit(realW));
     dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.15, 0, 0));
-    updateLabelText(dimLabels.h, "↕ " + formatUnit(realH));
+    updateLabelText(dimLabels.h, "H: " + formatUnit(realH));
 }
 
 function updateGrid() {
@@ -398,7 +356,7 @@ function updateGrid() {
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (STABLE V16)
+// 🎮 CONTROLES XR (SIN CRASHES)
 // ==========================================
 function setupXRControllers() {
     controller1 = renderer.xr.getController(0); 
@@ -409,6 +367,7 @@ function setupXRControllers() {
 
     controller2 = renderer.xr.getController(1); 
     controller2.addEventListener('selectstart', onSelect);
+    // REMOVIDO LISTENER PROBLEMATICO PARA BOTONES
     scene.add(controller2);
 
     const fac = new XRControllerModelFactory();
@@ -441,9 +400,11 @@ function handleStableControls() {
                 if(obj.mesh.position.y < 0) obj.mesh.position.y = 0;
             }
             if(Math.abs(ax) > 0.1) {
-                const scaleF = 1 + (ax * 0.02);
+                let scaleF = 1 + (ax * 0.02);
+                // PROTECCIÓN ANTI-CRASH (NaN/Infinity)
+                if(scaleF < 0.1) scaleF = 0.1;
                 obj.mesh.scale.multiplyScalar(scaleF);
-                obj.mesh.scale.clampScalar(0.1, 20);
+                obj.mesh.scale.clampScalar(0.05, 50.0);
             }
         }
 
@@ -461,9 +422,9 @@ function handleStableControls() {
     }
 }
 
+// LOGICA SELECCIÓN BASICA
 function onGripStart(e) {
-    const c = e.target;
-    const hits = getIntersections(c);
+    const c = e.target; const hits = getIntersections(c);
     if(hits.length > 0) { const o = hits[0].object; c.attach(o); c.userData.selected = o; }
 }
 function onGripEnd(e) {
@@ -482,7 +443,7 @@ function getIntersections(c) {
 }
 
 // ==========================================
-// 📦 ASSET LOADER (CON PRO SHADER)
+// 📦 LOADERS
 // ==========================================
 async function addAsset(url, type, name, isGif=false, isRestore=false) {
   if(!isRestore) document.getElementById('loader').style.display='grid';
@@ -504,10 +465,8 @@ async function addAsset(url, type, name, isGif=false, isRestore=false) {
     const ar = video ? video.videoWidth/video.videoHeight : (tex.image?tex.image.width/tex.image.height:1.77);
     const mat = new THREE.ShaderMaterial({
         uniforms: { 
-            map:{value:tex}, 
-            uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uGamma:{value:1}, uOpacity:{value:1},
-            chromaOn:{value:false}, chromaInvert:{value:false}, k1:{value:new THREE.Color(0,1,0)}, 
-            sim1:{value:0.4}, smooth1:{value:0.08}, despill:{value:0.5} 
+            map:{value:tex}, uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uGamma:{value:1}, uOpacity:{value:1},
+            chromaOn:{value:false}, chromaInvert:{value:false}, k1:{value:new THREE.Color(0,1,0)}, sim1:{value:0.4}, smooth1:{value:0.08}, despill:{value:0.5} 
         },
         vertexShader: vShader, fragmentShader: fShader, transparent:true, side:THREE.DoubleSide, depthWrite:false
     });
@@ -522,9 +481,6 @@ async function addAsset(url, type, name, isGif=false, isRestore=false) {
   return newObj;
 }
 
-// ==========================================
-// 🔁 LOOP
-// ==========================================
 function animate(time, frame) {
   const dt = clock.getElapsedTime();
   orbit.update();
@@ -561,7 +517,6 @@ function animate(time, frame) {
   renderer.render(scene, camera);
 }
 
-// UTILS & SETUP
 function setupVR() {
   if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok => {
       if(ok) {
@@ -588,53 +543,10 @@ function initDepthOcclusion(s) {
     depthTex=gl.createTexture();
 }
 
-// UI HELPERS
-function updateMaterialParam(id,v){ 
-    const o=objects.find(x=>x.id===activeId); if(o) {
-        const u = o.mesh.material.uniforms;
-        if(id==='brightness') u.uBrightness.value=v;
-        else if(id==='contrast') u.uContrast.value=v;
-        else if(id==='saturation') u.uSaturation.value=v;
-        else if(id==='gamma') u.uGamma.value=v;
-        else if(id==='opacity') u.uOpacity.value=v;
-        else if(id==='k1sim') u.sim1.value=v;
-        else if(id==='k1smooth') u.smooth1.value=v;
-        else if(id==='despill') u.despill.value=v;
-    }
-}
-function updateChromaManual(){ 
-    const o=objects.find(x=>x.id===activeId); if(o) {
-        o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); 
-        document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); 
-    }
-}
-function updateMaterial(){ 
-    const o=objects.find(x=>x.id===activeId); if(o) { 
-        o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; 
-        o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; 
-        document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; 
-        updateChromaManual(); 
-    }
-}
-function selectObject(id){ 
-    activeId=id; const o=objects.find(x=>x.id===id); if(o){ 
-        transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; 
-        // Sync UI
-        document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; 
-        document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; 
-        
-        document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value;
-        document.getElementById('contrast').value=o.mesh.material.uniforms.uContrast.value;
-        document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value;
-        document.getElementById('gamma').value=o.mesh.material.uniforms.uGamma.value;
-        
-        document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value;
-        document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value;
-        document.getElementById('despill').value=o.mesh.material.uniforms.despill.value;
-        
-        updateMaterial(); updateLayers();
-    } 
-}
+function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o) { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='gamma') u.uGamma.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; }}
+function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); }}
+function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
+function selectObject(id){ activeId=id; const o=objects.find(x=>x.id===id); if(o){ transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value; document.getElementById('contrast').value=o.mesh.material.uniforms.uContrast.value; document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value; document.getElementById('gamma').value=o.mesh.material.uniforms.uGamma.value; document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value; document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value; document.getElementById('despill').value=o.mesh.material.uniforms.despill.value; updateMaterial(); updateLayers(); } }
 function updateLayers() { const l=document.getElementById('layerList'); l.innerHTML=''; objects.forEach(o=>{ const d=document.createElement('div'); d.className=`layer-item ${o.id===activeId?'active':''}`; d.innerText=(o.type=='video'?'🎬 ':'🖼️ ')+o.name.slice(0,15); d.onclick=()=>selectObject(o.id); l.appendChild(d); }); }
 window.toggleUIPanel = () => document.getElementById('ui').classList.toggle('minimized');
 window.handleAuthClick = () => { if(!CLIENT_ID) alert("Falta API KEY"); gapi.load('client:auth2', ()=>{ gapi.client.init({apiKey:API_KEY, clientId:CLIENT_ID, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope:SCOPES}).then(()=>gapi.auth2.getAuthInstance().signIn()).then(()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('driveActions').style.display='flex'; }); }); };
