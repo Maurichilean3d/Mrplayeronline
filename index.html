@@ -3,85 +3,78 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v29.0 | THE INTEGRATION</title>
+  <title>MR Studio Diamond v30.0 | FIXED INTEGRATION</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
     /* =========================================
-       ESTILO AMBER GLASS (v20) + UTILIDADES
+       ESTILO AMBER GLASS (UI FINAL)
     ========================================= */
-    :root { --main: #ffaa00; --bg: rgba(15, 15, 20, 0.85); --glass: blur(30px); --border: 1px solid rgba(255,170,0,0.3); }
+    :root { --main: #ffaa00; --bg: rgba(10, 10, 15, 0.95); --glass: blur(20px); --border: 1px solid rgba(255,170,0,0.3); }
     * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', sans-serif; }
-    body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
+    body { margin: 0; overflow: hidden; background: #000; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
     
     .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 90vh; 
+      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 90vh; 
       background: var(--bg); backdrop-filter: var(--glass); -webkit-backdrop-filter: var(--glass);
-      border: var(--border); border-radius: 24px; padding: 20px; 
-      overflow-y: auto; z-index: 100; box-shadow: 0 10px 50px rgba(0,0,0,0.9);
+      border: var(--border); border-radius: 16px; padding: 15px; 
+      overflow-y: auto; z-index: 100; box-shadow: 0 10px 50px rgba(0,0,0,0.8);
       transition: transform 0.3s ease;
     }
     .ui-panel.minimized { transform: translateX(-450px); }
     
-    h2 { margin: 0 0 15px 0; color: var(--main); font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; display:flex; justify-content:space-between; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(255, 170, 0, 0.5); }
-    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 15px 0 5px 0; text-transform: uppercase; letter-spacing: 1.5px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+    h2 { margin: 0 0 10px 0; color: var(--main); font-size: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; display:flex; justify-content:space-between; }
+    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 15px 0 5px 0; text-transform: uppercase; letter-spacing: 1px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; }
     
     .row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
     label { flex: 1; color: #ccc; cursor: pointer; white-space: nowrap; }
     input[type=range] { flex: 2; accent-color: var(--main); height: 4px; background:rgba(255,255,255,0.1); border-radius: 2px; appearance: none; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--main); border-radius: 50%; box-shadow: 0 0 10px var(--main); }
     input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main); cursor: pointer; }
-    .val { width: 36px; text-align: right; color: var(--main); font-family: monospace; font-size: 11px; font-weight: bold; }
+    .val { width: 35px; text-align: right; color: var(--main); font-family: monospace; font-size: 11px; font-weight: bold; }
     
-    select, button, input[type=url], input[type=text] { background: rgba(0,0,0,0.4); border: 1px solid #555; color: #fff; padding: 8px; border-radius: 8px; outline: none; font-size: 11px; transition: 0.2s; }
-    input[type=url]:focus { border-color: var(--main); }
+    select, button, input[type=url], input[type=text] { background: rgba(255,255,255,0.05); border: 1px solid #555; color: #fff; padding: 8px; border-radius: 6px; outline: none; font-size: 11px; transition: 0.2s; }
     
     button { flex: 1; font-weight: bold; cursor: pointer; text-transform: uppercase; }
     button:hover { background: var(--main); color: #000; box-shadow: 0 0 15px var(--main); }
-    button.active { background: var(--main); color: #000; box-shadow: 0 0 10px var(--main); }
+    button.active { background: var(--main); color: #000; }
     button.drive { background: rgba(15, 157, 88, 0.2); border-color: #0F9D58; color: #2ecc71; }
-    button.drive:hover { background: #0F9D58; color: #fff; }
     button.danger { background: rgba(200, 50, 50, 0.2); border-color: #f00; color: #f55; }
     
     .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; }
     .layer-item { padding: 8px 10px; font-size: 11px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; transition: 0.2s; }
-    .layer-item:hover { background: rgba(255,255,255,0.05); }
     .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main); color: #fff; }
     
-    /* GIZMO BAR */
     .gizmo-bar { display: flex; gap: 5px; margin-bottom: 10px; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 10px; }
     
-    /* CHROMA PANEL */
     #chromaPanel { display:none; padding:10px; background:rgba(0,0,0,0.3); border-radius:8px; margin-top:5px; border:1px solid rgba(255,255,255,0.1); }
     .chroma-presets { display: flex; gap: 8px; margin-bottom: 10px; justify-content: space-between; }
     .cp { width: 24px; height: 24px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.3); }
-    .cp:hover { transform: scale(1.15); border-color: #fff; }
     #currentColorBox { width: 100%; height: 8px; border-radius: 4px; background: #0f0; margin-bottom: 10px; }
 
-    /* VIDEO CONTROLS */
-    #videoControls { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--bg); backdrop-filter: var(--glass); border: var(--border); border-radius: 40px; padding: 15px 40px; display: none; z-index: 150; box-shadow: 0 10px 40px #000; min-width: 350px; }
+    #videoControls { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: var(--bg); backdrop-filter: var(--glass); border: var(--border); border-radius: 40px; padding: 15px 40px; display: none; z-index: 150; min-width: 350px; }
     #videoControls.show { display: block; }
     .vid-bar { height: 6px; background: #444; margin: 10px 0; border-radius: 3px; cursor: pointer; position: relative; }
-    .vid-fill { height: 100%; background: var(--main); width: 0%; pointer-events: none; border-radius: 3px; box-shadow: 0 0 10px var(--main); }
+    .vid-fill { height: 100%; background: var(--main); width: 0%; pointer-events: none; }
     
     #loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main); font-weight: 900; letter-spacing: 5px; font-size: 24px; }
-    #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 60px; background: var(--main); color: #000; border-radius: 50px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 35px rgba(255, 170, 0, 0.7); letter-spacing: 2px; border: 3px solid #fff; font-size: 16px; }
+    #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 60px; background: var(--main); color: #000; border-radius: 50px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 35px rgba(255, 170, 0, 0.7); border: 3px solid #fff; }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div id="loader">CARGANDO SISTEMA...</div>
+<div id="loader">INICIANDO SISTEMA...</div>
 <button style="position:fixed; top:20px; left:20px; z-index:101; width:44px; height:44px; border-radius:50%; background:rgba(0,0,0,0.6); color:var(--main); border:2px solid var(--main); font-size:20px; cursor:pointer;" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
 
 <div id="videoControls">
   <div class="row" style="justify-content: center; gap:20px; margin-bottom:10px;">
-    <button onclick="mediaAction('play')" style="border-radius:20px;">▶ PLAY</button>
-    <button onclick="mediaAction('pause')" style="border-radius:20px;">⏸ PAUSE</button>
-    <button onclick="mediaAction('stop')" style="border-radius:20px;">⏹ STOP</button>
+    <button onclick="mediaAction('play')" style="border-radius:20px;">▶</button>
+    <button onclick="mediaAction('pause')" style="border-radius:20px;">⏸</button>
+    <button onclick="mediaAction('stop')" style="border-radius:20px;">⏹</button>
   </div>
   <div class="vid-bar" id="vidTrack"><div class="vid-fill" id="vidFill"></div></div>
   <div style="text-align:center; font-size:10px; color:#aaa; margin-top:8px;">VOLUMEN</div>
@@ -89,32 +82,26 @@
 </div>
 
 <div class="ui-panel" id="ui">
-  <h2>STUDIO DIAMOND v29.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>STUDIO DIAMOND v30.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
 
-  <div class="sec-head">☁️ Conectividad & Drive</div>
-  <div class="row" id="authPanel">
-      <button onclick="handleAuthClick()" class="drive">🔑 CONECTAR GOOGLE DRIVE</button>
-  </div>
+  <div class="sec-head">☁️ Google Drive</div>
+  <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">🔑 CONECTAR DRIVE</button></div>
   <div class="row" id="driveActions" style="display:none; gap:8px;">
-      <button onclick="saveSceneToDrive()">💾 GUARDAR NUBE</button>
-      <button onclick="loadSceneFromDrive()">📂 ABRIR NUBE</button>
+      <button onclick="saveSceneToDrive()">💾 GUARDAR</button>
+      <button onclick="loadSceneFromDrive()">📂 ABRIR</button>
   </div>
 
-  <div class="sec-head">💾 Local & URL</div>
+  <div class="sec-head">📥 Archivos Locales & URL</div>
   <div class="row">
-    <button onclick="saveSession()">GUARDAR JSON</button>
-    <button onclick="document.getElementById('jsonLoader').click()">CARGAR JSON</button>
-    <input type="file" id="jsonLoader" style="display:none" accept=".json">
+    <button onclick="document.getElementById('fileInput').click()" style="height:40px; background:rgba(255,255,255,0.15);">📁 ABRIR ARCHIVOS (PC)</button>
   </div>
-  <div class="row">
-    <input type="url" id="webUrl" placeholder="https://... (Video/Img)" style="flex:2">
-    <button onclick="loadFromWeb()" style="flex:1">CARGAR</button>
-  </div>
-  <div class="row">
-    <button onclick="document.getElementById('fileInput').click()" style="height:35px; background:rgba(255,255,255,0.1);">📁 ABRIR ARCHIVOS PC</button>
-  </div>
-  <input type="file" id="fileInput" multiple style="display:none;" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj">
+  <input type="file" id="fileInput" multiple style="display:none;" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj,.json">
   
+  <div class="row" style="margin-top:5px;">
+    <input type="url" id="webUrl" placeholder="https://... (Video/Img)" style="flex:2">
+    <button onclick="loadFromWeb()" style="flex:1">CARGAR URL</button>
+  </div>
+
   <div class="sec-head">Capas</div>
   <div id="layerList" class="layer-list"></div>
 
@@ -126,7 +113,7 @@
         <button id="modeS" onclick="setGizmo('scale')">ESCALA</button>
     </div>
 
-    <div class="sec-head">📍 Geometría & Proyección</div>
+    <div class="sec-head">📍 Geometría</div>
     <div class="row">
       <select id="projSelect" onchange="updateObj('mode', this.value)" style="width:100%">
         <option value="plane">Plano 2D (TV)</option>
@@ -145,11 +132,6 @@
     <div class="row"><label>Rotación Y</label><input type="range" id="rotY" min="0" max="360" step="1"><span class="val" id="v_rotY">0</span></div>
     <div class="row"><label>Espejo H</label><input type="checkbox" id="flipX" onchange="updateObj('flipX', this.checked)"></div>
 
-    <div class="sec-head">🎨 Color & Estilo</div>
-    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05"><span class="val" id="v_brightness">0</span></div>
-    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1"><span class="val" id="v_contrast">1</span></div>
-    <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1"><span class="val" id="v_saturation">1</span></div>
-
     <div class="sec-head">🛠️ Chroma Key Ultra</div>
     <div class="row"><label><input type="checkbox" id="chromaToggle" onchange="updateMaterial()"> Activar</label> <label><input type="checkbox" id="chromaInvert" onchange="updateMaterial()"> Invertir</label></div>
     <div id="chromaPanel">
@@ -164,15 +146,13 @@
         <div class="row"><label>Similitud</label><input type="range" id="sim" min="0" max="0.8" step="0.001"><span class="val" id="v_sim">0.4</span></div>
         <div class="row"><label>Suave</label><input type="range" id="smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_smooth">0.08</span></div>
         <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
-        <div class="row"><label>Anti-Azul</label><input type="range" id="deblue" min="0" max="1" step="0.01"><span class="val" id="v_deblue">0</span></div>
-        <div class="row"><label>Anti-Verde</label><input type="range" id="degreen" min="0" max="1" step="0.01"><span class="val" id="v_degreen">0</span></div>
     </div>
 
     <button class="danger" onclick="deleteActive()" style="margin-top:15px; padding:12px;">🗑️ ELIMINAR CAPA</button>
   </div>
 
-  <div class="sec-head">⚙️ Visualización</div>
-  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico (Amber Grid)</label></div>
+  <div class="sec-head">⚙️ Global</div>
+  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
   <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas & Medidas</label></div>
   <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Real (Depth API)</label></div>
 </div>
@@ -195,13 +175,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
-// ⚠️⚠️⚠️ API KEYS GOOGLE (PONER AQUI) ⚠️⚠️⚠️
+// ⚠️ API KEYS (Rellena esto para que funcione Drive)
 const CLIENT_ID = ''; 
 const API_KEY = ''; 
 const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 SHADERS INTEGRADOS (Grid, Depth, Chroma)
+// 🌑 SHADERS COMPLETOS
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
@@ -213,9 +193,6 @@ void main(){
   float z = -zMeters; float clipZ = uProj[2][2] * z + uProj[3][2]; float clipW = uProj[2][3] * z + uProj[3][3];
   gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0); outColor = vec4(0.0); 
 }`;
-
-const gridVS = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const gridFS = `varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions; void main() { vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions); float line = min(grid.x, grid.y); float alpha = 1.0 - min(line, 1.0); alpha = pow(alpha, 0.3); float dist = distance(vUv, vec2(0.5)); float mask = 1.0 - smoothstep(0.2, 0.5, dist); gl_FragColor = vec4(uColor, alpha * mask * 0.6); }`;
 
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
@@ -262,6 +239,9 @@ void main() {
   gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
 }`;
 
+const gridVS = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+const gridFS = `varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions; void main() { vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions); float line = min(grid.x, grid.y); float alpha = 1.0 - min(line, 1.0); alpha = pow(alpha, 0.3); float dist = distance(vUv, vec2(0.5)); float mask = 1.0 - smoothstep(0.2, 0.5, dist); gl_FragColor = vec4(uColor, alpha * mask * 0.6); }`;
+
 // ==========================================
 // ⚙️ SISTEMA PRINCIPAL
 // ==========================================
@@ -291,6 +271,8 @@ function init() {
   orbit = new OrbitControls(camera, renderer.domElement);
   transformCtrl = new TransformControls(camera, renderer.domElement);
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+  
+  // Sync Gizmo -> UI
   transformCtrl.addEventListener('change', () => {
       if(activeId) {
           const o = objects.find(x=>x.id===activeId);
@@ -307,14 +289,16 @@ function init() {
   });
   scene.add(transformCtrl);
   
-  initEngineeringUI(); // 🔥 RESTAURADO
-  updateGrid(); // 🔥 RESTAURADO SHADER GRID
+  // 🔥 INICIALIZACIÓN ESTRICTA
+  initEngineeringUI();
+  updateGrid(); 
   setupXRControllers();
   setupVR();
   initMousePick();
   
   renderer.setAnimationLoop(animate);
   
+  // 🔥 EVENT LISTENERS CRÍTICOS (ARCHIVOS)
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
   document.getElementById('jsonLoader').addEventListener('change', (e) => {
       const file = e.target.files[0]; if(!file) return;
@@ -331,6 +315,8 @@ function init() {
   
   window.setGizmo = (m) => { transformCtrl.setMode(m); document.querySelectorAll('.gizmo-bar button').forEach(b=>b.classList.remove('active')); document.getElementById('mode'+(m==='translate'?'T':m==='rotate'?'R':'S')).classList.add('active'); };
   window.setChroma = (r,g,b) => { const o=objects.find(x=>x.id===activeId); if(o){ o.settings.keyColor=[r,g,b]; updateObj('force',0); } document.getElementById('currentColorBox').style.backgroundColor=`rgb(${r*255},${g*255},${b*255})`; };
+  
+  document.getElementById('loader').style.display='none';
 }
 
 function defSettings() {
@@ -343,17 +329,17 @@ function defSettings() {
 }
 
 // ==========================================
-// ☁️ DRIVE & URL (RESTAURADO)
+// ☁️ DRIVE & URL 
 // ==========================================
 window.handleAuthClick = () => {
-    if(!CLIENT_ID || CLIENT_ID.includes('TU_')) { alert("⚠️ Falta configurar API KEYS."); return; }
+    if(!CLIENT_ID || CLIENT_ID.includes('TU_')) { alert("⚠️ Configura API KEY en el código."); return; }
     gapi.load('client:auth2', () => {
         gapi.client.init({ apiKey: API_KEY, clientId: CLIENT_ID, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope: SCOPES })
         .then(() => gapi.auth2.getAuthInstance().signIn())
         .then(() => {
             document.getElementById('authPanel').style.display='none';
             document.getElementById('driveActions').style.display='flex';
-            alert("✅ Conectado a Drive");
+            alert("✅ Drive Conectado");
         })
         .catch(err => alert("Error Auth: " + JSON.stringify(err)));
     });
@@ -397,7 +383,7 @@ function loadSessionJSON(data) {
 }
 
 // ==========================================
-// 📦 LOADERS
+// 📦 LOADERS (INTEGRAL)
 // ==========================================
 async function handleFileSelect(e) {
     if(!e.target.files.length) return;
@@ -469,6 +455,7 @@ function createObject(mode, tex, ar, name, type, video=null, sourceUrl=null) {
     else if(mode.includes('180')) { geo = new THREE.SphereGeometry(20, 64, 64, 0, Math.PI); geo.rotateY(-Math.PI/2); }
     else if(mode.includes('cube')) geo = new THREE.BoxGeometry(30,30,30);
     else geo = new THREE.PlaneGeometry(ar, 1);
+    
     if(mode !== 'plane') geo.scale(-1,1,1);
 
     const mat = new THREE.ShaderMaterial({
@@ -532,7 +519,7 @@ window.updateMaterial = () => {
 };
 
 // ==========================================
-// 📐 VISUALES (COTAS + AMBER GRID)
+// 📐 VISUALES (GRID + COTAS)
 // ==========================================
 function initEngineeringUI() {
     engGroup = new THREE.Group(); scene.add(engGroup);
@@ -567,8 +554,9 @@ function updateEngineeringVisuals() {
     const o = objects.find(x=>x.id===activeId); if(!o) return;
     engGroup.visible = true;
     const P = o.mesh.position; const S = o.mesh.scale;
+    let baseW = o.originalAspect || 1; let realW = baseW * S.x; let realH = S.y;
     const lineY = engGroup.getObjectByName('lineY'); lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]); lineY.computeLineDistances();
-    const shadow = engGroup.getObjectByName('shadowPlane'); shadow.position.set(P.x, 0.005, P.z); shadow.scale.set(Math.abs(S.x)*1.1, Math.abs(S.x)*1.1, 1);
+    const shadow = engGroup.getObjectByName('shadowPlane'); shadow.position.set(P.x, 0.005, P.z); const frameScale = Math.max(realW, 0.5) * 1.1; shadow.scale.set(frameScale, frameScale, 1);
     dimLabels.w.position.copy(P).add(new THREE.Vector3(0, S.y/2+0.1, 0));
     dimLabels.h.position.copy(P).add(new THREE.Vector3(S.x/2+0.1, 0, 0));
     if(document.getElementById('showCoords').checked) {
@@ -595,7 +583,7 @@ function updateGrid() {
 }
 
 // ==========================================
-// 🖱️ SELECTION & UI SYNC
+// 🖱️ INTERACCIÓN & UTILS
 // ==========================================
 function selectObject(id){ 
     activeId=id; 
