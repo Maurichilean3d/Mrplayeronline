@@ -3,16 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v8.0 | Cloud Sync</title>
+  <title>MR Studio Diamond v7.2 | Billboard Priority</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
-  
   <style>
     * { box-sizing: border-box; user-select: none; }
     body { margin: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', system-ui, sans-serif; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
-    /* UI PRINCIPAL */
+    /* UI MEJORADA */
     .ui-panel { 
       position: fixed; left: 20px; top: 20px; width: 400px; max-height: 90vh; 
       background: rgba(12, 12, 16, 0.95); backdrop-filter: blur(20px); 
@@ -23,7 +21,6 @@
     }
     .ui-panel.minimized { transform: translateX(-450px); }
     
-    /* BOTONES Y CONTROLES */
     #toggleUI {
         position: fixed; left: 20px; top: 20px; z-index: 101;
         width: 40px; height: 40px; border-radius: 50%; background: #6c5ce7;
@@ -47,7 +44,6 @@
     button.primary { background: #6c5ce7; }
     button.danger { background: rgba(214, 48, 49, 0.2); color: #ff7675; border: 1px solid #d63031; }
     button.media-btn { background: #0984e3; }
-    button.drive-btn { background: #0F9D58; color: white; }
 
     .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; border: 1px solid #333; }
     .layer-item { padding: 8px; font-size: 11px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
@@ -56,34 +52,19 @@
 
     #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 14px 40px; background: #6c5ce7; color: white; border-radius: 50px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(108,92,231,0.6); border: 2px solid white; }
     .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: #a29bfe; font-weight: 900; letter-spacing: 2px; }
-    
-    /* Indicador de Google */
-    #gStatus { font-size: 10px; color: #aaa; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; }
-    .dot.on { background: #0F9D58; box-shadow: 0 0 5px #0F9D58; }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">PROCESANDO...</div>
+<div class="loader" id="loader">CARGANDO DIAMOND v7.2...</div>
 <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
 <div class="ui-panel" id="ui">
   <h2>
-      <span>💎 DIAMOND v8.0</span>
+      <span>💎 DIAMOND v7.2</span>
       <button style="width:auto; padding:4px 8px; background:transparent; font-size:16px;" onclick="toggleUIPanel()">×</button>
   </h2>
-
-  <div class="sec-head">☁️ Google Cloud Sync</div>
-  <div id="gStatus"><div class="dot" id="gDot"></div> <span id="gText">Desconectado</span></div>
-  <div class="row" id="authPanel">
-      <button onclick="handleAuthClick()" class="drive-btn">🔑 CONECTAR DRIVE</button>
-  </div>
-  <div class="row" id="driveActions" style="display:none; gap:5px;">
-      <button onclick="saveSceneToDrive()">💾 GUARDAR</button>
-      <button onclick="loadSceneFromDrive()">📂 CARGAR</button>
-  </div>
 
   <div class="sec-head">📥 Importar Contenido</div>
   <div class="row">
@@ -120,7 +101,6 @@
     <div class="row"><label>Escala</label><input type="range" id="scale" min="0.01" max="10" step="0.01" value="1"><span class="val" id="v_scale">1.0</span></div>
     <div class="row"><label>Altura Y</label><input type="range" id="posY" min="-5" max="5" step="0.1" value="1.6"><span class="val" id="v_posY">1.6</span></div>
     <div class="row"><label>Dist. Z</label><input type="range" id="posZ" min="-10" max="10" step="0.1" value="-2"><span class="val" id="v_posZ">-2.0</span></div>
-    <div class="row"><label>Rot Y</label><input type="range" id="rotY" min="-3.14" max="3.14" step="0.1" value="0"><span class="val" id="v_rotY">0.0</span></div>
     
     <div class="sec-head">🌐 Proyección</div>
     <select id="projSelect" onchange="updateProjection()">
@@ -165,163 +145,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
-// ==========================================
-// ☁️ CONFIGURACIÓN GOOGLE API (REQUIERE KEYS)
-// ==========================================
-const CLIENT_ID = 'TU_CLIENT_ID_AQUI'; // <--- PEGA TU CLIENT ID DE GOOGLE CLOUD
-const API_KEY = 'TU_API_KEY_AQUI';     // <--- PEGA TU API KEY DE GOOGLE CLOUD
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-window.handleAuthClick = () => {
-    gapi.load('client:auth2', () => {
-        gapi.client.init({
-            apiKey: API_KEY,
-            clientId: CLIENT_ID,
-            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
-            scope: SCOPES
-        }).then(() => {
-            return gapi.auth2.getAuthInstance().signIn();
-        }).then(() => {
-            updateSigninStatus(true);
-        }).catch(err => {
-            console.error("Error Auth:", err);
-            alert("Error de autenticación. Revisa la consola y tus API Keys.");
-        });
-    });
-};
-
-function updateSigninStatus(isSignedIn) {
-    if (isSignedIn) {
-        document.getElementById('authPanel').style.display = 'none';
-        document.getElementById('driveActions').style.display = 'flex';
-        document.getElementById('gDot').classList.add('on');
-        document.getElementById('gText').innerText = "Conectado a Drive";
-    }
-}
-
-// ==========================================
-// 💾 SISTEMA DE GUARDADO/CARGA
-// ==========================================
-
-// 1. Convertir Escena a JSON
-window.saveSceneToDrive = () => {
-    if(objects.length === 0) { alert("Nada que guardar."); return; }
-    
-    toggleLoader(true);
-    const sceneData = objects.map(o => ({
-        type: o.type,
-        url: o.sourceUrl, // Importante: URL original
-        name: o.name,
-        transform: {
-            position: o.mesh.position.toArray(),
-            rotation: o.mesh.rotation.toArray(),
-            scale: o.mesh.scale.toArray()
-        },
-        settings: {
-            opacity: o.mesh.material.uniforms.uOpacity.value,
-            emissive: o.mesh.material.uniforms.uEmissive.value,
-            billboard: o.billboard,
-            chromaOn: o.mesh.material.uniforms.chromaOn.value,
-            chromaColor: o.mesh.material.uniforms.k1.value.getHexString(),
-            sim: o.mesh.material.uniforms.sim1.value,
-            smooth: o.mesh.material.uniforms.smooth1.value
-        }
-    }));
-
-    const fileContent = JSON.stringify(sceneData, null, 2);
-    const fileName = `diamond_project_${new Date().toISOString().slice(0,10)}.json`;
-
-    // Subir a Drive (Multipart)
-    const fileMetadata = { 'name': fileName, 'mimeType': 'application/json' };
-    const multipartRequestBody =
-      `\r\n--foo_bar_baz\r\nContent-Type: application/json\r\n\r\n` +
-      JSON.stringify(fileMetadata) +
-      `\r\n--foo_bar_baz\r\nContent-Type: application/json\r\n\r\n` +
-      fileContent +
-      `\r\n--foo_bar_baz--`;
-
-    gapi.client.request({
-      'path': '/upload/drive/v3/files',
-      'method': 'POST',
-      'params': {'uploadType': 'multipart'},
-      'headers': { 'Content-Type': 'multipart/related; boundary=foo_bar_baz' },
-      'body': multipartRequestBody
-    }).then((res) => {
-        toggleLoader(false);
-        alert(`✅ Proyecto guardado en Drive!\nID: ${res.result.id}`);
-    }).catch(err => {
-        toggleLoader(false);
-        console.error(err);
-        alert("Error guardando en Drive.");
-    });
-};
-
-// 2. Cargar JSON desde Drive (Simplificado: Busca el último guardado)
-window.loadSceneFromDrive = () => {
-    toggleLoader(true);
-    // Busca archivos JSON creados por esta app
-    gapi.client.drive.files.list({
-        'q': "mimeType='application/json' and trashed=false",
-        'orderBy': 'createdTime desc',
-        'pageSize': 1,
-        'fields': "files(id, name)"
-    }).then(res => {
-        const files = res.result.files;
-        if (files && files.length > 0) {
-            const fileId = files[0].id;
-            // Descargar contenido
-            return gapi.client.drive.files.get({ fileId: fileId, alt: 'media' });
-        } else {
-            throw new Error("No se encontraron proyectos guardados.");
-        }
-    }).then(res => {
-        reconstructScene(res.result);
-    }).catch(err => {
-        toggleLoader(false);
-        alert("Error cargando: " + err.message);
-    });
-};
-
-async function reconstructScene(data) {
-    // Limpiar escena actual
-    [...objects].forEach(o => {
-        scene.remove(o.mesh);
-        if(o.video) o.video.pause();
-    });
-    objects = [];
-    transformCtrl.detach();
-    document.getElementById('editorUI').style.display = 'none';
-
-    // Reconstruir uno a uno
-    for (const item of data) {
-        // addAsset ahora devuelve una promesa con el objeto creado
-        const obj = await addAsset(item.url, item.type, item.name, item.url.includes('.gif'));
-        if (obj) {
-            // Aplicar transformaciones guardadas
-            obj.mesh.position.fromArray(item.transform.position);
-            obj.mesh.rotation.fromArray(item.transform.rotation);
-            obj.mesh.scale.fromArray(item.transform.scale);
-            
-            // Aplicar ajustes visuales
-            obj.mesh.material.uniforms.uOpacity.value = item.settings.opacity;
-            obj.mesh.material.uniforms.uEmissive.value = item.settings.emissive;
-            obj.billboard = item.settings.billboard;
-            obj.mesh.material.uniforms.chromaOn.value = item.settings.chromaOn;
-            obj.mesh.material.uniforms.k1.value.set('#' + item.settings.chromaColor);
-            obj.mesh.material.uniforms.sim1.value = item.settings.sim;
-            obj.mesh.material.uniforms.smooth1.value = item.settings.smooth;
-        }
-    }
-    updateLayers();
-    toggleLoader(false);
-    alert("✅ Escena restaurada desde la nube.");
-}
-
-
-// ==========================================
-// 🎨 CORE 3D ENGINE
-// ==========================================
-
+// --- SHADERS (Unlit + Alpha + Emissive) ---
 const vShader = `
 varying vec2 vUv; 
 void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
@@ -396,4 +220,324 @@ function init() {
   orbit.enableDamping = true;
 
   transformCtrl = new TransformControls(camera, renderer.domElement);
-  transformCtrl.addEventListener('dragging-changed', e => orbit.
+  transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+  scene.add(transformCtrl);
+  
+  setupVR();
+  renderer.setAnimationLoop(animate);
+  
+  document.getElementById('pickerColor').addEventListener('input', updateChromaFromPicker);
+}
+
+async function addAsset(url, type, name, isGif = false) {
+  toggleLoader(true);
+  let tex, mesh, gifData = null, video = null;
+
+  try {
+    if (isGif) {
+      const resp = await fetch(url);
+      const buf = await resp.arrayBuffer();
+      const reader = new window.Omggif.GifReader(new Uint8Array(buf));
+      const cvs = document.createElement('canvas');
+      cvs.width = reader.width; cvs.height = reader.height;
+      const ctx = cvs.getContext('2d');
+      const imgData = ctx.createImageData(cvs.width, cvs.height);
+      tex = new THREE.CanvasTexture(cvs);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      gifData = { reader, ctx, imgData, tex, frame: 0, nextTime: 0, playing: true };
+    } else if (type === 'video') {
+      video = document.createElement('video');
+      video.src = url;
+      video.loop = true; video.muted = true; video.crossOrigin = "anonymous";
+      video.playsInline = true;
+      await video.play();
+      tex = new THREE.VideoTexture(video);
+      tex.colorSpace = THREE.SRGBColorSpace;
+    } else {
+      tex = await new THREE.TextureLoader().loadAsync(url);
+      tex.colorSpace = THREE.SRGBColorSpace;
+    }
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { 
+        map: { value: tex }, 
+        chromaOn: { value: false }, 
+        k1: { value: new THREE.Color(0,1,0) }, 
+        sim1: { value: 0.4 }, 
+        smooth1: { value: 0.08 },
+        uOpacity: { value: 1.0 },
+        uEmissive: { value: 0.0 }
+      },
+      vertexShader: vShader, 
+      fragmentShader: fShader, 
+      transparent: true, 
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+
+    const aspect = video ? video.videoWidth/video.videoHeight : (tex.image ? tex.image.width/tex.image.height : 1.77);
+    const geometry = new THREE.PlaneGeometry(aspect * 2, 2); 
+    mesh = new THREE.Mesh(geometry, mat);
+    mesh.position.set(0, 1.6, -2);
+    
+    const obj = { 
+        id: Math.random().toString(36).substr(2,9), 
+        name, mesh, video, gifData, type, 
+        billboard: false,
+        originalAspect: aspect
+    };
+    
+    objects.push(obj);
+    scene.add(mesh);
+    selectObject(obj.id);
+  } catch (e) { 
+    console.error(e); 
+    alert("Error cargando archivo. Intenta otra URL.");
+  }
+  toggleLoader(false);
+}
+
+function animate(time, frame) {
+  orbit.update();
+  
+  objects.forEach(obj => {
+      if(obj.billboard && obj.mesh) {
+          obj.mesh.lookAt(camera.position.x, obj.mesh.position.y, camera.position.z);
+      }
+      
+      if (obj.gifData && obj.gifData.playing) {
+        const g = obj.gifData;
+        if (performance.now() > g.nextTime) {
+          g.reader.decodeAndBlitFrameRGBA(g.frame, g.imgData.data);
+          g.ctx.putImageData(g.imgData, 0, 0);
+          g.tex.needsUpdate = true;
+          g.nextTime = performance.now() + (g.reader.frameInfo(g.frame).delay * 10 || 100);
+          g.frame = (g.frame + 1) % g.reader.numFrames();
+        }
+      }
+  });
+
+  if (frame && occlusionEnabled && xrGlBinding) {
+    const pose = frame.getViewerPose(xrRefSpace);
+    if (pose) {
+      const gl = renderer.getContext();
+      gl.colorMask(false, false, false, false);
+      for (const view of pose.views) {
+        const depthInfo = xrGlBinding.getDepthInformation(view);
+        if (depthInfo) {
+           gl.bindTexture(gl.TEXTURE_2D, depthTex);
+           gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE_ALPHA, depthInfo.width, depthInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, depthInfo.data);
+           gl.useProgram(depthProgram);
+           gl.uniform1f(gl.getUniformLocation(depthProgram, 'uRawToMeters'), depthInfo.rawValueToMeters);
+           gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram, 'uProj'), false, view.projectionMatrix);
+           gl.bindVertexArray(depthVao);
+           gl.drawArrays(gl.TRIANGLES, 0, 6);
+        }
+      }
+      gl.colorMask(true, true, true, true);
+    }
+  }
+
+  renderer.render(scene, camera);
+}
+
+function selectObject(id) {
+  activeId = id;
+  const obj = objects.find(o => o.id === id);
+  if (!obj) return;
+  
+  transformCtrl.attach(obj.mesh);
+  document.getElementById('editorUI').style.display = 'block';
+  
+  document.getElementById('scale').value = obj.mesh.scale.x;
+  document.getElementById('posY').value = obj.mesh.position.y;
+  document.getElementById('posZ').value = obj.mesh.position.z;
+  
+  const mat = obj.mesh.material;
+  document.getElementById('opacity').value = mat.uniforms.uOpacity.value;
+  document.getElementById('emissive').value = mat.uniforms.uEmissive.value;
+  document.getElementById('checkBillboard').checked = obj.billboard;
+  
+  const col = mat.uniforms.k1.value;
+  const hex = '#' + col.getHexString();
+  document.getElementById('pickerColor').value = hex;
+  document.getElementById('chromaToggle').checked = mat.uniforms.chromaOn.value;
+  document.getElementById('chromaPanel').style.display = mat.uniforms.chromaOn.value ? 'block' : 'none';
+
+  updateLayers();
+}
+
+const bindSlider = (id, fn) => {
+    document.getElementById(id).addEventListener('input', (e) => {
+        const obj = objects.find(o => o.id === activeId);
+        if(obj) {
+            const v = parseFloat(e.target.value);
+            fn(obj, v);
+            const valSpan = document.getElementById('v_' + id);
+            if(valSpan) valSpan.innerText = v.toFixed(2);
+        }
+    });
+};
+
+bindSlider('scale', (o,v) => o.mesh.scale.setScalar(v));
+bindSlider('posY', (o,v) => o.mesh.position.y = v);
+bindSlider('posZ', (o,v) => o.mesh.position.z = v);
+bindSlider('opacity', (o,v) => o.mesh.material.uniforms.uOpacity.value = v);
+bindSlider('emissive', (o,v) => o.mesh.material.uniforms.uEmissive.value = v);
+bindSlider('k1sim', (o,v) => o.mesh.material.uniforms.sim1.value = v);
+bindSlider('k1smooth', (o,v) => o.mesh.material.uniforms.smooth1.value = v);
+
+document.getElementById('checkBillboard').onchange = (e) => {
+    const obj = objects.find(o => o.id === activeId);
+    if(obj) {
+        obj.billboard = e.target.checked;
+        if(!obj.billboard) obj.mesh.rotation.set(0,0,0);
+    }
+};
+
+function updateChromaFromPicker(e) {
+    const obj = objects.find(o => o.id === activeId);
+    if(obj) obj.mesh.material.uniforms.k1.value.set(e.target.value);
+}
+document.getElementById('chromaToggle').onchange = (e) => {
+    const obj = objects.find(o => o.id === activeId);
+    if (obj) {
+        obj.mesh.material.uniforms.chromaOn.value = e.target.checked;
+        document.getElementById('chromaPanel').style.display = e.target.checked ? 'block' : 'none';
+    }
+};
+
+window.mediaAction = (action) => {
+    const obj = objects.find(o => o.id === activeId);
+    if(!obj) return;
+    
+    if(obj.type === 'video' && obj.video) {
+        if(action === 'play') obj.video.play();
+        if(action === 'pause') obj.video.pause();
+        if(action === 'mute') obj.video.muted = !obj.video.muted;
+    } else if (obj.gifData) {
+        if(action === 'play') obj.gifData.playing = true;
+        if(action === 'pause') obj.gifData.playing = false;
+    }
+};
+
+window.updateProjection = () => {
+  const obj = objects.find(o => o.id === activeId);
+  if (!obj) return;
+  const mode = document.getElementById('projSelect').value;
+  scene.remove(obj.mesh);
+  
+  let geo;
+  if (mode === '360') {
+    geo = new THREE.SphereGeometry(100, 64, 32);
+    obj.mesh.material.side = THREE.BackSide;
+  } else if (mode === 'orb') {
+    geo = new THREE.SphereGeometry(1.5, 64, 32);
+    obj.mesh.material.side = THREE.FrontSide;
+  } else if (mode === 'curved') {
+     geo = new THREE.CylinderGeometry(5, 5, 2, 32, 1, true, 3.8, 1.8); 
+     obj.mesh.scale.set(-1,1,1);
+     obj.mesh.material.side = THREE.DoubleSide;
+  } else {
+    geo = new THREE.PlaneGeometry(obj.originalAspect * 2, 2);
+    obj.mesh.material.side = THREE.DoubleSide;
+  }
+  
+  obj.mesh.geometry = geo;
+  scene.add(obj.mesh);
+  transformCtrl.attach(obj.mesh);
+};
+
+window.loadFromWeb = () => {
+  const url = document.getElementById('webUrl').value;
+  if (!url) return;
+  const isGif = url.toLowerCase().includes('.gif');
+  const type = url.match(/\.(mp4|webm)/i) ? 'video' : 'image';
+  addAsset(url, type, "Web Asset", isGif);
+};
+document.getElementById('fileInput').onchange = (e) => {
+  for (let f of e.target.files) {
+    const url = URL.createObjectURL(f);
+    const isGif = f.name.toLowerCase().endsWith('.gif');
+    addAsset(url, f.type.includes('video') ? 'video' : 'image', f.name, isGif);
+  }
+};
+window.deleteActive = () => {
+    const idx = objects.findIndex(o => o.id === activeId);
+    if(idx > -1) {
+        scene.remove(objects[idx].mesh);
+        objects.splice(idx,1);
+        transformCtrl.detach();
+        document.getElementById('editorUI').style.display = 'none';
+        updateLayers();
+    }
+};
+window.centerActive = () => {
+    const o = objects.find(o => o.id === activeId);
+    if(o) o.mesh.position.set(0, 1.6, -2);
+};
+function updateLayers() {
+  const list = document.getElementById('layerList'); list.innerHTML = '';
+  objects.forEach(o => {
+    const d = document.createElement('div');
+    d.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
+    d.innerHTML = `<span>${o.type === 'video' ? '🎬' : (o.gifData ? '👾' : '🖼️')}</span> ${o.name.slice(0,18)}`;
+    d.onclick = () => selectObject(o.id);
+    list.appendChild(d);
+  });
+}
+
+window.toggleUIPanel = () => {
+    const ui = document.getElementById('ui');
+    const btn = document.getElementById('toggleUI');
+    ui.classList.toggle('minimized');
+    if(ui.classList.contains('minimized')) {
+        btn.style.display = 'block';
+    } else {
+        btn.style.display = 'none';
+    }
+};
+
+function setupVR() {
+  if (navigator.xr) {
+    navigator.xr.isSessionSupported('immersive-ar').then(ok => {
+      if (ok) {
+        const btn = document.getElementById('vrBtn');
+        btn.style.display = 'block';
+        btn.onclick = async () => {
+          occlusionEnabled = document.getElementById('checkOcclusion').checked;
+          const sessionInit = {
+             requiredFeatures: ['local-floor'],
+             optionalFeatures: ['dom-overlay', 'depth-sensing'],
+             domOverlay: { root: document.body },
+             depthSensing: { usagePreference: ['cpu-optimized'], dataFormatPreference: ['luminance-alpha'] }
+          };
+          xrSession = await navigator.xr.requestSession('immersive-ar', sessionInit);
+          renderer.xr.setSession(xrSession);
+          xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+          
+          if (occlusionEnabled) initDepthOcclusion(xrSession);
+        };
+      }
+    });
+  }
+}
+function initDepthOcclusion(session) {
+  const gl = renderer.getContext();
+  xrGlBinding = new XRWebGLBinding(session, gl);
+  const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, depthVS); gl.compileShader(vs);
+  const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, depthFS); gl.compileShader(fs);
+  depthProgram = gl.createProgram(); gl.attachShader(depthProgram, vs); gl.attachShader(depthProgram, fs); gl.linkProgram(depthProgram);
+  depthVao = gl.createVertexArray(); gl.bindVertexArray(depthVao);
+  const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+  const loc = gl.getAttribLocation(depthProgram, 'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  depthTex = gl.createTexture();
+}
+
+function toggleLoader(s) { document.getElementById('loader').style.display = s ? 'grid' : 'none'; }
+
+init();
+</script>
+</body>
+</html>
