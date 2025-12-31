@@ -3,26 +3,26 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio v7.5</title>
+  <title>MR Studio Diamond v6.9 (Stable Core + Earth)</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <style>
-    /* ESTILOS UI (Mantenidos de v6.7 por su funcionalidad PRO) */
+    /* ESTILOS UI - Mantenidos de la versión Pro */
     * { box-sizing: border-box; user-select: none; }
     body { margin: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', system-ui, sans-serif; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
-    .ui-panel { position: fixed; left: 20px; top: 20px; width: 420px; max-height: 95vh; background: rgba(10, 10, 14, 0.96); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 25px 60px rgba(0,0,0,0.85); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); scrollbar-width: thin; scrollbar-color: #6c5ce7 transparent; }
-    .ui-panel.hidden { transform: translateX(-480px); }
+    .ui-panel { position: fixed; left: 20px; top: 20px; width: 400px; max-height: 95vh; background: rgba(10, 10, 14, 0.96); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 25px 60px rgba(0,0,0,0.85); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); scrollbar-width: thin; scrollbar-color: #6c5ce7 transparent; }
+    .ui-panel.hidden { transform: translateX(-460px); }
     
     h2 { margin: 0 0 18px 0; font-size: 20px; color: #a29bfe; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid rgba(108, 92, 231, 0.3); padding-bottom: 10px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; justify-content: space-between; align-items: center; }
-    .ver-badge { font-size: 10px; background: #00cec9; color: black; padding: 2px 6px; border-radius: 4px; vertical-align: middle; font-weight: 800; }
+    .ver-badge { font-size: 10px; background: #55efc4; color: #000; padding: 2px 6px; border-radius: 4px; vertical-align: middle; font-weight: 800; }
 
     .sec-head { font-size: 11px; font-weight: 800; color: #b2b9c6; margin: 18px 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px; }
     .row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
     label { font-size: 12px; flex: 1; color: #d1d5db; white-space: nowrap; font-weight: 500; }
     
-    /* FIX: Slider optimizado visualmente */
-    input[type=range] { flex: 2; height: 5px; background: #2a2d35; border-radius: 3px; accent-color: #6c5ce7; cursor: pointer; }
+    /* FIX: Slider optimizado 0.1 a 5 */
+    input[type=range] { flex: 2; height: 6px; background: #2a2d35; border-radius: 3px; accent-color: #6c5ce7; cursor: pointer; }
     
     .val { width: 50px; text-align: right; font-size: 11px; font-family: 'Consolas', monospace; color: #a29bfe; font-weight: 600; }
     select, input[type=file], input[type=text] { width: 100%; background: #1e1e24; border: 1px solid #444; color: #eee; padding: 10px; border-radius: 10px; font-size: 11px; outline: none; cursor: pointer; transition: 0.2s; }
@@ -33,7 +33,6 @@
     button.primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); box-shadow: 0 5px 20px rgba(108,92,231,0.4); }
     button.danger { background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.4); color: #ff7675; }
     button.warn { background: rgba(253, 203, 110, 0.15); border: 1px solid rgba(253, 203, 110, 0.4); color: #ffeaa7; }
-    button.success { background: rgba(85, 239, 196, 0.15); border: 1px solid rgba(85, 239, 196, 0.4); color: #55efc4; }
     button.info { background: rgba(116, 185, 255, 0.15); border: 1px solid rgba(116, 185, 255, 0.4); color: #74b9ff; }
 
     .layer-list { max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 6px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
@@ -43,7 +42,7 @@
     .layer-item.dragging { opacity: 0.5; transform: scale(0.95); }
 
     .toggle-ui { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; background: linear-gradient(135deg, #1e1e24, #2a2d35); border-radius: 50%; display: grid; place-items: center; font-size: 22px; border: 2px solid #6c5ce7; z-index: 200; cursor: pointer; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5); transition: 0.3s; }
-    .toggle-ui:hover { transform: scale(1.1); box-shadow: 0 10px 30px rgba(108, 92, 231, 0.7); }
+    .toggle-ui:hover { transform: scale(1.1); }
 
     #vrBtn { position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%); padding: 16px 50px; background: linear-gradient(135deg, #6c5ce7, #0984e3); color: white; border-radius: 60px; border: none; font-weight: 900; cursor: pointer; z-index: 1000; display: none; font-size: 14px; box-shadow: 0 0 35px rgba(108,92,231,0.7); animation: pulse 2s infinite; text-transform: uppercase; letter-spacing: 2px; }
     @keyframes pulse { 0% {box-shadow: 0 0 25px rgba(108,92,231,0.7);} 50% {box-shadow: 0 0 45px rgba(108,92,231,0.9);} 100% {box-shadow: 0 0 25px rgba(108,92,231,0.7);} }
@@ -117,7 +116,7 @@
 </div>
 
 <div class="ui-panel" id="ui">
-  <h2><span>MR Studio Diamond <span class="ver-badge">v6.8</span></span></h2>
+  <h2><span>MR Studio Diamond <span class="ver-badge">v6.9</span></span></h2>
 
   <div id="projectManager">
     <div class="sec-head">💾 Proyecto</div>
@@ -125,7 +124,7 @@
     <div style="display:flex; gap:8px;">
       <button class="success" id="btnSaveProject">💾 Guardar</button>
       <button class="warn" id="btnLoadProject">📂 Cargar</button>
-      <button class="danger" onclick="clearScene()" title="Borrar toda la escena">🗑️ Limpiar</button>
+      <button class="danger" onclick="clearScene()" title="Borrar Escena">🗑️ Limpiar</button>
     </div>
     <input type="file" id="projectFileInput" accept=".mrsd,application/json" style="display:none;">
   </div>
@@ -142,7 +141,7 @@
   </div>
   <div class="row">
     <label><input type="checkbox" id="checkSnap"> Snap (0.25m)</label>
-    <label><input type="checkbox" id="checkOcclusion"> Oclusión (Depth)</label>
+    <label><input type="checkbox" id="checkOcclusion"> Oclusión (Depth API)</label>
   </div>
 
   <div id="generalControls">
@@ -161,7 +160,7 @@
         <div class="view-mode-btn active" data-mode="orb">🔮 Orbe</div>
         <div class="view-mode-btn" data-mode="immersive">🌊 Inmersivo</div>
       </div>
-      <div class="hint"><b>Orbe:</b> Ves el 360° como esfera exterior.<br><b>Inmersivo:</b> Estás dentro del 360°.</div>
+      <div class="hint"><b>Orbe:</b> Esfera manipulable.<br><b>Inmersivo:</b> Entorno VR (Fondo).</div>
     </div>
 
     <div class="row" id="surfaceRow" style="display:none;">
@@ -170,7 +169,7 @@
         <option value="sphere">Esfera</option>
         <option value="cube">Cubo</option>
         <option value="ovoid">Ovoide</option>
-        <option value="earth">Tierra (Polos Achatados)</option>
+        <option value="earth">Tierra (Achatada)</option>
       </select>
     </div>
 
@@ -180,7 +179,7 @@
     </div>
 
     <div class="sec-head">📏 Transformación</div>
-    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.01" max="5.0" step="0.01" value="1"><span class="val" id="v_scale">1.00</span></div>
+    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.1" max="5.0" step="0.1" value="1"><span class="val" id="v_scale">1.0</span></div>
     <div class="row"><label>Flip Horizontal</label><input type="checkbox" id="checkFlip" style="flex:0; width:20px; height:20px;"></div>
 
     <div id="posControls">
@@ -254,20 +253,6 @@
     </div>
 
     <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1.00</span></div>
-
-    <div class="sec-head">✨ Efectos & Shaders</div>
-    <div class="row">
-      <select id="shaderEffect">
-        <option value="none">Sin Efecto</option>
-        <option value="glitch">Glitch Digital</option>
-        <option value="vhs">VHS Retro</option>
-        <option value="pixelate">Pixelado</option>
-        <option value="edge">Edge Detection</option>
-        <option value="invert">Invertir Colores</option>
-        <option value="sepia">Sepia Vintage</option>
-      </select>
-    </div>
-    <div class="row" id="fxIntensityRow" style="display:none;"><label>Intensidad FX</label><input type="range" id="fxIntensity" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v_fxIntensity">0.50</span></div>
   </div>
 
   <div class="action-grid">
@@ -297,7 +282,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-console.log('🚀 MR Studio Diamond v6.8 Stable Core iniciando...');
+console.log('🚀 MR Studio Diamond v6.9 (Stable) iniciando...');
 
 let scene, camera, renderer, xrSession;
 let objects = [];
@@ -309,15 +294,7 @@ let hoverId;
 let audioListener;
 let occlusionEnabled = false;
 
-// ======= Depth Occlusion =======
-let xrGlBinding = null;
-let depthProgram = null;
-let depthVao = null;
-let depthTex = null;
-let depthTexW = 0, depthTexH = 0;
-let depthRawToMeters = 0.001;
-let gl = null;
-
+// ======= CONTROLES VR =======
 const ctrl = {
   right: { gripped: false, lastQuat: new THREE.Quaternion(), lastTrig: false, lastBtn: false, currPos: new THREE.Vector3(), currQuat: new THREE.Quaternion() },
   left: { gripped: false },
@@ -325,6 +302,7 @@ const ctrl = {
 };
 let rightRay, rayCursor;
 
+// ======= SHADERS (Estilo v5 - Ligero y Estable) =======
 const vertShader = `
 varying vec2 vUv;
 uniform vec2 offset;
@@ -341,9 +319,6 @@ uniform vec3 keyColor;
 uniform float similarity, smoothness, opacity, despill;
 uniform float brightness, contrast, saturation, gamma;
 uniform float deblue, degreen;
-uniform int shaderEffect;
-uniform float fxIntensity;
-uniform float time;
 varying vec2 vUv;
 
 vec3 rgb2hsv(vec3 c) {
@@ -392,40 +367,6 @@ vec3 removeGreenGray(vec3 col, float amt) {
   return outc;
 }
 
-vec3 applyShaderEffect(vec3 col, vec2 uv) {
-  if(shaderEffect == 1) {
-    float glitch = sin(time * 10.0 + uv.y * 50.0) * fxIntensity * 0.05;
-    vec2 uvG = uv + vec2(glitch, 0.0);
-    vec3 glitchCol = texture2D(map, uvG).rgb;
-    return mix(col, glitchCol, fxIntensity);
-  } else if(shaderEffect == 2) {
-    float noise = fract(sin(dot(uv + time, vec2(12.9898, 78.233))) * 43758.5453);
-    float scanline = sin(uv.y * 800.0 + time * 10.0) * 0.04;
-    vec3 vhs = col + vec3(noise * 0.1 + scanline) * fxIntensity;
-    return vhs;
-  } else if(shaderEffect == 3) {
-    float pixelSize = mix(1.0, 32.0, fxIntensity);
-    vec2 pixelUv = floor(uv * pixelSize) / pixelSize;
-    return texture2D(map, pixelUv).rgb;
-  } else if(shaderEffect == 4) {
-    vec2 texelSize = vec2(1.0 / 1024.0);
-    float edge = 0.0;
-    edge += length(texture2D(map, uv + texelSize * vec2(1,0)).rgb - col);
-    edge += length(texture2D(map, uv + texelSize * vec2(0,1)).rgb - col);
-    return mix(col, vec3(edge * 4.0), fxIntensity);
-  } else if(shaderEffect == 5) {
-    return mix(col, 1.0 - col, fxIntensity);
-  } else if(shaderEffect == 6) {
-    vec3 sepia = vec3(
-      dot(col, vec3(0.393, 0.769, 0.189)),
-      dot(col, vec3(0.349, 0.686, 0.168)),
-      dot(col, vec3(0.272, 0.534, 0.131))
-    );
-    return mix(col, sepia, fxIntensity);
-  }
-  return col;
-}
-
 void main() {
   vec4 tex = texture2D(map, vUv);
   vec3 col = tex.rgb;
@@ -470,103 +411,12 @@ void main() {
   col = removeBlueGray(col, deblue);
   col = removeGreenGray(col, degreen);
   col = adjustColor(col);
-  col = applyShaderEffect(col, vUv);
   gl_FragColor = vec4(col, alpha);
   if (alpha < 0.01) discard;
 }
 `;
 
-const depthVS = `#version 300 es
-precision highp float;
-in vec2 aPos;
-out vec2 vUv;
-void main(){
-  vUv = aPos * 0.5 + 0.5;
-  gl_Position = vec4(aPos, 0.0, 1.0);
-}`;
-const depthFS = `#version 300 es
-precision highp float;
-precision highp sampler2D;
-in vec2 vUv;
-uniform sampler2D uDepth;
-uniform float uRawToMeters;
-uniform mat4 uProj;
-out vec4 outColor;
-float decodeRaw(vec4 la){
-  float L = la.r * 255.0;
-  float A = la.a * 255.0;
-  return L * 256.0 + A;
-}
-float metersToDepthNdc(float zMeters){
-  float z = -zMeters;
-  float clipZ = uProj[2][2] * z + uProj[3][2];
-  float clipW = uProj[2][3] * z + uProj[3][3];
-  float ndc = clipZ / clipW;
-  return ndc;
-}
-void main(){
-  vec4 la = texture(uDepth, vUv);
-  float raw = decodeRaw(la);
-  float zMeters = raw * uRawToMeters;
-  if(zMeters <= 0.0) discard;
-  float ndc = metersToDepthNdc(zMeters);
-  float depth01 = ndc * 0.5 + 0.5;
-  depth01 = clamp(depth01, 0.0, 1.0);
-  gl_FragDepth = depth01;
-  outColor = vec4(0.0);
-}
-`;
-
-function initDepthOcclusion(session){
-  gl = renderer.getContext();
-  if(!gl || !(gl instanceof WebGL2RenderingContext)){ console.warn('⚠️ WebGL2 required'); return; }
-  try{ xrGlBinding = new XRWebGLBinding(session, gl); }catch(e){ console.warn('⚠️ No XRBinding', e); return; }
-  
-  const compile = (type, src)=>{
-    const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-    if(!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
-    return s;
-  };
-  const vs = compile(gl.VERTEX_SHADER, depthVS);
-  const fs = compile(gl.FRAGMENT_SHADER, depthFS);
-  depthProgram = gl.createProgram(); gl.attachShader(depthProgram, vs); gl.attachShader(depthProgram, fs); gl.linkProgram(depthProgram);
-  
-  depthVao = gl.createVertexArray(); gl.bindVertexArray(depthVao);
-  const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
-  const loc = gl.getAttribLocation(depthProgram, 'aPos'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  gl.bindVertexArray(null);
-
-  depthTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, depthTex);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-  gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
-function renderDepthForView(view){
-  if(!xrGlBinding || !depthProgram || !depthVao || !depthTex) return;
-  const di = xrGlBinding.getDepthInformation(view);
-  if(!di) return;
-  depthRawToMeters = di.rawValueToMeters;
-  const w = di.width, h = di.height;
-  gl.bindTexture(gl.TEXTURE_2D, depthTex);
-  if(w !== depthTexW || h !== depthTexH){
-    depthTexW = w; depthTexH = h;
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE_ALPHA, w, h, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, di.data);
-  }else{
-    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, w, h, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, di.data);
-  }
-  gl.useProgram(depthProgram); gl.bindVertexArray(depthVao);
-  gl.colorMask(false, false, false, false); gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.depthFunc(gl.LESS); gl.disable(gl.BLEND);
-  gl.uniform1i(gl.getUniformLocation(depthProgram, 'uDepth'), 0);
-  gl.uniform1f(gl.getUniformLocation(depthProgram, 'uRawToMeters'), depthRawToMeters);
-  gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram, 'uProj'), false, view.projectionMatrix);
-  gl.drawArrays(gl.TRIANGLES, 0, 6);
-  gl.colorMask(true, true, true, true); gl.bindVertexArray(null); gl.useProgram(null); gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
+// ======= INIT ENGINE =======
 function init() {
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -627,6 +477,7 @@ function setMode(isXR){
   }
 }
 
+// ======= LISTENERS =======
 function initEventListeners() {
   document.getElementById('checkGrid').addEventListener('change', e=>grid.visible=e.target.checked);
   document.getElementById('checkAxes').addEventListener('change', e=>axes.visible=e.target.checked);
@@ -641,14 +492,6 @@ function initEventListeners() {
     const tex = await new THREE.TextureLoader().loadAsync(URL.createObjectURL(e.target.files[0]));
     tex.colorSpace = THREE.SRGBColorSpace;
     o.mesh.traverse(c=>{ if(c.isMesh && c.material) { if(Array.isArray(c.material)) c.material.forEach(m=>m.map=tex); else c.material.map = tex; } });
-  });
-
-  document.getElementById('shaderEffect').addEventListener('change', e=>{
-    const o = objects.find(x=>x.id===activeId); if(!o || o.type==='model') return;
-    const val = parseInt(e.target.value === 'none' ? 0 : e.target.selectedIndex);
-    o.settings.shaderEffect = val;
-    document.getElementById('fxIntensityRow').style.display = val > 0 ? 'flex' : 'none';
-    applyUniforms(o);
   });
 
   document.getElementById('audioType').addEventListener('change', e=>{
@@ -677,12 +520,11 @@ function applyViewMode(obj) {
   if(mode === 'orb') {
     obj.mesh.scale.set(2, 2, 2); obj.mesh.position.set(0, 1.6, -3);
     obj.settings.scale = 2; obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -3;
-    if(obj.mesh.material) { obj.mesh.material.side = THREE.FrontSide; obj.mesh.material.depthWrite = true; }
+    if(obj.mesh.material) obj.mesh.material.side = THREE.FrontSide;
   } else {
-    // Immersive mode: inside out
     const bs = obj.baseScale || 1; obj.mesh.scale.set(20 * bs, 20 * bs, 20 * bs); obj.mesh.position.set(0, 0, 0);
     obj.settings.scale = 20; obj.settings.posX = 0; obj.settings.posY = 0; obj.settings.posZ = 0;
-    if(obj.mesh.material) { obj.mesh.material.side = THREE.BackSide; obj.mesh.material.depthWrite = false; }
+    if(obj.mesh.material) obj.mesh.material.side = THREE.BackSide;
   }
   syncUI();
 }
@@ -839,54 +681,23 @@ async function handleFileUpload(e) {
   e.target.value = '';
 }
 
-// ======= Loaders (Reforzado v5 logic) =======
+// ======= Loaders =======
 async function loadVideo(url, name, source=null, settingsOverride=null, transformOverride=null) {
-  // 1. Crear video element simple (Estilo v5 para estabilidad)
   const vid = document.createElement('video');
-  vid.src = url; 
-  vid.crossOrigin = 'anonymous'; 
-  vid.loop = true; 
-  vid.muted = false; 
-  vid.playsInline = true; 
-  vid.style.display = 'none';
+  vid.src = url; vid.crossOrigin = 'anonymous'; vid.loop = true; vid.muted = false; vid.playsInline = true; vid.style.display = 'none';
   document.body.appendChild(vid);
+  await new Promise(r => { vid.onloadedmetadata = () => r(); vid.play().catch(()=>{}); });
 
-  await new Promise(r => { 
-    vid.onloadedmetadata = () => r(); 
-    vid.play().catch(e=>console.log("Auto-play prevented:",e)); 
-  });
-
-  // 2. Texture setup (v5 style)
   const tex = new THREE.VideoTexture(vid);
-  tex.colorSpace = THREE.SRGBColorSpace; 
-  tex.wrapS = THREE.RepeatWrapping; 
-  tex.wrapT = THREE.RepeatWrapping; 
-  tex.minFilter = THREE.LinearFilter; 
-  tex.magFilter = THREE.LinearFilter;
-
-  let proj = 'plane';
-  if(name.includes('360')) proj = '360';
-  else if(name.includes('180')) proj = '180';
-
-  const ar = (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77;
-  
-  // 3. Crear Mesh con shader (v6 features pero geometría robusta)
-  const mesh = createMesh(proj, 'sphere', tex, ar);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.minFilter = THREE.LinearFilter;
+  let proj = (name.includes('360') ? '360' : (name.includes('180') ? '180' : 'plane'));
+  const mesh = createMesh(proj, 'sphere', tex, (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77);
 
   const obj = { id: uid(), mesh, name, type:'video', video:vid, tex, settings: defSettings(), source };
   obj.settings.projection = proj;
-
   if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
-
-  // 4. Posicionamiento inicial seguro
-  if(proj !== 'plane') { 
-    obj.settings.viewMode = obj.settings.viewMode || 'immersive'; 
-    applyViewMode(obj); 
-  } else { 
-    mesh.position.set(0, 1.6, -2); 
-    obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2; 
-  }
-
+  if(obj.settings.projection !== 'plane') { obj.settings.viewMode = obj.settings.viewMode || 'immersive'; applyViewMode(obj); } 
+  else { mesh.position.set(0, 1.6, -2); obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2; }
   if(transformOverride) applyTransform(mesh, transformOverride);
   addObj(obj);
 }
@@ -941,7 +752,7 @@ async function load3D(url, name, type, source=null, settingsOverride=null, trans
   else if(type==='fbx') m=await new FBXLoader().loadAsync(url);
   else m=await new OBJLoader().loadAsync(url);
 
-  // AUTO-SCALE FIX
+  // AUTO-SCALE FIX (Detecta gigantes y los reduce)
   const box = new THREE.Box3().setFromObject(m); 
   const sz = box.getSize(new THREE.Vector3()).length();
   const sc = sz > 0 ? 2/sz : 1; 
@@ -964,6 +775,7 @@ function applyTransform(mesh, t) {
   mesh.scale.set(t.scale.x, t.scale.y, t.scale.z);
 }
 
+// ======= GEOMETRÍA CON OPCIÓN TIERRA =======
 function createMesh(proj, surface, tex, aspect) {
   let geo, side=THREE.DoubleSide;
   const makeInside = (g)=>{ g.computeVertexNormals(); return g; };
@@ -973,7 +785,7 @@ function createMesh(proj, surface, tex, aspect) {
     else { 
       geo = makeInside(new THREE.SphereGeometry(20, 64, 64)); 
       if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
-      // FIX EARTH GEOMETRY
+      // FIX TIERRA
       if(surface === 'earth') geo.scale(1.0, 0.75, 1.0); 
     }
   } else if(proj === '180') {
@@ -983,9 +795,6 @@ function createMesh(proj, surface, tex, aspect) {
     geo.rotateY(-Math.PI/2);
   } else { geo = new THREE.PlaneGeometry(aspect, 1); }
 
-  // Material seguro para 360 (evita crash profundidad)
-  const isImmersive = (proj === '360' || proj === '180');
-  
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       map: { value: tex },
@@ -993,18 +802,14 @@ function createMesh(proj, surface, tex, aspect) {
       similarity:{value:0.4}, smoothness:{value:0.08}, despill:{value:0.5},
       offset:{value:new THREE.Vector2(0,0)}, opacity:{value:1.0},
       brightness:{value:0.0}, contrast:{value:1.0}, saturation:{value:1.0}, gamma:{value:1.0},
-      deblue:{value:0.0}, degreen:{value:0.0},
-      shaderEffect:{value:0}, fxIntensity:{value:0.5}, time:{value:0}
+      deblue:{value:0.0}, degreen:{value:0.0}
     },
     vertexShader: vertShader, fragmentShader: fragShader, 
-    transparent: true, 
-    side: side, 
-    depthWrite: !isImmersive, // ANTI-CRASH: No escribir profundidad en 360
-    depthTest: true
+    transparent: true, side: side, depthWrite: (proj==='plane'), depthTest: true
   });
   
   const mesh = new THREE.Mesh(geo, mat); 
-  if(isImmersive) { mesh.frustumCulled = false; mesh.renderOrder = -1; }
+  if(proj !== 'plane') { mesh.frustumCulled = false; mesh.renderOrder = -1; }
   return mesh;
 }
 
@@ -1013,7 +818,7 @@ function defSettings() {
     scale:1, posX:0, posY:1.6, posZ:-2, rotY:0, projection:'plane', surface:'sphere', followViewer:false, viewMode:'immersive', flipX:false,
     chromaEnabled:false, chromaInvert:false, keyR:0, keyG:1, keyB:0, sim:0.4, smooth:0.08, despill:0.5,
     offsetX:0, offsetY:0, opac:1, brightness:0, contrast:1, saturation:1, gamma:1, deblue:0, degreen:0,
-    shaderEffect:0, fxIntensity:0.5, audioType:'global', audioSpeed:1.0, audioRefDist:1.0, audioDoppler:1.0
+    audioType:'global', audioSpeed:1.0, audioRefDist:1.0, audioDoppler:1.0
   };
 }
 
@@ -1021,30 +826,6 @@ function uid() { return Math.random().toString(36).substr(2,9); }
 
 function addObj(obj) {
   scene.add(obj.mesh); objects.push(obj); updateRenderOrder(); updateList(); selectObj(obj.id);
-}
-
-function applyUniforms(o){
-  const s=o.settings; const m=o.mesh; if(o.type === 'model' || o.type === 'audio') return;
-  if(!m.material?.uniforms) return;
-  const u=m.material.uniforms;
-  u.chromaEnabled.value=s.chromaEnabled; u.chromaInvert.value=s.chromaInvert; u.keyColor.value.setRGB(s.keyR, s.keyG, s.keyB);
-  u.similarity.value=s.sim; u.smoothness.value=s.smooth; u.despill.value=s.despill;
-  u.offset.value.set(s.offsetX, s.offsetY); u.opacity.value=s.opac;
-  u.brightness.value=s.brightness; u.contrast.value=s.contrast; u.saturation.value=s.saturation; u.gamma.value=s.gamma;
-  u.deblue.value=s.deblue; u.degreen.value=s.degreen;
-  u.shaderEffect.value=s.shaderEffect||0; u.fxIntensity.value=s.fxIntensity||0.5;
-}
-
-function updateAudioType(obj) {
-  if(!obj.audio) return;
-  const type = obj.settings.audioType;
-  if(type === 'spatial') {
-    const spatial = new THREE.PositionalAudio(audioListener); spatial.setBuffer(obj.audio.buffer); spatial.setRefDistance(obj.settings.audioRefDist); spatial.setLoop(obj.audio.getLoop()); spatial.setVolume(obj.audio.getVolume()); spatial.setPlaybackRate(obj.settings.audioSpeed);
-    obj.mesh.add(spatial); if(obj.audio.isPlaying) { obj.audio.stop(); spatial.play(); } obj.audio = spatial;
-  } else {
-    const global = new THREE.Audio(audioListener); global.setBuffer(obj.audio.buffer); global.setLoop(obj.audio.getLoop()); global.setVolume(obj.audio.getVolume()); global.setPlaybackRate(obj.settings.audioSpeed);
-    if(obj.audio.isPlaying) { obj.audio.stop(); global.play(); } obj.audio = global;
-  }
 }
 
 function updateObj(k, v) {
@@ -1079,7 +860,7 @@ bind('chromaActive','chromaEnabled','bool'); bind('chromaInvert','chromaInvert',
 bind('keyR','keyR'); bind('keyG','keyG'); bind('keyB','keyB'); bind('sim','sim'); bind('smooth','smooth'); bind('despill','despill');
 bind('offsetX','offsetX'); bind('offsetY','offsetY'); bind('opacity','opac');
 bind('brightness','brightness'); bind('contrast','contrast'); bind('saturation','saturation'); bind('gamma','gamma');
-bind('deblue','deblue'); bind('degreen','degreen'); bind('fxIntensity','fxIntensity');
+bind('deblue','deblue'); bind('degreen','degreen'); 
 bind('audioSpeed','audioSpeed'); bind('audioRefDist','audioRefDist'); bind('audioDoppler','audioDoppler'); bind('checkFlip', 'flipX', 'bool');
 
 function isPickable(o){
@@ -1130,7 +911,7 @@ function syncUI() {
     const t=document.getElementById('v_'+id);
     if(t) {
       if(typeof v==='number') {
-        if(id==='sim' || id==='smooth' || id==='despill' || id==='fxIntensity') t.innerText=v.toFixed(3);
+        if(id==='sim' || id==='smooth' || id==='despill') t.innerText=v.toFixed(3);
         else if(id==='audioSpeed') t.innerText=v.toFixed(2)+'x';
         else t.innerText=v.toFixed(2);
       } else t.innerText = v;
@@ -1157,10 +938,6 @@ function syncUI() {
     set('offsetX',s.offsetX); set('offsetY',s.offsetY); set('opacity',s.opac);
     set('brightness',s.brightness); set('contrast',s.contrast); set('saturation',s.saturation); set('gamma',s.gamma);
     set('deblue', s.deblue); set('degreen', s.degreen);
-    const fx = s.shaderEffect || 0;
-    document.getElementById('shaderEffect').selectedIndex = fx;
-    document.getElementById('fxIntensityRow').style.display = fx > 0 ? 'flex' : 'none';
-    set('fxIntensity', s.fxIntensity || 0.5);
   }
 
   if(o.type === 'audio') {
@@ -1213,9 +990,7 @@ window.clearScene = () => {
 window.duplicateActive = async () => {
   const o = objects.find(x => x.id === activeId);
   if (!o) { alert("Selecciona un objeto para clonar."); return; }
-  
   if (!o.source) { alert("No se puede clonar este objeto (sin datos de origen)."); return; }
-  
   toggleLoader(true);
   try {
     const newName = o.name + " (Copia)";
@@ -1225,34 +1000,20 @@ window.duplicateActive = async () => {
       rotation: { x: o.mesh.rotation.x, y: o.mesh.rotation.y, z: o.mesh.rotation.z },
       scale:    { x: o.mesh.scale.x, y: o.mesh.scale.y, z: o.mesh.scale.z }
     };
-
     const s = o.source;
-
-    if (o.type === 'video') {
-       await loadVideo(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
-    } else if (o.type === 'image') {
-       await loadImg(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
-    } else if (o.type === 'audio') {
-       await loadAudioFromDataURL(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
-    } else if (o.type === 'gif') {
-       const ab = b64ToAb(s.dataB64 || '');
-       await loadGifFromArrayBuffer(ab, newName, s, newSettings, newTransform);
-    } else if (o.type === 'model') {
+    if (o.type === 'video') await loadVideo(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
+    else if (o.type === 'image') await loadImg(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
+    else if (o.type === 'audio') await loadAudioFromDataURL(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
+    else if (o.type === 'gif') { const ab = b64ToAb(s.dataB64 || ''); await loadGifFromArrayBuffer(ab, newName, s, newSettings, newTransform); }
+    else if (o.type === 'model') {
        const ab = b64ToAb(s.dataB64 || '');
        const url = URL.createObjectURL(new Blob([ab], {type: s.mime}));
        const ext = s.ext || 'glb';
-       let typeStr = 'gltf';
-       if(ext === 'fbx') typeStr = 'fbx';
-       else if(ext === 'obj') typeStr = 'obj';
-       
-       await load3D(url, newName, typeStr, s, newSettings, newTransform);
+       await load3D(url, newName, (ext==='fbx'?'fbx':(ext==='obj'?'obj':'gltf')), s, newSettings, newTransform);
        const created = objects[objects.length - 1];
        if(created && o.renderMode) { created.renderMode = o.renderMode; applyRenderMode(created, o.renderMode); }
     }
-  } catch (e) {
-    console.error("Error clonando:", e);
-    alert("Error al clonar el objeto.");
-  }
+  } catch (e) { console.error("Error clonando:", e); alert("Error al clonar el objeto."); }
   toggleLoader(false);
 };
 
@@ -1319,8 +1080,7 @@ async function startVR() {
   try {
     xrSession = await navigator.xr.requestSession('immersive-ar', init);
     renderer.xr.setSession(xrSession); setMode(true);
-    if(occlusionEnabled) initDepthOcclusion(xrSession);
-    xrSession.addEventListener('end', () => { xrSession = null; xrGlBinding = null; setMode(false); });
+    xrSession.addEventListener('end', () => { xrSession = null; setMode(false); });
   } catch(err) { console.error('Error XR:', err); alert('Error al iniciar MR.'); }
 }
 
@@ -1413,19 +1173,7 @@ function render(time, frame) {
     obj.mesh.position.copy(cam.position);
   }
 
-  // ANTI-CRASH: Si hay un video 360/180 activo y visible, renderizar profundidad podría saturar el GPU
-  // Chequeo simple para evitar sobrecarga en immersive background
-  let immersiveActive = objects.some(o => (o.settings.projection === '360' || o.settings.projection === '180') && o.settings.viewMode === 'immersive');
-
-  if(frame && occlusionEnabled && xrGlBinding && !immersiveActive){
-    const pose = frame.getViewerPose(renderer.xr.getReferenceSpace());
-    if(pose){
-      const baseLayer = xrSession.renderState.baseLayer;
-      gl.bindFramebuffer(gl.FRAMEBUFFER, baseLayer.framebuffer);
-      for(const view of pose.views){ const vp = baseLayer.getViewport(view); gl.viewport(vp.x, vp.y, vp.width, vp.height); renderDepthForView(view); }
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
-  }
+  // ANTI-CRASH: Sin renderDepthForView (Oclusión nativa simple si el visor lo permite)
   if(frame) handleVR(frame, dt);
   renderer.render(scene, camera);
 }
@@ -1452,7 +1200,7 @@ async function saveProject(){
       source: o.source || null
     });
   }
-  const blob = new Blob([JSON.stringify({ version: '6.8', name: projectName, created: new Date().toISOString(), objects: serialized }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ version: '6.9', name: projectName, created: new Date().toISOString(), objects: serialized }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${projectName.replace(/\s+/g, '_')}.mrsd`; a.click();
 }
 
