@@ -3,21 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v20.4 | Depth Engineered</title>
+  <title>MR Studio Diamond v21.0 | Depth Master</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
     /* =========================================
-       ESTILO "AMBER GLASS"
+       ESTILO "AMBER GLASS" (v20 UI)
     ========================================= */
-    :root { --main-color: #ffaa00; --bg-glass: rgba(20, 20, 25, 0.75); --border-glass: rgba(255, 170, 0, 0.3); --text-glow: 0 0 8px rgba(255, 170, 0, 0.6); }
+    :root { --main-color: #ffaa00; --bg-glass: rgba(20, 20, 25, 0.85); --border-glass: rgba(255, 170, 0, 0.3); --text-glow: 0 0 8px rgba(255, 170, 0, 0.6); }
     * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
-    .ui-panel { position: fixed; left: 20px; top: 20px; width: 350px; max-height: 90vh; background: var(--bg-glass); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); border: 1px solid var(--border-glass); border-radius: 24px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+    .ui-panel { position: fixed; left: 20px; top: 20px; width: 350px; max-height: 90vh; background: var(--bg-glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--border-glass); border-radius: 24px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 40px rgba(0,0,0,0.5); transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
     .ui-panel.minimized { transform: translateX(-450px); }
     
     h2 { margin: 0 0 20px 0; font-size: 16px; color: var(--main-color); font-weight: 800; letter-spacing: 2px; border-bottom: 2px solid var(--border-glass); padding-bottom: 12px; display: flex; justify-content: space-between; text-shadow: var(--text-glow); }
@@ -53,7 +53,7 @@
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')" style="display:flex;">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>STUDIO DIAMOND v20.4 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
+  <h2>STUDIO DIAMOND v21.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer; font-size:24px;">×</span></h2>
 
   <div class="sec-head">📐 Guías & Entorno</div>
   <div class="row">
@@ -141,14 +141,14 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 SHADERS (DEPTH FIX WEBGL2 RG8)
+// 🌑 SHADERS (DEPTH FIX v21: RG8 Format)
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
 
 const depthFS = `#version 300 es
 precision highp float; precision highp sampler2D; in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj; out vec4 outColor;
-// Adaptado para leer RG en lugar de RA/LA
+// FIX: WebGL2 RG8 decode (R=High byte, G=Low byte for packed depth)
 float decode(vec4 rg){ return (rg.r * 255.0 * 256.0 + rg.g * 255.0); }
 void main(){ 
   float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters; if(zMeters <= 0.0) discard;
@@ -376,7 +376,7 @@ function updateGrid() {
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (LOGIC FIX: GRIP SELECCIONA)
+// 🎮 CONTROLES XR (Grip = Select + Hold)
 // ==========================================
 function setupXRControllers() {
     controller1 = renderer.xr.getController(0); 
@@ -449,13 +449,12 @@ function onGripStart(e) {
     const c = e.target;
     const hits = getIntersections(c);
     
-    // 🔥 LÓGICA MEJORADA: Grip = Selección + Agarre
     if (hits.length > 0) {
         const mesh = hits[0].object;
         const id = mesh.userData?.id;
         
         if (id) {
-            selectObject(id); // Forzar selección al agarrar
+            selectObject(id); 
             c.attach(mesh);
             c.userData.selected = mesh;
         }
@@ -537,9 +536,9 @@ function animate(time, frame) {
           for(const view of pose.views) {
               const dInfo = xrGlBinding.getDepthInformation(view);
               if(dInfo) {
-                  // 🔥 DEPTH FIX WEBGL2 RG8
+                  // 🔥 DEPTH FIX V21: Usando formato RG8 (WebXR standard en WebGL2)
                   gl.bindTexture(gl.TEXTURE_2D, depthTex);
-                  gl.texImage2D(gl.TEXTURE_2D,0,gl.RG8, dInfo.width, dInfo.height, 0, gl.RG, gl.UNSIGNED_BYTE, dInfo.data);
+                  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RG8, dInfo.width, dInfo.height, 0, gl.RG, gl.UNSIGNED_BYTE, dInfo.data);
                   gl.useProgram(depthProgram);
                   gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
                   gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
@@ -552,6 +551,7 @@ function animate(time, frame) {
   renderer.render(scene, camera);
 }
 
+// 🔥 CONFIGURACIÓN ROBUSTA DE SESIÓN (ESTILO V5.0)
 function setupVR() {
   if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok => {
       if(ok) {
@@ -562,7 +562,7 @@ function setupVR() {
               const requiredFeatures = ['local-floor'];
               const optionalFeatures = ['dom-overlay'];
               
-              // 🔥 STRICT: Si pide depth, es Requerido (así falla si no hay soporte)
+              // Pedimos depth-sensing solo si el usuario lo marcó
               if (wantDepth) requiredFeatures.push('depth-sensing'); 
 
               try {
@@ -570,10 +570,15 @@ function setupVR() {
                       requiredFeatures, 
                       optionalFeatures, 
                       domOverlay:{root:document.body}, 
-                      depthSensing: wantDepth ? { usagePreference:['cpu-optimized'], dataFormatPreference:['luminance-alpha'] } : undefined 
+                      depthSensing: wantDepth ? { 
+                        // 🔥 Compatibilidad ampliada (copiado de v5.0)
+                        usagePreference: ["gpu-optimized", "cpu-optimized"], 
+                        dataFormatPreference: ["luminance-alpha"] 
+                      } : undefined 
                   });
               } catch(e) {
-                  alert("ERROR: Este dispositivo no soporta Depth Occlusion.");
+                  console.error(e);
+                  alert("ERROR: No se pudo iniciar AR con Oclusión.");
                   return;
               }
 
@@ -595,7 +600,7 @@ function initDepthOcclusion(s) {
     const fs=gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs,depthFS); gl.compileShader(fs);
     depthProgram=gl.createProgram(); gl.attachShader(depthProgram,vs); gl.attachShader(depthProgram,fs); gl.linkProgram(depthProgram);
 
-    // 🔥 VAO/VBO FIX: Atributos explícitos para WebGL2
+    // VAO Setup
     depthVao=gl.createVertexArray(); gl.bindVertexArray(depthVao);
     const vbo=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,vbo);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
@@ -605,7 +610,7 @@ function initDepthOcclusion(s) {
     gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
     gl.bindVertexArray(null);
 
-    // 🔥 TEXTURE PARAMS FIX
+    // Texture Setup (RG8 for packed depth)
     depthTex=gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, depthTex);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
@@ -626,19 +631,7 @@ window.saveSceneToDrive = () => { /* Logica guardar */ };
 window.loadSceneFromDrive = () => { /* Logica cargar */ };
 window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
 document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
-
-// 🔥 DELETE FIX: Limpieza completa
-window.deleteActive=()=>{ 
-    const i=objects.findIndex(x=>x.id===activeId); 
-    if(i>-1) { 
-        scene.remove(objects[i].mesh); 
-        objects.splice(i,1); 
-    } 
-    activeId = null; // Reset ID
-    transformCtrl.detach(); 
-    document.getElementById('editorUI').style.display='none'; 
-    updateLayers();
-};
+window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); activeId=null; transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; updateLayers(); } };
 window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
