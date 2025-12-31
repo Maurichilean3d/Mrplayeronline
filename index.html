@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v4.1 (Fix Import + Geo Morph)</title>
+  <title>MR Studio Diamond v4.2 (Geo Morph Extended)</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <style>
     /* ESTILOS DE INTERFAZ (UI LIMPIA) */
@@ -55,7 +55,7 @@
 <div class="loader" id="loader"><div class="spinner"></div><span>CARGANDO...</span></div>
 
 <div class="ui-panel" id="ui">
-  <h2>🥽 MR Studio Diamond v4.1</h2>
+  <h2>🥽 MR Studio Diamond v4.2</h2>
 
   <div class="sec-head">📂 Archivos <button class="warn" style="padding:4px; font-size:10px; width:auto; flex:0;" onclick="document.getElementById('fileInput').click()">+ IMPORTAR</button></div>
   <input type="file" id="fileInput" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj" multiple style="display:none;" />
@@ -71,12 +71,16 @@
           <option value="180">Domo 180° (Inmersiva)</option>
         </select>
       </div>
+      
       <div class="row" id="shapeRow" style="display:none;">
         <label>Geometría</label>
         <select id="shapeSelect">
             <option value="sphere">Esfera (Estándar)</option>
-            <option value="cube">Cubo (Skybox)</option>
-            <option value="ovoid">Ovoide (Vertical)</option>
+            <option value="cube">Cubo (Skybox Fake)</option>
+            <option value="ovoid">Ovoide (Estirado)</option>
+            <option value="earth">Tierra (Achatada 0.75)</option>
+            <option value="earth_poles">Tierra Polos (0.68)</option>
+            <option value="earth_extreme">Tierra Extrema (0.60)</option>
         </select>
       </div>
       
@@ -266,7 +270,6 @@ function init() {
   window.addEventListener('resize', onResize);
   renderer.setAnimationLoop(render);
   
-  // ASEGURAR EVENTO INPUT
   document.getElementById('fileInput').addEventListener('change', handleFileSelect);
 }
 
@@ -303,15 +306,14 @@ async function loadVideo(url, name) {
   vid.crossOrigin = 'anonymous'; vid.loop = true; vid.muted = true; vid.playsInline = true;
   vid.style.display = 'none'; document.body.appendChild(vid);
   
-  // FIX: Promesa más robusta para evitar congelamientos
   await new Promise((resolve, reject) => {
      vid.onloadedmetadata = () => resolve();
      vid.onerror = () => reject(new Error('Formato de video no soportado'));
      vid.src = url;
-     vid.load(); // Forzar carga
+     vid.load();
   });
   
-  vid.play().catch(e => console.warn("Autoplay bloqueado, se requiere interacción usuario", e));
+  vid.play().catch(e => console.warn("Autoplay bloqueado", e));
 
   const tex = new THREE.VideoTexture(vid);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -324,7 +326,7 @@ async function loadVideo(url, name) {
 
   const ar = (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77;
 
-  // Creamos con forma 'sphere' por defecto
+  // Default shape: sphere
   const mesh = createMesh(proj, 'sphere', tex, ar);
   const obj = { id: uid(), mesh, name, type:'video', video:vid, tex, settings: defSettings() };
   obj.settings.projection = proj;
@@ -387,16 +389,15 @@ async function load3D(url, name, type) {
   addObj(obj);
 }
 
-// FIX: Valor por defecto para shape = 'sphere'
 function createMesh(proj, shape = 'sphere', tex, aspect) {
   let geo, side=THREE.DoubleSide;
   
   if(proj === '360' || proj === '180') {
     if(shape === 'cube') {
-        geo = new THREE.BoxGeometry(30, 30, 30);
+        geo = new THREE.BoxGeometry(30, 30, 30); // Cubo grande
     } else {
+        // Esfera (Base para ovoid y earths)
         const tLen = (proj === '180') ? Math.PI : Math.PI*2;
-        // Si shape es indefinido, usa Sphere por defecto
         geo = new THREE.SphereGeometry(20, 64, 64, 0, tLen);
     }
 
@@ -451,7 +452,6 @@ function updateObj(k, v) {
     if(o.video) ar=o.video.videoWidth/o.video.videoHeight;
     else if(o.tex && o.tex.image) ar=o.tex.image.width/o.tex.image.height;
     
-    // FIX: Manejo seguro de textura si viene de modelo
     let tMap = o.tex;
     if(!tMap && m.material.uniforms && m.material.uniforms.map) tMap = m.material.uniforms.map.value;
     
@@ -472,6 +472,7 @@ function updateObj(k, v) {
     scene.add(nm); selectObj(o.id); return; 
   }
 
+  // LOGICA MULTI-FORMA (ESFERA, CUBO, OVOIDE, TIERRA)
   if(k==='scale' || k==='flipX' || k==='shape') {
      const bs = o.baseScale || 1;
      const dir = s.flipX ? -1 : 1;
@@ -480,10 +481,16 @@ function updateObj(k, v) {
      let sy = s.scale * bs;
      let sz = s.scale * bs;
 
-     if(s.projection !== 'plane' && s.shape === 'ovoid') {
-         sy *= 1.4; 
-         sx *= 0.85; 
-         sz *= 0.85;
+     // Aplica deformación solo si no es plano
+     if(s.projection !== 'plane') {
+         let yMult = 1.0;
+         // Ajustes solicitados
+         if(s.shape === 'ovoid') yMult = 1.35;         // Estirado
+         if(s.shape === 'earth') yMult = 0.75;         // Oblata
+         if(s.shape === 'earth_poles') yMult = 0.68;   // Polos achatados
+         if(s.shape === 'earth_extreme') yMult = 0.60; // Corrección agresiva
+         
+         sy *= yMult;
      }
 
      m.scale.set(sx, sy, sz);
@@ -514,7 +521,7 @@ function updateObj(k, v) {
 
 const bind = (id, k, type='float') => {
   const el = document.getElementById(id);
-  if(!el) return; // Seguridad
+  if(!el) return; 
   el.addEventListener('input', e=>{
     let v=e.target.value; if(type==='float')v=parseFloat(v); else if(type==='bool')v=e.target.checked;
     updateObj(k,v); syncUI();
