@@ -3,31 +3,33 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio v7.0</title>
+  <title>MR Studio v7.5</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <style>
+    /* ESTILOS UI (Mantenidos de v6.7 por su funcionalidad PRO) */
     * { box-sizing: border-box; user-select: none; }
     body { margin: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', system-ui, sans-serif; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
-    /* UI Panel Styling */
     .ui-panel { position: fixed; left: 20px; top: 20px; width: 420px; max-height: 95vh; background: rgba(10, 10, 14, 0.96); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 25px 60px rgba(0,0,0,0.85); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); scrollbar-width: thin; scrollbar-color: #6c5ce7 transparent; }
     .ui-panel.hidden { transform: translateX(-480px); }
     
     h2 { margin: 0 0 18px 0; font-size: 20px; color: #a29bfe; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid rgba(108, 92, 231, 0.3); padding-bottom: 10px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; justify-content: space-between; align-items: center; }
-    .ver-badge { font-size: 10px; background: #6c5ce7; color: white; padding: 2px 6px; border-radius: 4px; vertical-align: middle; }
+    .ver-badge { font-size: 10px; background: #00cec9; color: black; padding: 2px 6px; border-radius: 4px; vertical-align: middle; font-weight: 800; }
 
     .sec-head { font-size: 11px; font-weight: 800; color: #b2b9c6; margin: 18px 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px; }
     .row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
     label { font-size: 12px; flex: 1; color: #d1d5db; white-space: nowrap; font-weight: 500; }
+    
+    /* FIX: Slider optimizado visualmente */
     input[type=range] { flex: 2; height: 5px; background: #2a2d35; border-radius: 3px; accent-color: #6c5ce7; cursor: pointer; }
+    
     .val { width: 50px; text-align: right; font-size: 11px; font-family: 'Consolas', monospace; color: #a29bfe; font-weight: 600; }
     select, input[type=file], input[type=text] { width: 100%; background: #1e1e24; border: 1px solid #444; color: #eee; padding: 10px; border-radius: 10px; font-size: 11px; outline: none; cursor: pointer; transition: 0.2s; }
     select:hover, input[type=file]:hover { border-color: #6c5ce7; }
     
     button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 11px; font-weight: 800; cursor: pointer; color: white; background: #2a2d35; transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 5px; }
     button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); filter: brightness(1.2); }
-    button:active { transform: translateY(0); }
     button.primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); box-shadow: 0 5px 20px rgba(108,92,231,0.4); }
     button.danger { background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.4); color: #ff7675; }
     button.warn { background: rgba(253, 203, 110, 0.15); border: 1px solid rgba(253, 203, 110, 0.4); color: #ffeaa7; }
@@ -115,7 +117,7 @@
 </div>
 
 <div class="ui-panel" id="ui">
-  <h2><span>MR Studio Diamond <span class="ver-badge">v6.6</span></span></h2>
+  <h2><span>MR Studio Diamond <span class="ver-badge">v6.8</span></span></h2>
 
   <div id="projectManager">
     <div class="sec-head">💾 Proyecto</div>
@@ -178,7 +180,7 @@
     </div>
 
     <div class="sec-head">📏 Transformación</div>
-    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.01" max="50" step="0.01" value="1"><span class="val" id="v_scale">1.00</span></div>
+    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.01" max="5.0" step="0.01" value="1"><span class="val" id="v_scale">1.00</span></div>
     <div class="row"><label>Flip Horizontal</label><input type="checkbox" id="checkFlip" style="flex:0; width:20px; height:20px;"></div>
 
     <div id="posControls">
@@ -295,7 +297,7 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-console.log('🚀 MR Studio Diamond v6.6 Pro iniciando...');
+console.log('🚀 MR Studio Diamond v6.8 Stable Core iniciando...');
 
 let scene, camera, renderer, xrSession;
 let objects = [];
@@ -675,11 +677,12 @@ function applyViewMode(obj) {
   if(mode === 'orb') {
     obj.mesh.scale.set(2, 2, 2); obj.mesh.position.set(0, 1.6, -3);
     obj.settings.scale = 2; obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -3;
-    if(obj.mesh.material) obj.mesh.material.side = THREE.FrontSide;
+    if(obj.mesh.material) { obj.mesh.material.side = THREE.FrontSide; obj.mesh.material.depthWrite = true; }
   } else {
+    // Immersive mode: inside out
     const bs = obj.baseScale || 1; obj.mesh.scale.set(20 * bs, 20 * bs, 20 * bs); obj.mesh.position.set(0, 0, 0);
     obj.settings.scale = 20; obj.settings.posX = 0; obj.settings.posY = 0; obj.settings.posZ = 0;
-    if(obj.mesh.material) obj.mesh.material.side = THREE.BackSide;
+    if(obj.mesh.material) { obj.mesh.material.side = THREE.BackSide; obj.mesh.material.depthWrite = false; }
   }
   syncUI();
 }
@@ -836,23 +839,54 @@ async function handleFileUpload(e) {
   e.target.value = '';
 }
 
-// ======= Loaders =======
+// ======= Loaders (Reforzado v5 logic) =======
 async function loadVideo(url, name, source=null, settingsOverride=null, transformOverride=null) {
+  // 1. Crear video element simple (Estilo v5 para estabilidad)
   const vid = document.createElement('video');
-  vid.src = url; vid.crossOrigin = 'anonymous'; vid.loop = true; vid.muted = false; vid.playsInline = true; vid.style.display = 'none';
+  vid.src = url; 
+  vid.crossOrigin = 'anonymous'; 
+  vid.loop = true; 
+  vid.muted = false; 
+  vid.playsInline = true; 
+  vid.style.display = 'none';
   document.body.appendChild(vid);
-  await new Promise(r => { vid.onloadedmetadata = () => r(); vid.play().catch(()=>{}); });
 
+  await new Promise(r => { 
+    vid.onloadedmetadata = () => r(); 
+    vid.play().catch(e=>console.log("Auto-play prevented:",e)); 
+  });
+
+  // 2. Texture setup (v5 style)
   const tex = new THREE.VideoTexture(vid);
-  tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.minFilter = THREE.LinearFilter;
-  let proj = (name.includes('360') ? '360' : (name.includes('180') ? '180' : 'plane'));
-  const mesh = createMesh(proj, 'sphere', tex, (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77);
+  tex.colorSpace = THREE.SRGBColorSpace; 
+  tex.wrapS = THREE.RepeatWrapping; 
+  tex.wrapT = THREE.RepeatWrapping; 
+  tex.minFilter = THREE.LinearFilter; 
+  tex.magFilter = THREE.LinearFilter;
+
+  let proj = 'plane';
+  if(name.includes('360')) proj = '360';
+  else if(name.includes('180')) proj = '180';
+
+  const ar = (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77;
+  
+  // 3. Crear Mesh con shader (v6 features pero geometría robusta)
+  const mesh = createMesh(proj, 'sphere', tex, ar);
 
   const obj = { id: uid(), mesh, name, type:'video', video:vid, tex, settings: defSettings(), source };
   obj.settings.projection = proj;
+
   if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
-  if(obj.settings.projection !== 'plane') { obj.settings.viewMode = obj.settings.viewMode || 'immersive'; applyViewMode(obj); } 
-  else { mesh.position.set(0, 1.6, -2); obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2; }
+
+  // 4. Posicionamiento inicial seguro
+  if(proj !== 'plane') { 
+    obj.settings.viewMode = obj.settings.viewMode || 'immersive'; 
+    applyViewMode(obj); 
+  } else { 
+    mesh.position.set(0, 1.6, -2); 
+    obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2; 
+  }
+
   if(transformOverride) applyTransform(mesh, transformOverride);
   addObj(obj);
 }
@@ -907,13 +941,18 @@ async function load3D(url, name, type, source=null, settingsOverride=null, trans
   else if(type==='fbx') m=await new FBXLoader().loadAsync(url);
   else m=await new OBJLoader().loadAsync(url);
 
-  const box = new THREE.Box3().setFromObject(m); const sz = box.getSize(new THREE.Vector3()).length();
-  const sc = (sz>0 && sz<1000) ? 2/sz : 1;
-  m.scale.setScalar(sc); m.position.set(0, 1, -2);
+  // AUTO-SCALE FIX
+  const box = new THREE.Box3().setFromObject(m); 
+  const sz = box.getSize(new THREE.Vector3()).length();
+  const sc = sz > 0 ? 2/sz : 1; 
+
+  m.scale.setScalar(sc); 
+  m.position.set(0, 1, -2);
   m.traverse(c=>{ if(c.isMesh) { if(!c.material.transparent) c.material.transparent = true; c.material.depthWrite = true; c.castShadow = true; } });
 
   const obj = { id:uid(), mesh:m, name, type:'model', settings:defSettings(), renderMode:'standard', baseScale: sc, source };
   obj.settings.posX = 0; obj.settings.posY = 1; obj.settings.posZ = -2;
+  
   if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
   if(transformOverride) applyTransform(m, transformOverride);
   addObj(obj);
@@ -934,16 +973,19 @@ function createMesh(proj, surface, tex, aspect) {
     else { 
       geo = makeInside(new THREE.SphereGeometry(20, 64, 64)); 
       if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
-      // === NUEVO: Lógica de Tierra (Polos Achatados) ===
-      if(surface === 'earth') geo.scale(1.0, 0.8, 1.0); 
+      // FIX EARTH GEOMETRY
+      if(surface === 'earth') geo.scale(1.0, 0.75, 1.0); 
     }
   } else if(proj === '180') {
     side = THREE.BackSide; geo = makeInside(new THREE.SphereGeometry(20, 64, 64, 0, Math.PI));
     if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
-    if(surface === 'earth') geo.scale(1.0, 0.8, 1.0); 
+    if(surface === 'earth') geo.scale(1.0, 0.75, 1.0); 
     geo.rotateY(-Math.PI/2);
   } else { geo = new THREE.PlaneGeometry(aspect, 1); }
 
+  // Material seguro para 360 (evita crash profundidad)
+  const isImmersive = (proj === '360' || proj === '180');
+  
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       map: { value: tex },
@@ -954,9 +996,15 @@ function createMesh(proj, surface, tex, aspect) {
       deblue:{value:0.0}, degreen:{value:0.0},
       shaderEffect:{value:0}, fxIntensity:{value:0.5}, time:{value:0}
     },
-    vertexShader: vertShader, fragmentShader: fragShader, transparent: true, side: side, depthWrite: (proj==='plane'), depthTest: true
+    vertexShader: vertShader, fragmentShader: fragShader, 
+    transparent: true, 
+    side: side, 
+    depthWrite: !isImmersive, // ANTI-CRASH: No escribir profundidad en 360
+    depthTest: true
   });
-  const mesh = new THREE.Mesh(geo, mat); if(proj !== 'plane') { mesh.frustumCulled = false; mesh.renderOrder = -1; }
+  
+  const mesh = new THREE.Mesh(geo, mat); 
+  if(isImmersive) { mesh.frustumCulled = false; mesh.renderOrder = -1; }
   return mesh;
 }
 
@@ -1151,7 +1199,6 @@ window.deleteActive = () => {
 window.clearScene = () => {
   if(objects.length === 0) return;
   if(!confirm("⚠️ ¿Estás seguro de que quieres BORRAR TODO el proyecto? Esta acción no se puede deshacer.")) return;
-  // Borrar en orden inverso para evitar problemas de índice
   for (let i = objects.length - 1; i >= 0; i--) {
       const o = objects[i];
       scene.remove(o.mesh);
@@ -1172,7 +1219,6 @@ window.duplicateActive = async () => {
   toggleLoader(true);
   try {
     const newName = o.name + " (Copia)";
-    // Clonar configuración, desplazando ligeramente para visibilidad
     const newSettings = { ...o.settings, posX: o.settings.posX + 0.5, posZ: o.settings.posZ + 0.5 };
     const newTransform = {
       position: { x: o.mesh.position.x + 0.5, y: o.mesh.position.y, z: o.mesh.position.z + 0.5 },
@@ -1200,7 +1246,6 @@ window.duplicateActive = async () => {
        else if(ext === 'obj') typeStr = 'obj';
        
        await load3D(url, newName, typeStr, s, newSettings, newTransform);
-       // Restaurar renderMode si existe
        const created = objects[objects.length - 1];
        if(created && o.renderMode) { created.renderMode = o.renderMode; applyRenderMode(created, o.renderMode); }
     }
@@ -1368,7 +1413,11 @@ function render(time, frame) {
     obj.mesh.position.copy(cam.position);
   }
 
-  if(frame && occlusionEnabled && xrGlBinding){
+  // ANTI-CRASH: Si hay un video 360/180 activo y visible, renderizar profundidad podría saturar el GPU
+  // Chequeo simple para evitar sobrecarga en immersive background
+  let immersiveActive = objects.some(o => (o.settings.projection === '360' || o.settings.projection === '180') && o.settings.viewMode === 'immersive');
+
+  if(frame && occlusionEnabled && xrGlBinding && !immersiveActive){
     const pose = frame.getViewerPose(renderer.xr.getReferenceSpace());
     if(pose){
       const baseLayer = xrSession.renderState.baseLayer;
@@ -1403,7 +1452,7 @@ async function saveProject(){
       source: o.source || null
     });
   }
-  const blob = new Blob([JSON.stringify({ version: '6.5', name: projectName, created: new Date().toISOString(), objects: serialized }, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify({ version: '6.8', name: projectName, created: new Date().toISOString(), objects: serialized }, null, 2)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${projectName.replace(/\s+/g, '_')}.mrsd`; a.click();
 }
 
