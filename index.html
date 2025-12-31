@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MR Studio Diamond v6.9 (Fixed + Ellipsoid)</title>
+  <!-- THREE.JS desde CDN sin módulos -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/examples/js/loaders/FBXLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.170.0/examples/js/loaders/OBJLoader.js"></script>
+  <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
+  <style>
+    * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; }
+    body { overflow: hidden; background: #0a0a0e; font-family: 'Segoe UI', system-ui, sans-serif; color: #eee; }
+    #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
+    
+    .ui-panel { 
+      position: fixed; left: 20px; top: 20px; width: 400px; max-height: 95vh; 
+      background: rgba(10, 10, 14, 0.96); backdrop-filter: blur(25px); 
+      border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; 
+      padding: 20px; overflow-y: auto; z-index: 100; 
+      box-shadow: 0 25px 60px rgba(0,0,0,0.85); 
+      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); 
+      scrollbar-width: thin; scrollbar-color: #6c5ce7 transparent; 
+    }
+    .ui-panel.hidden { transform: translateX(-460px); }
+    
+    h2 { 
+      margin: 0 0 18px 0; font-size: 20px; color: #a29bfe; font-weight: 900; 
+      text-transform: uppercase; letter-spacing: 1.5px; 
+      border-bottom: 2px solid rgba(108, 92, 231, 0.3); padding-bottom: 10px; 
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe); 
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+      background-clip: text; display: flex; justify-content: space-between; align-items: center; 
+    }
+    .ver-badge { 
+      font-size: 10px; background: #55efc4; color: #000; 
+      padding: 2px 6px; border-radius: 4px; font-weight: 800; 
+    }
+
+    .sec-head { 
+      font-size: 11px; font-weight: 800; color: #b2b9c6; 
+      margin: 18px 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px; 
+    }
+    .row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    label { font-size: 12px; flex: 1; color: #d1d5db; white-space: nowrap; font-weight: 500; }
+    
+    input[type=range] { 
+      flex: 2; height: 6px; background: #2a2d35; border-radius: 3px; 
+      accent-color: #6c5ce7; cursor: pointer; 
+    }
+    
+    .val { 
+      width: 50px; text-align: right; font-size: 11px; 
+      font-family: 'Consolas', monospace; color: #a29bfe; font-weight: 600; 
+    }
+    
+    select, input[type=file], input[type=text] { 
+      width: 100%; background: #1e1e24; border: 1px solid #444; color: #eee; 
+      padding: 10px; border-radius: 10px; font-size: 11px; outline: none; 
+      cursor: pointer; transition: 0.2s; 
+    }
+    select:hover, input[type=file]:hover { border-color: #6c5ce7; }
+    
+    button { 
+      flex: 1; padding: 12px; border-radius: 10px; border: none; 
+      font-size: 11px; font-weight: 800; cursor: pointer; color: white; 
+      background: #2a2d35; transition: all 0.25s; text-transform: uppercase; 
+      letter-spacing: 0.5px; display: flex; align-items: center; 
+      justify-content: center; gap: 5px; 
+    }
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); filter: brightness(1.2); }
+    button.primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); box-shadow: 0 5px 20px rgba(108,92,231,0.4); }
+    button.danger { background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.4); color: #ff7675; }
+    button.warn { background: rgba(253, 203, 110, 0.15); border: 1px solid rgba(253, 203, 110, 0.4); color: #ffeaa7; }
+    button.info { background: rgba(116, 185, 255, 0.15); border: 1px solid rgba(116, 185, 255, 0.4); color: #74b9ff; }
+
+    .layer-list { 
+      max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.4); 
+      border-radius: 10px; padding: 6px; margin-bottom: 12px; 
+      border: 1px solid rgba(255,255,255,0.05); 
+    }
+    .layer-item { 
+      padding: 10px; font-size: 12px; border-radius: 8px; cursor: move; 
+      display: flex; align-items: center; gap: 12px; margin-bottom: 5px; 
+      border: 1px solid transparent; transition: all 0.2s; 
+      background: rgba(255,255,255,0.02); 
+    }
+    .layer-item:hover { background: rgba(108, 92, 231, 0.15); border-color: rgba(108, 92, 231, 0.3); }
+    .layer-item.active { background: rgba(108, 92, 231, 0.3); border-color: rgba(108, 92, 231, 0.6); color: white; box-shadow: 0 0 15px rgba(108, 92, 231, 0.3); }
+    .layer-item.dragging { opacity: 0.5; transform: scale(0.95); }
+
+    .toggle-ui { 
+      position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; 
+      background: linear-gradient(135deg, #1e1e24, #2a2d35); border-radius: 50%; 
+      display: grid; place-items: center; font-size: 22px; border: 2px solid #6c5ce7; 
+      z-index: 200; cursor: pointer; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5); 
+      transition: 0.3s; 
+    }
+    .toggle-ui:hover { transform: scale(1.1); }
+
+    #vrBtn { 
+      position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%); 
+      padding: 16px 50px; background: linear-gradient(135deg, #6c5ce7, #0984e3); 
+      color: white; border-radius: 60px; border: none; font-weight: 900; 
+      cursor: pointer; z-index: 1000; display: none; font-size: 14px; 
+      box-shadow: 0 0 35px rgba(108,92,231,0.7); animation: pulse 2s infinite; 
+      text-transform: uppercase; letter-spacing: 2px; 
+    }
+    @keyframes pulse { 
+      0% {box-shadow: 0 0 25px rgba(108,92,231,0.7);} 
+      50% {box-shadow: 0 0 45px rgba(108,92,231,0.9);} 
+      100% {box-shadow: 0 0 25px rgba(108,92,231,0.7);} 
+    }
+
+    #modeBadge { 
+      position: fixed; top: 20px; right: 20px; z-index: 1200; 
+      background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); 
+      padding: 12px 16px; border-radius: 14px; font-size: 13px; 
+      display:flex; gap:12px; align-items:center; backdrop-filter: blur(15px); 
+      box-shadow: 0 5px 20px rgba(0,0,0,0.5); 
+    }
+    #modeDot { width:12px; height:12px; border-radius:50%; background:#55efc4; box-shadow: 0 0 20px rgba(85,239,196,0.7); }
+    #modeText { color:#e8e8e8; font-weight:900; letter-spacing:0.8px; }
+    #exitXrBtn { 
+      display:none; padding:10px 14px; border-radius:12px; 
+      border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1); 
+      color:#fff; cursor:pointer; font-weight:900; transition: 0.2s; 
+      text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; 
+    }
+    #exitXrBtn:hover { background:rgba(255,255,255,0.15); }
+
+    .loader { 
+      position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; 
+      display: none; place-items: center; flex-direction: column; gap: 20px; 
+      color: #a29bfe; font-size: 15px; font-weight: 900; letter-spacing: 3px; 
+    }
+    .spinner { 
+      width: 50px; height: 50px; border: 5px solid #333; 
+      border-top-color: #6c5ce7; border-right-color: #a29bfe; 
+      border-radius: 50%; animation: spin 1s infinite linear; 
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hint { 
+      font-size: 11px; color: #9aa5b1; line-height: 1.4; 
+      background: rgba(108, 92, 231, 0.08); border: 1px solid rgba(108, 92, 231, 0.2); 
+      padding: 12px; border-radius: 12px; margin-top: 12px; 
+    }
+    .kbd { 
+      font-family: 'Consolas', monospace; font-size: 11px; color:#fff; 
+      background: rgba(108, 92, 231, 0.25); padding: 3px 8px; border-radius: 8px; 
+      border: 1px solid rgba(108, 92, 231, 0.3); font-weight: 700; 
+    }
+
+    #mediaPlayer { 
+      position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); 
+      background: rgba(10, 10, 14, 0.97); backdrop-filter: blur(25px); 
+      border: 1px solid rgba(108, 92, 231, 0.3); border-radius: 18px; 
+      padding: 18px 24px; display: none; z-index: 150; 
+      box-shadow: 0 12px 45px rgba(0,0,0,0.8); min-width: 450px; 
+    }
+    #mediaPlayer.show { display: block; }
+    .media-type-badge { 
+      font-size: 10px; padding: 4px 10px; border-radius: 6px; 
+      background: rgba(108, 92, 231, 0.2); color: #a29bfe; 
+      font-weight: 800; letter-spacing: 0.5px; margin-bottom: 10px; 
+      display: inline-block; 
+    }
+    .media-btn-row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .media-btn { 
+      width: 44px; height: 44px; border-radius: 50%; background: #2a2d35; 
+      border: 1px solid #555; display: grid; place-items: center; 
+      cursor: pointer; transition: 0.2s; font-size: 20px; 
+    }
+    .media-btn:hover { background: #3a3d45; border-color: #6c5ce7; transform: scale(1.05); }
+    .media-progress { 
+      flex: 1; height: 8px; background: #2a2d35; border-radius: 4px; 
+      cursor: pointer; position: relative; 
+    }
+    .media-progress-bar { 
+      height: 100%; background: linear-gradient(90deg, #6c5ce7, #a29bfe); 
+      border-radius: 4px; width: 0%; transition: width 0.1s; 
+    }
+    .media-time { 
+      font-size: 12px; color: #b2b9c6; font-family: 'Consolas', monospace; 
+      min-width: 110px; text-align: center; font-weight: 600; 
+    }
+
+    .preset-grid { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .preset-item { 
+      width: 38px; height: 38px; border-radius: 10px; cursor: pointer; 
+      border: 2px solid transparent; transition: 0.2s; position: relative; 
+      display: grid; place-items: center; font-size: 20px; 
+    }
+    .preset-item:hover { border-color: #6c5ce7; transform: scale(1.1); }
+    .preset-item.active { border-color: #a29bfe; box-shadow: 0 0 20px rgba(108,92,231,0.7); }
+
+    .view-mode-toggle { 
+      display: flex; gap: 8px; background: rgba(0,0,0,0.3); 
+      padding: 6px; border-radius: 10px; margin: 10px 0; 
+    }
+    .view-mode-btn { 
+      flex: 1; padding: 10px; background: transparent; border: 1px solid transparent; 
+      border-radius: 8px; font-size: 11px; font-weight: 700; color: #999; 
+      cursor: pointer; transition: 0.2s; text-align: center; 
+    }
+    .view-mode-btn.active { 
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; 
+      border-color: rgba(255,255,255,0.2); 
+    }
+
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 25px; }
+
+    #loading-screen {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0a0a0e, #1a1a2e);
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      transition: opacity 0.5s;
+    }
+    #loading-screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .loading-logo {
+      font-size: 48px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: glow 2s ease-in-out infinite;
+    }
+    @keyframes glow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.5); }
+    }
+    .loading-bar {
+      width: 300px;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .loading-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+      width: 0%;
+      transition: width 0.3s;
+      animation: shimmer 1.5s infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(400%); }
+    }
+    .loading-text {
+      color: #a29bfe;
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-logo">MR STUDIO</div>
+  <div class="loading-bar">
+    <div class="loading-bar-fill"></div>
+  </div>
+  <div class="loading-text">CARGANDO SISTEMA...</div>
+</div>
+
+<canvas id="c"></canvas>
+<div class="loader" id="loader"><div class="spinner"></div><span>PROCESANDO...</span></div>
+<div id="modeBadge"><div id="modeDot"></div><div id="modeText">MODO EDITOR</div><button id="exitXrBtn">SALIR</button></div>
+
+<div id="mediaPlayer">
+  <span class="media-type-badge" id="mediaTypeBadge">VIDEO</span>
+  <div class="media-btn-row">
+    <div class="media-btn" id="mediaPlayPause" title="Play/Pause">▶️</div>
+    <div class="media-btn" id="mediaStop" title="Stop">⏹️</div>
+    <div class="media-progress" id="mediaProgress">
+      <div class="media-progress-bar" id="mediaProgressBar"></div>
+    </div>
+    <div class="media-time" id="mediaTime">0:00 / 0:00</div>
+  </div>
+  <div class="row">
+    <label>🔊 Volumen</label>
+    <input type="range" id="mediaVolume" min="0" max="1" step="0.01" value="1" style="flex:2;">
+    <span class="val" id="v_mediaVolume">100</span>
+  </div>
+</div>
+
+<div class="ui-panel" id="ui">
+  <h2>🥽 MR STUDIO <span class="ver-badge">v6.9 FIXED</span></h2>
+
+  <div class="sec-head">📂 ARCHIVOS</div>
+  <input type="file" id="fileInput" accept="image/*,video/*,.gif,audio/*" multiple style="display:none;" />
+  <button class="warn" onclick="document.getElementById('fileInput').click()">+ IMPORTAR ARCHIVOS</button>
+
+  <div class="layer-list" id="layerList"></div>
+
+  <div class="sec-head">🧭 EDICIÓN</div>
+  <div class="row">
+    <label><input type="checkbox" id="checkGrid" checked> Grilla</label>
+    <label><input type="checkbox" id="checkAxes" checked> Ejes</label>
+  </div>
+
+  <div id="generalControls">
+    <div class="sec-head">📍 PROYECCIÓN</div>
+    <div class="row">
+      <select id="projSelect">
+        <option value="plane">Plano 2D</option>
+        <option value="360">Esfera 360° (Inmersiva)</option>
+        <option value="180">Domo 180° (Inmersiva)</option>
+      </select>
+    </div>
+
+    <div class="row" id="surfaceRow" style="display:none;">
+      <label>🌍 Superficie</label>
+      <select id="surfaceSelect" style="flex:2;">
+        <option value="sphere">Esfera</option>
+        <option value="cube">Cubo</option>
+        <option value="ellipsoid">Elipsoide (Tierra)</option>
+      </select>
+    </div>
+
+    <div class="row" id="followRow" style="display:none;">
+      <label title="Centrado en observador">📌 Seguir cámara</label>
+      <input type="checkbox" id="followViewer" style="flex:0; width:18px; height:18px;">
+    </div>
+
+    <div class="sec-head">📏 POSICIÓN</div>
+    <div class="row">
+      <label>X</label>
+      <input type="range" id="posX" min="-10" max="10" step="0.01" value="0">
+      <span class="val" id="v_posX">0.00</span>
+    </div>
+    <div class="row">
+      <label>Y</label>
+      <input type="range" id="posY" min="-10" max="10" step="0.01" value="0">
+      <span class="val" id="v_posY">0.00</span>
+    </div>
+    <div class="row">
+      <label>Z</label>
+      <input type="range" id="posZ" min="-10" max="10" step="0.01" value="0">
+      <span class="val" id="v_posZ">0.00</span>
+    </div>
+
+    <div class="sec-head">🔄 ROTACIÓN</div>
+    <div class="row">
+      <label>Rot Y</label>
+      <input type="range" id="rotY" min="-180" max="180" step="1" value="0">
+      <span class="val" id="v_rotY">0</span>
+    </div>
+
+    <div class="sec-head">📐 ESCALA</div>
+    <div class="row">
+      <label>Escala</label>
+      <input type="range" id="scale" min="0.1" max="5" step="0.01" value="1">
+      <span class="val" id="v_scale">1.00</span>
+    </div>
+
+    <div class="sec-head">🎨 EFECTOS</div>
+    <div class="row">
+      <label>Opacidad</label>
+      <input type="range" id="opacity" min="0" max="1" step="0.01" value="1">
+      <span class="val" id="v_opacity">1.00</span>
+    </div>
+    <div class="row">
+      <label>Brillo</label>
+      <input type="range" id="brightness" min="0" max="2" step="0.01" value="1">
+      <span class="val" id="v_brightness">1.00</span>
+    </div>
+
+    <div class="sec-head">🔑 CHROMA KEY</div>
+    <div class="row">
+      <label><input type="checkbox" id="chromaEnable"> Activar Chroma</label>
+    </div>
+    
+    <div class="preset-grid">
+      <div class="preset-item" style="background:#00ff00" data-color="0,255,0" title="Verde"></div>
+      <div class="preset-item" style="background:#0000ff" data-color="0,0,255" title="Azul"></div>
+      <div class="preset-item" style="background:#ff00ff" data-color="255,0,255" title="Magenta"></div>
+    </div>
+
+    <div class="row">
+      <label>🎨 Color RGB</label>
+      <input type="text" id="chromaColorRGB" placeholder="0,255,0" value="0,255,0" style="flex:2;">
+    </div>
+    <div class="row">
+      <label>Tolerancia</label>
+      <input type="range" id="chromaTolerance" min="0" max="1" step="0.01" value="0.4">
+      <span class="val" id="v_chromaTolerance">0.40</span>
+    </div>
+
+    <div class="sec-head">🎭 MODO DE VISTA</div>
+    <div class="view-mode-toggle">
+      <div class="view-mode-btn active" data-mode="normal">Normal</div>
+      <div class="view-mode-btn" data-mode="immersive">Inmersivo</div>
+    </div>
+    <div class="hint">
+      <strong>Normal:</strong> Objeto fijo.<br>
+      <strong>Inmersivo:</strong> Para videos 360°.
+    </div>
+  </div>
+
+  <div class="action-grid">
+    <button class="danger" id="btnDelete">🗑️ Eliminar</button>
+    <button class="warn" id="btnClearAll">🧹 Limpiar</button>
+  </div>
+
+  <div class="hint">
+    <strong>Controles:</strong> Click derecho para rotar | Rueda para zoom
+  </div>
+</div>
+
+<div class="toggle-ui" id="toggleBtn">⚙️</div>
+<button id="vrBtn">ENTRAR A MODO MR</button>
+
+<script>
+// Esperar a que THREE.js esté cargado
+window.addEventListener('load', function() {
+  setTimeout(initApp, 100);
+});
+
+function initApp() {
+  if (typeof THREE === 'undefined') {
+    alert('Error: Three.js no se pudo cargar. Verifica tu conexión a Internet.');
+    return;
+  }
+
+  console.log('✅ Three.js cargado:', THREE.REVISION);
+
+  const canvas = document.getElementById('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.xr.enabled = true;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.01, 1000);
+  camera.position.set(0, 1.6, 3);
+
+  const orbit = new THREE.OrbitControls(camera, canvas);
+  orbit.enableDamping = true;
+  orbit.dampingFactor = 0.08;
+
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 10, 7);
+  scene.add(dirLight);
+
+  const gridHelper = new THREE.GridHelper(20, 20, 0x555555, 0x333333);
+  scene.add(gridHelper);
+  const axesHelper = new THREE.AxesHelper(5);
+  scene.add(axesHelper);
+
+  let objects = [];
+  let activeId = null;
+
+  // ========== GEOMETRÍA ELIPSOIDE (TIERRA) ==========
+  function createEllipsoidGeometry(radius, widthSegments, heightSegments, flattenFactor) {
+    const geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
+    const positions = geometry.attributes.position;
+    
+    for (let i = 0; i < positions.count; i++) {
+      const y = positions.getY(i);
+      positions.setY(i, y * flattenFactor);
+    }
+    
+    geometry.attributes.position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  }
+
+  function defSettings() {
+    return {
+      projection: 'plane',
+      surface: 'sphere',
+      followViewer: false,
+      viewMode: 'normal',
+      posX: 0, posY: 0, posZ: 0,
+      rotY: 0,
+      scale: 1,
+      opacity: 1,
+      brightness: 1,
+      chromaEnable: false,
+      chromaColorRGB: '0,255,0',
+      chromaTolerance: 0.4
+    };
+  }
+
+  function createGeometryForSurface(surface, projection) {
+    const r = 10;
+    switch(surface) {
+      case 'cube':
+        return new THREE.BoxGeometry(r * 2, r * 2, r * 2);
+      case 'ellipsoid':
+        return createEllipsoidGeometry(r, 64, 32, 0.85);
+      case 'sphere':
+      default:
+        if (projection === '180') {
+          return new THREE.SphereGeometry(r, 64, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+        }
+        return new THREE.SphereGeometry(r, 64, 32);
+    }
+  }
+
+  function chromaShader() {
+    return {
+      uniforms: {
+        tDiffuse: { value: null },
+        chromaKey: { value: new THREE.Vector3(0, 1, 0) },
+        tolerance: { value: 0.4 },
+        opacity: { value: 1 },
+        brightness: { value: 1 },
+        chromaEnable: { value: 0 }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform vec3 chromaKey;
+        uniform float tolerance;
+        uniform float opacity;
+        uniform float brightness;
+        uniform int chromaEnable;
+        varying vec2 vUv;
+
+        void main() {
+          vec4 col = texture2D(tDiffuse, vUv);
+          col.rgb *= brightness;
+          float alpha = opacity;
+          
+          if(chromaEnable == 1) {
+            float d = distance(col.rgb, chromaKey);
+            alpha *= smoothstep(tolerance - 0.1, tolerance + 0.1, d);
+          }
+          
+          gl_FragColor = vec4(col.rgb, alpha * col.a);
+        }
+      `
+    };
+  }
+
+  function buildShaderMaterial(obj) {
+    const s = obj.settings;
+    const shader = chromaShader();
+    shader.uniforms.tDiffuse.value = obj.texture || new THREE.Texture();
+    shader.uniforms.chromaEnable.value = s.chromaEnable ? 1 : 0;
+    const rgb = s.chromaColorRGB.split(',').map(x => parseFloat(x.trim()) / 255);
+    shader.uniforms.chromaKey.value.set(rgb[0] || 0, rgb[1] || 1, rgb[2] || 0);
+    shader.uniforms.tolerance.value = s.chromaTolerance;
+    shader.uniforms.opacity.value = s.opacity;
+    shader.uniforms.brightness.value = s.brightness;
+    return new THREE.ShaderMaterial({
+      uniforms: shader.uniforms,
+      vertexShader: shader.vertexShader,
+      fragmentShader: shader.fragmentShader,
+      transparent: true,
+      side: THREE.DoubleSide
+    });
+  }
+
+  function rebuildGeometry(obj) {
+    const s = obj.settings;
+    if (s.projection === 'plane') return;
+    
+    const oldGeom = obj.mesh.geometry;
+    const newGeom = createGeometryForSurface(s.surface, s.projection);
+    obj.mesh.geometry = newGeom;
+    oldGeom.dispose();
+  }
+
+  function updateObj(prop, val) {
+    const obj = objects.find(o => o.id === activeId);
+    if (!obj) return;
+    const s = obj.settings;
+    
+    if (prop === 'projection') {
+      s.projection = val;
+      const oldGeom = obj.mesh.geometry;
+      
+      if (val === 'plane') {
+        obj.mesh.geometry = new THREE.PlaneGeometry(2, 2);
+      } else {
+        obj.mesh.geometry = createGeometryForSurface(s.surface, val);
+      }
+      oldGeom.dispose();
+      obj.mesh.material = buildShaderMaterial(obj);
+    } else if (prop === 'surface') {
+      s.surface = val;
+      rebuildGeometry(obj);
+    } else if (prop === 'followViewer') {
+      s.followViewer = val;
+    } else if (prop === 'viewMode') {
+      s.viewMode = val;
+    } else if (prop === 'posX') {
+      s.posX = val; obj.mesh.position.x = val;
+    } else if (prop === 'posY') {
+      s.posY = val; obj.mesh.position.y = val;
+    } else if (prop === 'posZ') {
+      s.posZ = val; obj.mesh.position.z = val;
+    } else if (prop === 'rotY') {
+      s.rotY = val; obj.mesh.rotation.y = THREE.Math.degToRad(val);
+    } else if (prop === 'scale') {
+      s.scale = val; obj.mesh.scale.set(val, val, val);
+    } else if (['opacity', 'brightness'].includes(prop)) {
+      s[prop] = val;
+      if (obj.mesh.material.uniforms) obj.mesh.material.uniforms[prop].value = val;
+    } else if (prop === 'chromaEnable') {
+      s.chromaEnable = val;
+      if (obj.mesh.material.uniforms) obj.mesh.material.uniforms.chromaEnable.value = val ? 1 : 0;
+    } else if (prop === 'chromaColorRGB') {
+      s.chromaColorRGB = val;
+      const rgb = val.split(',').map(x => parseFloat(x.trim()) / 255);
+      if (obj.mesh.material.uniforms) obj.mesh.material.uniforms.chromaKey.value.set(rgb[0] || 0, rgb[1] || 1, rgb[2] || 0);
+    } else if (prop === 'chromaTolerance') {
+      s.chromaTolerance = val;
+      if (obj.mesh.material.uniforms) obj.mesh.material.uniforms.tolerance.value = val;
+    }
+    
+    syncUI();
+  }
+
+  function syncUI() {
+    const obj = objects.find(o => o.id === activeId);
+    if (!obj) return;
+    const s = obj.settings;
+
+    document.getElementById('projSelect').value = s.projection;
+    document.getElementById('surfaceSelect').value = s.surface;
+    document.getElementById('followViewer').checked = s.followViewer;
+
+    const isImmersive = (s.projection === '360' || s.projection === '180');
+    document.getElementById('surfaceRow').style.display = isImmersive ? 'flex' : 'none';
+    document.getElementById('followRow').style.display = isImmersive ? 'flex' : 'none';
+
+    document.querySelectorAll('.view-mode-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.mode === s.viewMode);
+    });
+
+    ['posX', 'posY', 'posZ', 'rotY', 'scale', 'opacity', 'brightness', 'chromaTolerance'].forEach(k => {
+      const el = document.getElementById(k);
+      const vel = document.getElementById('v_' + k);
+      if (el && vel) {
+        el.value = s[k];
+        vel.textContent = typeof s[k] === 'number' ? s[k].toFixed(2) : s[k];
+      }
+    });
+
+    document.getElementById('chromaEnable').checked = s.chromaEnable;
+    document.getElementById('chromaColorRGB').value = s.chromaColorRGB;
+  }
+
+  function selectObj(id) {
+    activeId = id;
+    updateList();
+    syncUI();
+    updateMediaPlayer();
+  }
+
+  function updateList() {
+    const list = document.getElementById('layerList');
+    list.innerHTML = '';
+    objects.forEach((obj, idx) => {
+      const div = document.createElement('div');
+      div.className = 'layer-item';
+      if (obj.id === activeId) div.classList.add('active');
+      
+      const icon = obj.type === 'video' ? '🎬' : obj.type === 'image' ? '🖼️' : '🔊';
+      div.innerHTML = `<span>${icon}</span><span style="flex:1;">${obj.name}</span>`;
+      
+      div.onclick = () => selectObj(obj.id);
+      list.appendChild(div);
+    });
+  }
+
+  function updateMediaPlayer() {
+    const obj = objects.find(o => o.id === activeId);
+    const player = document.getElementById('mediaPlayer');
+    
+    if (!obj || obj.type !== 'video') {
+      player.classList.remove('show');
+      return;
+    }
+    
+    player.classList.add('show');
+    const badge = document.getElementById('mediaTypeBadge');
+    badge.textContent = 'VIDEO';
+    
+    const media = obj.video;
+    
+    document.getElementById('mediaPlayPause').onclick = () => {
+      if (media.paused) {
+        media.play();
+        document.getElementById('mediaPlayPause').textContent = '⏸️';
+      } else {
+        media.pause();
+        document.getElementById('mediaPlayPause').textContent = '▶️';
+      }
+    };
+    
+    document.getElementById('mediaStop').onclick = () => {
+      media.pause();
+      media.currentTime = 0;
+      document.getElementById('mediaPlayPause').textContent = '▶️';
+    };
+    
+    const progress = document.getElementById('mediaProgress');
+    const progressBar = document.getElementById('mediaProgressBar');
+    const timeDisplay = document.getElementById('mediaTime');
+    
+    progress.onclick = (e) => {
+      const rect = progress.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      media.currentTime = percent * media.duration;
+    };
+    
+    const updateProgress = () => {
+      if (media.duration) {
+        const percent = (media.currentTime / media.duration) * 100;
+        progressBar.style.width = percent + '%';
+        
+        const formatTime = (sec) => {
+          const m = Math.floor(sec / 60);
+          const s = Math.floor(sec % 60);
+          return `${m}:${s.toString().padStart(2, '0')}`;
+        };
+        
+        timeDisplay.textContent = `${formatTime(media.currentTime)} / ${formatTime(media.duration)}`;
+      }
+    };
+    
+    media.addEventListener('timeupdate', updateProgress);
+    
+    const volumeSlider = document.getElementById('mediaVolume');
+    const volumeVal = document.getElementById('v_mediaVolume');
+    
+    volumeSlider.value = media.volume;
+    volumeVal.textContent = Math.round(media.volume * 100);
+    
+    volumeSlider.oninput = () => {
+      media.volume = parseFloat(volumeSlider.value);
+      volumeVal.textContent = Math.round(media.volume * 100);
+    };
+  }
+
+  // ========== CRITICAL FIX: Video con await para metadata ==========
+  async function loadVideo(dataURL, name) {
+    const video = document.createElement('video');
+    video.src = dataURL;
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = false;
+    video.playsInline = true;
+    
+    // ESPERAR metadata antes de crear textura
+    await new Promise((resolve) => {
+      video.addEventListener('loadedmetadata', resolve, { once: true });
+    });
+    
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    
+    const s = defSettings();
+    const geom = new THREE.PlaneGeometry(2, 2);
+    const mat = buildShaderMaterial({ settings: s, texture });
+    
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.position.set(s.posX, s.posY, s.posZ);
+    
+    scene.add(mesh);
+    
+    const obj = {
+      id: Date.now() + Math.random(),
+      name,
+      type: 'video',
+      mesh,
+      video,
+      texture,
+      settings: s
+    };
+    
+    objects.push(obj);
+    selectObj(obj.id);
+    updateList();
+    
+    console.log('✅ Video cargado:', name);
+  }
+
+  async function loadImg(dataURL, name) {
+    const texture = await new THREE.TextureLoader().loadAsync(dataURL);
+    texture.encoding = THREE.sRGBEncoding;
+    
+    const s = defSettings();
+    const geom = new THREE.PlaneGeometry(2, 2);
+    const mat = buildShaderMaterial({ settings: s, texture });
+    
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.position.set(s.posX, s.posY, s.posZ);
+    
+    scene.add(mesh);
+    
+    const obj = {
+      id: Date.now() + Math.random(),
+      name,
+      type: 'image',
+      mesh,
+      texture,
+      settings: s
+    };
+    
+    objects.push(obj);
+    selectObj(obj.id);
+    updateList();
+  }
+
+  // ========== FILE INPUT ==========
+  document.getElementById('fileInput').addEventListener('change', async e => {
+    toggleLoader(true);
+    for (const file of e.target.files) {
+      const name = file.name;
+      const ext = name.split('.').pop().toLowerCase();
+      
+      const dataURL = await fileToDataURL(file);
+      
+      if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+        await loadImg(dataURL, name);
+      } else if (['mp4', 'webm', 'mov'].includes(ext)) {
+        await loadVideo(dataURL, name);
+      }
+    }
+    toggleLoader(false);
+    e.target.value = '';
+  });
+
+  function fileToDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ========== UI CONTROLS ==========
+  ['posX', 'posY', 'posZ', 'rotY', 'scale', 'opacity', 'brightness', 'chromaTolerance'].forEach(k => {
+    const el = document.getElementById(k);
+    const vel = document.getElementById('v_' + k);
+    if (el && vel) {
+      el.oninput = () => {
+        vel.textContent = parseFloat(el.value).toFixed(2);
+        updateObj(k, parseFloat(el.value));
+      };
+    }
+  });
+
+  document.getElementById('projSelect').onchange = (e) => updateObj('projection', e.target.value);
+  document.getElementById('surfaceSelect').onchange = (e) => updateObj('surface', e.target.value);
+  document.getElementById('followViewer').onchange = (e) => updateObj('followViewer', e.target.checked);
+  document.getElementById('chromaEnable').onchange = (e) => updateObj('chromaEnable', e.target.checked);
+  document.getElementById('chromaColorRGB').oninput = (e) => updateObj('chromaColorRGB', e.target.value);
+
+  document.querySelectorAll('.view-mode-btn').forEach(btn => {
+    btn.onclick = () => updateObj('viewMode', btn.dataset.mode);
+  });
+
+  document.querySelectorAll('.preset-item').forEach(item => {
+    item.onclick = () => {
+      document.querySelectorAll('.preset-item').forEach(i => i.classList.remove('active'));
+      item.classList.add('active');
+      const rgb = item.dataset.color;
+      document.getElementById('chromaColorRGB').value = rgb;
+      updateObj('chromaColorRGB', rgb);
+    };
+  });
+
+  document.getElementById('btnDelete').onclick = () => {
+    const obj = objects.find(o => o.id === activeId);
+    if (!obj) return;
+    
+    scene.remove(obj.mesh);
+    if (obj.video) obj.video.pause();
+    if (obj.texture) obj.texture.dispose();
+    if (obj.mesh.geometry) obj.mesh.geometry.dispose();
+    if (obj.mesh.material) obj.mesh.material.dispose();
+    
+    objects = objects.filter(o => o.id !== activeId);
+    activeId = null;
+    updateList();
+    syncUI();
+    updateMediaPlayer();
+  };
+
+  document.getElementById('btnClearAll').onclick = () => {
+    if (!confirm('¿Eliminar todos los objetos?')) return;
+    
+    objects.forEach(o => {
+      scene.remove(o.mesh);
+      if (o.video) o.video.pause();
+      if (o.texture) o.texture.dispose();
+      if (o.mesh.geometry) o.mesh.geometry.dispose();
+      if (o.mesh.material) o.mesh.material.dispose();
+    });
+    objects = [];
+    activeId = null;
+    updateList();
+    syncUI();
+    updateMediaPlayer();
+  };
+
+  document.getElementById('toggleBtn').onclick = () => {
+    document.getElementById('ui').classList.toggle('hidden');
+  };
+
+  document.getElementById('checkGrid').onchange = (e) => {
+    gridHelper.visible = e.target.checked;
+  };
+
+  document.getElementById('checkAxes').onchange = (e) => {
+    axesHelper.visible = e.target.checked;
+  };
+
+  function toggleLoader(show) {
+    document.getElementById('loader').style.display = show ? 'grid' : 'none';
+  }
+
+  // ========== RENDER LOOP ==========
+  let lastTime = performance.now();
+
+  function render(time) {
+    requestAnimationFrame(render);
+    
+    const dt = Math.min(0.05, (time - lastTime) / 1000);
+    lastTime = time;
+    
+    orbit.update();
+    
+    // Actualizar objetos inmersivos
+    for (const obj of objects) {
+      const s = obj.settings;
+      if ((s.projection === '360' || s.projection === '180') && s.followViewer && s.viewMode === 'immersive') {
+        obj.mesh.position.copy(camera.position);
+      }
+    }
+    
+    renderer.render(scene, camera);
+  }
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // Ocultar pantalla de carga
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.add('hidden');
+    render(0);
+    console.log('✅ Aplicación iniciada correctamente');
+  }, 1000);
+}
+</script>
+
+</body>
+</html>
