@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v28 | Stable Dual-Grip</title>
+  <title>MR Studio Diamond v24.0 | Smart Interaction</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
@@ -14,7 +14,7 @@
     ========================================= */
     :root {
         --main-color: #ffaa00; 
-        --bg-glass: rgba(20, 20, 25, 0.92);
+        --bg-glass: rgba(20, 20, 25, 0.85);
         --border-glass: rgba(255, 170, 0, 0.3);
         --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
     }
@@ -24,7 +24,7 @@
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
     .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh; 
+      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 95vh; 
       background: var(--bg-glass);
       backdrop-filter: blur(30px) saturate(150%);
       -webkit-backdrop-filter: blur(30px) saturate(150%);
@@ -38,7 +38,7 @@
     .ui-panel.minimized { transform: translateX(-450px); }
     
     h2 { margin: 0 0 20px 0; font-size: 16px; color: var(--main-color); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--border-glass); padding-bottom: 12px; display: flex; justify-content: space-between; text-shadow: var(--text-glow); }
-    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 4px; }
+    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
     
     .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
     label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 500; }
@@ -46,7 +46,7 @@
     input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none; }
     input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow); }
     input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
-    .val { width: 40px; text-align: right; font-size: 10px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: bold; }
+    .val { width: 36px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: bold; }
     
     select, input[type=url] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; transition: 0.3s; }
     
@@ -71,11 +71,11 @@
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO DIAMOND v28...</div>
+<div class="loader" id="loader">CARGANDO v24.0...</div>
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
 
 <div class="ui-panel" id="ui">
-  <h2>DIAMOND v28 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>DIAMOND v24.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
 
   <div class="sec-head">📐 Arquitectura</div>
   <div class="row">
@@ -89,85 +89,63 @@
   <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
   <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
 
-  <div class="sec-head">💾 Proyecto & Nube</div>
-  <div class="row" style="gap:5px;">
-      <button onclick="saveLocal()" class="secondary" title="Descargar JSON a tu PC">💾 LOCAL</button>
-      <button onclick="document.getElementById('jsonInput').click()" class="secondary" title="Cargar JSON desde PC">📂 ABRIR</button>
-      <input type="file" id="jsonInput" accept=".json" style="display:none" onchange="loadLocal(this)">
-  </div>
-  <div class="row" id="authPanel" style="margin-top:5px;">
-      <button onclick="handleAuthClick()" class="drive">☁️ CONECTAR DRIVE</button>
-  </div>
-  <div class="row" id="driveActions" style="display:none; gap:5px; margin-top:5px;">
-      <button onclick="saveSceneToDrive()" class="drive">☁️ GUARDAR</button>
-      <button onclick="loadSceneFromDrive()" class="drive">☁️ CARGAR</button>
+  <div class="sec-head">☁️ Proyecto</div>
+  <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">CONECTAR DRIVE</button></div>
+  <div class="row" id="driveActions" style="display:none; gap:8px;">
+      <button onclick="saveSceneToDrive()" class="secondary">GUARDAR</button>
+      <button onclick="loadSceneFromDrive()" class="secondary">CARGAR</button>
   </div>
 
-  <div class="sec-head">📥 Importar (Img/Video/GIF)</div>
+  <div class="sec-head">📥 Importar</div>
   <div class="row">
-    <input type="url" id="webUrl" placeholder="URL Video/Imagen/GIF">
+    <input type="url" id="webUrl" placeholder="URL Video/Imagen">
     <button onclick="loadFromWeb()" style="flex:0 0 40px;">+</button>
   </div>
-  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR MEDIA LOCAL</button>
+  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR LOCAL</button>
   <input type="file" id="fileInput" multiple style="display:none;">
   
-  <div class="sec-head">Capas Activas</div>
+  <div class="sec-head">Capas</div>
   <div id="layerList" class="layer-list"></div>
 
   <div id="editorUI" style="display:none;">
-    
-    <div class="sec-head">🌐 Proyección & Transform</div>
-    <div class="row">
-        <select id="projSelect" onchange="updateProjection()">
-          <option value="plane">Plano 2D (Standard)</option>
-          <option value="curved">Pantalla Curva</option>
-          <option value="orb">Orbe Flotante</option>
-          <option value="360">Entorno 360° (Video Sphere)</option>
-        </select>
-    </div>
-    
-    <div class="row" style="background:rgba(255,255,255,0.05); padding:5px; border-radius:5px;">
-        <label><input type="checkbox" id="checkBillboard"> Billboard (Mirar a Cámara)</label>
-    </div>
-
-    <div class="row"><label>Pos X</label><input type="range" id="posX" min="-5" max="5" step="0.1"><span class="val" id="v_posX">0</span></div>
-    <div class="row"><label>Pos Y</label><input type="range" id="posY" min="0" max="5" step="0.1"><span class="val" id="v_posY">1.6</span></div>
-    <div class="row"><label>Pos Z</label><input type="range" id="posZ" min="-10" max="10" step="0.1"><span class="val" id="v_posZ">-2</span></div>
-    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.1" max="5" step="0.1"><span class="val" id="v_scale">1</span></div>
-    <div class="row"><label>Rot Y</label><input type="range" id="rotY" min="0" max="6.28" step="0.1"><span class="val" id="v_rotY">0</span></div>
-
-    <div class="sec-head">🎨 Imagen & Chroma</div>
-    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+    <div class="sec-head">🎨 Imagen</div>
     <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
+    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
     <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
-
-    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar Chroma</label> <label><input type="checkbox" id="chromaInvert"> Invertir</label></div>
+    <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
+    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+    
+    <div class="sec-head">🛠️ Chroma Key</div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir</label></div>
     <div id="chromaPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--border-glass);">
         <div id="currentColorBox"></div>
         <div class="row" style="justify-content: space-around; margin-bottom:15px;">
-            <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)" title="Verde"></div>
-            <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)" title="Azul"></div>
-            <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)" title="Negro"></div>
+            <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
+            <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
+            <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
         </div>
         <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
         <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
         <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
-        
-        <input type="hidden" id="keyR" value="0"><input type="hidden" id="keyG" value="1"><input type="hidden" id="keyB" value="0">
+        <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
+            <div class="row"><label style="color:#f66">R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+            <div class="row"><label style="color:#6f6">G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+            <div class="row"><label style="color:#66f">B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        </div>
     </div>
     
     <div class="row" style="margin-top:20px; gap:8px;">
         <button onclick="mediaAction('play')" class="secondary">▶ REPRODUCIR</button>
         <button onclick="mediaAction('pause')" class="secondary">⏸ PAUSAR</button>
     </div>
-    <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:5px;">🗑️ ELIMINAR CAPA</button>
+    <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:5px;">🗑️ ELIMINAR</button>
   </div>
 
   <div class="sec-head">⚙️ Realidad Mixta</div>
-  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión (Depth API)</label></div>
+  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
 </div>
 
-<button id="vrBtn">INICIAR HYBRID MR</button>
+<button id="vrBtn">INICIAR ARQUITECTO MR</button>
 
 <script type="importmap">
 { "imports": {
@@ -182,15 +160,10 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
-// ==========================================
-// ☁️ CONFIGURACIÓN GOOGLE DRIVE
-// ==========================================
-const CLIENT_ID = ''; 
-const API_KEY = ''; 
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const CLIENT_ID = ''; const API_KEY = ''; const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
 // ==========================================
-// 🌑 SHADERS
+// 🌑 OCLUSIÓN SHADERS
 // ==========================================
 const depthVS = `#version 300 es
 in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
@@ -203,10 +176,13 @@ void main(){
   gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0); outColor = vec4(0.0); 
 }`;
 
+// ==========================================
+// 🎨 PRO SHADER (V17 - HSV)
+// ==========================================
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
 uniform sampler2D map; 
-uniform float uBrightness, uContrast, uSaturation, uOpacity;
+uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
 uniform bool chromaOn, chromaInvert; 
 uniform vec3 k1; 
 uniform float sim1, smooth1, despill;
@@ -243,23 +219,22 @@ void main() {
 
   col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
   float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation);
+  col = pow(max(col, 0.0), vec3(1.0 / uGamma));
+
   gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
 }`;
 
 // ==========================================
-// ⚙️ VARIABLES GLOBALES
+// ⚙️ SISTEMA PRINCIPAL
 // ==========================================
 let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null, clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null, occlusionEnabled = false;
+
 let controller1, controller2, controllerGrip1, controllerGrip2, raycaster, tempMatrix = new THREE.Matrix4();
+
 let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null, d:null };
 let currentUnit = 'm';
-
-// VARIABLES PARA DUAL GRIP SCALING (ANTI-CRASH)
-let isDualScaling = false;
-let initialDualDist = 0;
-let initialDualScale = new THREE.Vector3();
 
 function init() {
   scene = new THREE.Scene(); scene.add(new THREE.AmbientLight(0xffedd5, 1.2));
@@ -271,60 +246,26 @@ function init() {
   orbit = new OrbitControls(camera, renderer.domElement);
   transformCtrl = new TransformControls(camera, renderer.domElement);
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
-  transformCtrl.addEventListener('change', updateUIFromGizmo);
   scene.add(transformCtrl);
   
   initEngineeringUI(); updateGrid(); setupXRControllers(); setupVR();
   renderer.setAnimationLoop(animate);
   
+  // Bindings
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
   document.querySelectorAll('input[type=range]').forEach(i => {
-      if(!['keyR','keyG','keyB','posX','posY','posZ','scale','rotY'].includes(i.id)) {
-        i.addEventListener('input', e => {
-            const val = parseFloat(e.target.value);
-            const lbl = document.getElementById('v_' + e.target.id);
-            if(lbl) lbl.innerText = val.toFixed(3);
-            updateMaterialParam(e.target.id, val);
-        });
-      }
+      if(!i.id.startsWith('key')) i.addEventListener('input', e => {
+          const val = parseFloat(e.target.value);
+          const lbl = document.getElementById('v_' + e.target.id);
+          if(lbl) lbl.innerText = val.toFixed(3);
+          updateMaterialParam(e.target.id, val);
+      });
   });
-
-  const bindT = (id, fn) => {
-    document.getElementById(id).addEventListener('input', (e) => {
-        const obj = objects.find(o => o.id === activeId);
-        if(obj) {
-            const v = parseFloat(e.target.value);
-            fn(obj, v);
-            document.getElementById('v_' + id).innerText = v.toFixed(2);
-            updateEngineeringVisuals();
-        }
-    });
-  };
-  bindT('posX', (o,v) => o.mesh.position.x = v);
-  bindT('posY', (o,v) => o.mesh.position.y = v);
-  bindT('posZ', (o,v) => o.mesh.position.z = v);
-  bindT('scale', (o,v) => o.mesh.scale.setScalar(v));
-  bindT('rotY', (o,v) => o.mesh.rotation.y = v);
-
-  document.getElementById('checkBillboard').onchange = (e) => {
-      const obj = objects.find(o => o.id === activeId);
-      if(obj) {
-          obj.billboard = e.target.checked;
-          if(!obj.billboard) { 
-            obj.mesh.rotation.set(0,0,0);
-            document.getElementById('rotY').value = 0;
-            document.getElementById('v_rotY').innerText = "0";
-          }
-      }
-  };
-
+  ['keyR', 'keyG', 'keyB'].forEach(id => document.getElementById(id).addEventListener('input', updateChromaManual));
   window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
-  window.setChromaPreset = (r,g,b) => { 
-      document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; 
-      updateChromaManual(); 
-  };
+  window.setChromaPreset = (r,g,b) => { document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; updateChromaManual(); };
 }
 
 // ==========================================
@@ -333,9 +274,12 @@ function init() {
 function updateGrid() {
     const old = scene.getObjectByName("grid"); if(old) scene.remove(old);
     if(!document.getElementById('showGrid').checked) return;
+
     let gridSize = 15; let divisions = 15;
     if(currentUnit==='ft') { gridSize = 15*0.3048; divisions = 15; }
+    
     const colorGrid = new THREE.Color(0xffaa00);
+
     const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
     const material = new THREE.ShaderMaterial({
         transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
@@ -347,21 +291,26 @@ function updateGrid() {
     mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.001; mesh.name = "grid";
     scene.add(mesh);
 }
+
 function initEngineeringUI() {
     engGroup = new THREE.Group(); scene.add(engGroup);
+    
     const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
     const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
     lineY.name = 'lineY'; engGroup.add(lineY);
+    
     const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); frameGeo.rotateZ(Math.PI/4);
     const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.8, side:THREE.DoubleSide, depthWrite:false });
     const shadow = new THREE.Mesh(frameGeo, frameMat);
     shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
+
     coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
     engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
     dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
     engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
     engGroup.visible = false;
 }
+
 function createLabel(txt) {
     const cvs = document.createElement('canvas'); cvs.width=256; cvs.height=64;
     const tex = new THREE.CanvasTexture(cvs);
@@ -370,6 +319,7 @@ function createLabel(txt) {
     s.userData = { cvs, ctx: cvs.getContext('2d'), tex };
     return s;
 }
+
 function updateLabelText(sprite, text, isDim=false) {
     const { ctx, tex } = sprite.userData;
     ctx.clearRect(0,0,256,64);
@@ -380,22 +330,27 @@ function updateLabelText(sprite, text, isDim=false) {
     ctx.fillText(text, 128, 32);
     tex.needsUpdate = true;
 }
+
 function formatUnit(val) {
     if(currentUnit==='cm') return (val*100).toFixed(0)+'cm';
     if(currentUnit==='ft') return (val*3.28).toFixed(2)+'ft';
     return val.toFixed(2)+'m';
 }
+
 function updateEngineeringVisuals() {
     if(!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
     const obj = objects.find(o => o.id === activeId); if(!obj) return;
     engGroup.visible = true;
     const P = obj.mesh.position; const S = obj.mesh.scale; const R = obj.mesh.rotation;
     let baseW = obj.originalAspect || 1; let realW = baseW * S.x; let realH = 1 * S.y;
+
     const lineY = engGroup.getObjectByName('lineY');
     lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]); lineY.computeLineDistances();
+
     const shadow = engGroup.getObjectByName('shadowPlane');
     shadow.position.set(P.x, 0.005, P.z); shadow.rotation.set(-Math.PI/2, 0, R.y);
     const frameScale = Math.max(realW, 0.5) * 1.1; shadow.scale.set(frameScale, frameScale, 1);
+
     if(document.getElementById('showCoords').checked) {
         coordLabels.x.visible = true; coordLabels.y.visible = true; coordLabels.z.visible = true;
         coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
@@ -404,13 +359,14 @@ function updateEngineeringVisuals() {
     } else {
         coordLabels.x.visible = false; coordLabels.y.visible = false; coordLabels.z.visible = false;
     }
+
     dimLabels.w.visible = true; dimLabels.h.visible = true;
     dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0)); updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true);
     dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0)); updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (DUAL GRIP STABLE)
+// 🎮 CONTROLES XR (CORREGIDO v24)
 // ==========================================
 function setupXRControllers() {
     controller1 = renderer.xr.getController(0); 
@@ -420,7 +376,7 @@ function setupXRControllers() {
     scene.add(controller1);
 
     controller2 = renderer.xr.getController(1); 
-    controller2.addEventListener('selectstart', onSelect); 
+    controller2.addEventListener('selectstart', onSelect);
     scene.add(controller2);
 
     const fac = new XRControllerModelFactory();
@@ -434,86 +390,82 @@ function setupXRControllers() {
     raycaster = new THREE.Raycaster();
 }
 
-// 🔥 LOGICA DUAL GRIP (SIN JOYSTICK SCALING) 🔥
 function handleStableControls() {
-    const s = renderer.xr.getSession(); 
+    const s = renderer.xr.getSession();
     if (!s || !activeId) return;
-    
-    const obj = objects.find(o => o.id === activeId); 
-    if (!obj || !obj.mesh) return;
+    const obj = objects.find(o => o.id === activeId);
+    if (!obj || !obj.mesh) return; 
 
-    let grip1 = false;
-    let grip2 = false;
-
-    // Loop de inputs
     for (const src of s.inputSources) {
-        if (!src.gamepad) continue;
-        const isGripPressed = src.gamepad.buttons[1]?.pressed;
-        
-        if (src.handedness === 'left') {
-            if (isGripPressed) grip1 = true;
-            // Solo permitir movimiento Y si NO estamos escalando
-            if (!isDualScaling && isGripPressed) {
-                const ay = src.gamepad.axes[3] || 0;
-                if(Math.abs(ay) > 0.1) {
-                    obj.mesh.position.y -= ay * 0.02; 
-                    if(obj.mesh.position.y < 0) obj.mesh.position.y=0;
-                }
-                updateUIFromGizmo();
-            }
-        }
-        
-        if (src.handedness === 'right') {
-            if (isGripPressed) grip2 = true;
-            // Solo permitir rotacion/movX si NO estamos escalando
-            if (!isDualScaling && isGripPressed) {
-                const ax = src.gamepad.axes[2] || 0;
-                const ay = src.gamepad.axes[3] || 0;
-                if(Math.abs(ax) > 0.1) obj.mesh.rotation.y -= ax * 0.05;
-                if(Math.abs(ay) > 0.1) {
-                     const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize(); dir.y = 0; 
-                     obj.mesh.position.addScaledVector(dir, ay * -0.05); 
-                }
-                updateUIFromGizmo();
-            }
-        }
-    }
+        const gp = src.gamepad;
+        if (!gp) continue;
 
-    // --- LÓGICA DE ESCALADO DUAL ---
-    if (grip1 && grip2) {
-        const dist = controller1.position.distanceTo(controller2.position);
-        
-        if (!isDualScaling) {
-            // Inicio del gesto
-            isDualScaling = true;
-            initialDualDist = dist;
-            initialDualScale.copy(obj.mesh.scale);
-        } else {
-            // Durante el gesto
-            if (initialDualDist > 0.01) { 
-                const factor = dist / initialDualDist;
-                const newScale = initialDualScale.clone().multiplyScalar(factor);
-                
-                // 🛑 SAFETY CLAMP: Vital para evitar el crash
-                newScale.clampScalar(0.05, 50.0); 
-                
-                obj.mesh.scale.copy(newScale);
-                updateUIFromGizmo();
+        // BOTÓN GRIP SEGURO
+        const grip = gp.buttons?.[1]?.pressed === true;
+
+        // FALLBACK EJES
+        const axes = gp.axes || [];
+        let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
+        let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
+
+        if (!Number.isFinite(ax)) ax = 0;
+        if (!Number.isFinite(ay)) ay = 0;
+
+        if (src.handedness === 'left' && grip) {
+            if (Math.abs(ay) > 0.1) {
+                obj.mesh.position.y -= ay * 0.02;
+                if (obj.mesh.position.y < 0) obj.mesh.position.y = 0;
+            }
+            if (Math.abs(ax) > 0.1) {
+                let scaleF = 1 + (ax * 0.02);
+                if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; 
+                obj.mesh.scale.multiplyScalar(scaleF);
+                obj.mesh.scale.clampScalar(0.05, 50.0);
             }
         }
-    } else {
-        isDualScaling = false;
+
+        if (src.handedness === 'right' && grip) {
+            if (Math.abs(ay) > 0.1) {
+                const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize();
+                dir.y = 0;
+                obj.mesh.position.addScaledVector(dir, ay * -0.05);
+            }
+            if (Math.abs(ax) > 0.1) {
+                obj.mesh.rotation.y -= ax * 0.05;
+            }
+        }
     }
 }
 
+// 🔥 MEJORA DE INTERACCIÓN: SELECCIONAR AL AGARRAR 🔥
 function onGripStart(e) { 
-    const c = e.target; const hits = getIntersections(c); 
-    if(hits.length > 0) { const o = hits[0].object; if(o.userData.id) selectObject(o.userData.id); c.attach(o); c.userData.selected = o; } 
+    const c = e.target; 
+    const hits = getIntersections(c); 
+    if(hits.length > 0) { 
+        const o = hits[0].object; 
+        // 1. Convertir el objeto que toco en el activo para la UI
+        if(o.userData.id) selectObject(o.userData.id);
+        
+        // 2. Attach físico para mover
+        c.attach(o); 
+        c.userData.selected = o; 
+    } 
 }
-function onGripEnd(e) { const c = e.target; if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } }
-function onSelect(e) { const hits = getIntersections(e.target); if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id); }
+
+function onGripEnd(e) { 
+    const c = e.target; 
+    if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } 
+}
+
+function onSelect(e) { 
+    const hits = getIntersections(e.target); 
+    if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id); 
+}
+
 function getIntersections(c) { 
-    tempMatrix.identity().extractRotation(c.matrixWorld); raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld); raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix); 
+    tempMatrix.identity().extractRotation(c.matrixWorld); 
+    raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld); 
+    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix); 
     return raycaster.intersectObjects(objects.map(o=>o.mesh), false); 
 }
 
@@ -525,198 +477,64 @@ async function addAsset(url, type, name, isGif=false, isRestore=false) {
   let tex, mesh, gifData=null, video=null, newObj=null;
   try {
     if(isGif) {
-        const resp = await fetch(url);
-        const buf = await resp.arrayBuffer();
+        const buf = await (await fetch(url)).arrayBuffer();
         const r = new window.Omggif.GifReader(new Uint8Array(buf));
-        const cvs = document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
-        const ctx = cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
-        tex = new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
+        const cvs=document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
+        const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
+        tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
         gifData={r, ctx, dat, tex, f:0, nextTime:0, playing:true};
-    } 
-    else if(type==='video') {
+    } else if(type==='video') {
         video=document.createElement('video'); video.src=url; video.crossOrigin='anonymous'; video.loop=true; video.muted=true; video.playsInline=true;
         await video.play(); tex=new THREE.VideoTexture(video); tex.colorSpace=THREE.SRGBColorSpace;
-    } 
-    else {
+    } else {
         tex=await new THREE.TextureLoader().loadAsync(url); tex.colorSpace=THREE.SRGBColorSpace;
     }
-
     const ar = video ? video.videoWidth/video.videoHeight : (tex.image?tex.image.width/tex.image.height:1.77);
     const mat = new THREE.ShaderMaterial({
         uniforms: { 
-            map:{value:tex}, uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uOpacity:{value:1},
+            map:{value:tex}, uBrightness:{value:0}, uContrast:{value:1}, uSaturation:{value:1}, uGamma:{value:1}, uOpacity:{value:1},
             chromaOn:{value:false}, chromaInvert:{value:false}, k1:{value:new THREE.Color(0,1,0)}, sim1:{value:0.4}, smooth1:{value:0.08}, despill:{value:0.5} 
         },
         vertexShader: vShader, fragmentShader: fShader, transparent:true, side:THREE.DoubleSide, depthWrite:false
     });
-    
     mesh = new THREE.Mesh(new THREE.PlaneGeometry(ar, 1), mat);
     mesh.position.set(0, 1.6, -2);
     mesh.userData.id = Math.random().toString(36).substr(2,9);
-    
-    newObj = { 
-        id:mesh.userData.id, name, mesh, video, gifData, type, 
-        billboard:false, originalAspect:ar, sourceUrl:url, projectionMode:'plane'
-    };
-    
+    newObj = { id:mesh.userData.id, name, mesh, video, gifData, type, billboard:false, originalAspect:ar, sourceUrl:url };
     objects.push(newObj); scene.add(mesh);
     if(!isRestore) selectObject(newObj.id);
-  } catch(e){ console.error(e); if(!isRestore) alert("Error cargando Asset"); }
+  } catch(e){ console.error(e); }
   if(!isRestore) document.getElementById('loader').style.display='none';
-  return newObj; // Importante para la carga
+  return newObj;
 }
 
-// ==========================================
-// 💾 PERSISTENCIA
-// ==========================================
-function getSceneDataJSON() {
-    const data = objects.map(o => {
-        const u = o.mesh.material.uniforms;
-        return {
-            type: o.type,
-            name: o.name,
-            url: o.sourceUrl,
-            isGif: (o.gifData !== null),
-            transform: {
-                pos: o.mesh.position.toArray(),
-                rot: o.mesh.rotation.toArray(),
-                scale: o.mesh.scale.toArray()
-            },
-            props: {
-                billboard: o.billboard,
-                projection: o.projectionMode,
-                chroma: {
-                    on: u.chromaOn.value,
-                    inv: u.chromaInvert.value,
-                    color: u.k1.value.getHexString(),
-                    sim: u.sim1.value,
-                    smooth: u.smooth1.value,
-                    despill: u.despill.value
-                },
-                adjust: {
-                    bright: u.uBrightness.value,
-                    contrast: u.uContrast.value,
-                    sat: u.uSaturation.value,
-                    opacity: u.uOpacity.value
-                }
-            }
-        };
-    });
-    return JSON.stringify(data, null, 2);
-}
-
-async function loadSceneFromJSON(jsonString) {
-    try {
-        const data = JSON.parse(jsonString);
-        document.getElementById('loader').style.display = 'grid';
-        activeId = null; transformCtrl.detach(); document.getElementById('editorUI').style.display = 'none';
-        objects.forEach(o => scene.remove(o.mesh)); objects = []; updateLayers();
-
-        for (const item of data) {
-            const newObj = await addAsset(item.url, item.type, item.name, item.isGif, true);
-            if(newObj) {
-                newObj.mesh.position.fromArray(item.transform.pos);
-                newObj.mesh.rotation.fromArray(item.transform.rot.slice(0,3));
-                newObj.mesh.scale.fromArray(item.transform.scale);
-                
-                activeId = newObj.id; 
-                document.getElementById('projSelect').value = item.props.projection;
-                updateProjection(); 
-                
-                newObj.billboard = item.props.billboard;
-                const u = newObj.mesh.material.uniforms;
-                u.chromaOn.value = item.props.chroma.on;
-                u.chromaInvert.value = item.props.chroma.inv;
-                u.k1.value.setHex(parseInt(item.props.chroma.color, 16));
-                u.sim1.value = item.props.chroma.sim;
-                u.smooth1.value = item.props.chroma.smooth;
-                u.despill.value = item.props.chroma.despill;
-                u.uBrightness.value = item.props.adjust.bright;
-                u.uContrast.value = item.props.adjust.contrast;
-                u.uSaturation.value = item.props.adjust.sat;
-                u.uOpacity.value = item.props.adjust.opacity;
-            }
-        }
-        document.getElementById('loader').style.display = 'none';
-        updateLayers();
-    } catch(e) {
-        console.error("Error parsing JSON", e);
-        alert("JSON inválido.");
-        document.getElementById('loader').style.display = 'none';
-    }
-}
-
-// 4. GUARDADO LOCAL
-window.saveLocal = () => {
-    const json = getSceneDataJSON();
-    const blob = new Blob([json], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = "diamond_scene.json"; a.click();
-};
-
-window.loadLocal = (input) => {
-    const file = input.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => loadSceneFromJSON(e.target.result);
-    reader.readAsText(file);
-};
-
-// 5. GOOGLE DRIVE
-window.handleAuthClick = () => {
-    if(!CLIENT_ID || CLIENT_ID === '') {
-        alert("⚠️ Falta CLIENT_ID y API_KEY en el código. Usa '💾 LOCAL' mientras tanto.");
-        return;
-    }
-    gapi.load('client:auth2', () => {
-        gapi.client.init({ apiKey: API_KEY, clientId: CLIENT_ID, discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope: SCOPES })
-        .then(() => gapi.auth2.getAuthInstance().signIn())
-        .then(() => { document.getElementById('authPanel').style.display='none'; document.getElementById('driveActions').style.display='flex'; })
-        .catch(err => alert("Error Auth: " + JSON.stringify(err)));
-    });
-};
-
-window.saveSceneToDrive = () => {
-    const content = getSceneDataJSON();
-    const file = new Blob([content], {type: 'application/json'});
-    const metadata = { 'name': 'diamond_mr_scene.json', 'mimeType': 'application/json' };
-    const accessToken = gapi.auth.getToken().access_token;
-    const form = new FormData(); form.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'})); form.append('file', file);
-    fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', { method: 'POST', headers: new Headers({'Authorization': 'Bearer ' + accessToken}), body: form })
-    .then(res => res.json()).then(val => alert("✅ Guardado en Drive. ID: " + val.id)).catch(err => console.error(err));
-};
-
-window.loadSceneFromDrive = () => {
-    gapi.client.drive.files.list({ 'pageSize': 1, 'q': "name = 'diamond_mr_scene.json' and trashed = false", 'fields': "files(id, name)" })
-    .then(response => {
-        const files = response.result.files;
-        if (files && files.length > 0) return gapi.client.drive.files.get({ fileId: files[0].id, alt: 'media' });
-        else alert('No se encontró "diamond_mr_scene.json" en Drive.');
-    }).then(resp => { if(resp) loadSceneFromJSON(JSON.stringify(resp.result)); });
-};
-
-// ==========================================
-// 🎮 LOOP & UI
-// ==========================================
 function animate(time, frame) {
-  const dt = clock.getElapsedTime(); orbit.update(); handleStableControls(); updateEngineeringVisuals();
+  const dt = clock.getElapsedTime();
+  orbit.update();
+  handleStableControls();
+  updateEngineeringVisuals();
+  
   objects.forEach(o => {
-      if(o.billboard && o.mesh) { o.mesh.lookAt(camera.position.x, o.mesh.position.y, camera.position.z); }
+      if(o.billboard) o.mesh.lookAt(camera.position.x, o.mesh.position.y, camera.position.z);
       if(o.gifData && o.gifData.playing && performance.now() > o.gifData.nextTime) {
           const g=o.gifData; g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data); g.ctx.putImageData(g.dat,0,0);
-          g.tex.needsUpdate=true; g.nextTime=performance.now() + (g.r.frameInfo(g.f).delay*10 || 100); 
-          g.f=(g.f+1)%g.r.numFrames();
+          g.tex.needsUpdate=true; g.nextTime=performance.now()+100; g.f=(g.f+1)%g.r.numFrames();
       }
   });
+
   if(frame && occlusionEnabled && xrGlBinding) {
       const pose = frame.getViewerPose(xrRefSpace);
       if(pose) {
-          const gl = renderer.getContext(); gl.colorMask(false,false,false,false);
+          const gl = renderer.getContext();
+          gl.colorMask(false,false,false,false);
           for(const view of pose.views) {
               const dInfo = xrGlBinding.getDepthInformation(view);
               if(dInfo) {
-                  gl.bindTexture(gl.TEXTURE_2D, depthTex); gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE_ALPHA, dInfo.width, dInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, dInfo.data);
-                  gl.useProgram(depthProgram); gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters); gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
+                  gl.bindTexture(gl.TEXTURE_2D, depthTex);
+                  gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE_ALPHA, dInfo.width, dInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, dInfo.data);
+                  gl.useProgram(depthProgram);
+                  gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
+                  gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
                   gl.bindVertexArray(depthVao); gl.drawArrays(gl.TRIANGLES,0,6);
               }
           }
@@ -725,49 +543,7 @@ function animate(time, frame) {
   }
   renderer.render(scene, camera);
 }
-window.updateProjection = () => {
-  const obj = objects.find(o => o.id === activeId); if (!obj) return;
-  const mode = document.getElementById('projSelect').value; obj.projectionMode = mode;
-  const currentPos = obj.mesh.position.clone(); const currentRot = obj.mesh.rotation.clone(); const currentScale = obj.mesh.scale.clone();
-  scene.remove(obj.mesh);
-  let geo;
-  if (mode === '360') { geo = new THREE.SphereGeometry(100, 64, 32); obj.mesh.material.side = THREE.BackSide; } 
-  else if (mode === 'orb') { geo = new THREE.SphereGeometry(0.5, 64, 32); obj.mesh.material.side = THREE.FrontSide; } 
-  else if (mode === 'curved') { geo = new THREE.CylinderGeometry(5, 5, 2, 32, 1, true, 3.8, 1.8); obj.mesh.scale.set(-1,1,1); obj.mesh.material.side = THREE.DoubleSide; } 
-  else { geo = new THREE.PlaneGeometry(obj.originalAspect, 1); obj.mesh.material.side = THREE.DoubleSide; }
-  obj.mesh.geometry = geo;
-  if(mode !== '360') { obj.mesh.position.copy(currentPos); obj.mesh.rotation.copy(currentRot); obj.mesh.scale.copy(currentScale); } else { obj.mesh.position.set(0,0,0); }
-  scene.add(obj.mesh); transformCtrl.attach(obj.mesh);
-};
-function updateUIFromGizmo() {
-    const obj = objects.find(o => o.id === activeId);
-    if(obj && obj.mesh) {
-        document.getElementById('posX').value = obj.mesh.position.x; document.getElementById('v_posX').innerText = obj.mesh.position.x.toFixed(2);
-        document.getElementById('posY').value = obj.mesh.position.y; document.getElementById('v_posY').innerText = obj.mesh.position.y.toFixed(2);
-        document.getElementById('posZ').value = obj.mesh.position.z; document.getElementById('v_posZ').innerText = obj.mesh.position.z.toFixed(2);
-        document.getElementById('scale').value = obj.mesh.scale.x; document.getElementById('v_scale').innerText = obj.mesh.scale.x.toFixed(2);
-        document.getElementById('rotY').value = obj.mesh.rotation.y; document.getElementById('v_rotY').innerText = obj.mesh.rotation.y.toFixed(2);
-    }
-}
-function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o) { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; }}
-function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); }}
-function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
-function selectObject(id){ 
-    activeId=id; const o=objects.find(x=>x.id===id); if(o){ 
-        transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block';
-        document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; 
-        document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; 
-        document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value; 
-        document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value; 
-        document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value; 
-        document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value; 
-        document.getElementById('despill').value=o.mesh.material.uniforms.despill.value;
-        document.getElementById('projSelect').value = o.projectionMode || 'plane';
-        document.getElementById('checkBillboard').checked = o.billboard;
-        updateUIFromGizmo(); updateMaterial(); updateLayers(); 
-    } 
-}
-function updateLayers() { const l=document.getElementById('layerList'); l.innerHTML=''; objects.forEach(o=>{ const d=document.createElement('div'); d.className=`layer-item ${o.id===activeId?'active':''}`; d.innerText=(o.type=='video'?'🎬 ': (o.gifData?'👾 ':'🖼️ '))+o.name.slice(0,18); d.onclick=()=>selectObject(o.id); l.appendChild(d); }); }
+
 function setupVR() {
   if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok => {
       if(ok) {
@@ -793,11 +569,35 @@ function initDepthOcclusion(s) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
     depthTex=gl.createTexture();
 }
+
+function updateMaterialParam(id,v){ const o=objects.find(x=>x.id===activeId); if(o) { const u=o.mesh.material.uniforms; if(id==='brightness') u.uBrightness.value=v; else if(id==='contrast') u.uContrast.value=v; else if(id==='saturation') u.uSaturation.value=v; else if(id==='gamma') u.uGamma.value=v; else if(id==='opacity') u.uOpacity.value=v; else if(id==='k1sim') u.sim1.value=v; else if(id==='k1smooth') u.smooth1.value=v; else if(id==='despill') u.despill.value=v; }}
+function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.k1.value.setRGB(parseFloat(document.getElementById('keyR').value), parseFloat(document.getElementById('keyG').value), parseFloat(document.getElementById('keyB').value)); document.getElementById('currentColorBox').style.backgroundColor='#'+o.mesh.material.uniforms.k1.value.getHexString(); }}
+function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
+function selectObject(id){ activeId=id; const o=objects.find(x=>x.id===id); if(o){ transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value; document.getElementById('contrast').value=o.mesh.material.uniforms.uContrast.value; document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value; document.getElementById('gamma').value=o.mesh.material.uniforms.uGamma.value; document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value; document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value; document.getElementById('despill').value=o.mesh.material.uniforms.despill.value; updateMaterial(); updateLayers(); } }
+function updateLayers() { const l=document.getElementById('layerList'); l.innerHTML=''; objects.forEach(o=>{ const d=document.createElement('div'); d.className=`layer-item ${o.id===activeId?'active':''}`; d.innerText=(o.type=='video'?'🎬 ':'🖼️ ')+o.name.slice(0,15); d.onclick=()=>selectObject(o.id); l.appendChild(d); }); }
 window.toggleUIPanel = () => document.getElementById('ui').classList.toggle('minimized');
-window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) { const isGif = u.toLowerCase().includes('.gif'); const isVideo = u.match(/\.(mp4|webm)/i); addAsset(u, isVideo?'video':'image', 'Web Asset', isGif); }};
-document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.toLowerCase().endsWith('.gif')); };
-window.deleteActive = () => { const i = objects.findIndex(x => x.id === activeId); if(i > -1) { scene.remove(objects[i].mesh); objects.splice(i, 1); } activeId = null; transformCtrl.detach(); document.getElementById('editorUI').style.display = 'none'; engGroup.visible = false; updateLayers(); };
-window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o) { if(o.video) a=='play'?o.video.play():o.video.pause(); else if(o.gifData) o.gifData.playing = (a=='play'); } };
+window.handleAuthClick = () => { if(!CLIENT_ID) alert("Falta API KEY"); gapi.load('client:auth2', ()=>{ gapi.client.init({apiKey:API_KEY, clientId:CLIENT_ID, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope:SCOPES}).then(()=>gapi.auth2.getAuthInstance().signIn()).then(()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('driveActions').style.display='flex'; }); }); };
+window.saveSceneToDrive = () => { /* Logica guardar */ };
+window.loadSceneFromDrive = () => { /* Logica cargar */ };
+window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
+document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
+
+// 🔥 MEJORA DE LIMPIEZA 🔥
+window.deleteActive = () => {
+    const i = objects.findIndex(x => x.id === activeId);
+    if(i > -1) {
+        scene.remove(objects[i].mesh);
+        objects.splice(i, 1);
+    }
+    // RESETEAR ESTADO UI Y VISUALES
+    activeId = null;
+    transformCtrl.detach();
+    document.getElementById('editorUI').style.display = 'none';
+    if(engGroup) engGroup.visible = false; // Apagar cotas
+    updateLayers();
+};
+
+window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
 </script>
