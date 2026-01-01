@@ -3,149 +3,113 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v24.0 | Smart Interaction</title>
+  <title>MR Studio Diamond v25.0 | Performance Fix</title>
   
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    /* =========================================
-       ESTILO "AMBER GLASS"
-    ========================================= */
-    :root {
-        --main-color: #ffaa00; 
-        --bg-glass: rgba(20, 20, 25, 0.85);
-        --border-glass: rgba(255, 170, 0, 0.3);
-        --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
-    }
-
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+    /* ESTILO "AMBER GLASS" (Optimizado) */
+    :root { --main: #ffaa00; --bg: rgba(20,20,25,0.85); --brd: rgba(255,170,0,0.3); }
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; user-select: none; }
     body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     
     .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 95vh; 
-      background: var(--bg-glass);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid var(--border-glass); 
-      border-radius: 24px; 
-      padding: 20px; overflow-y: auto; z-index: 100; 
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
-      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      position: fixed; left: 20px; top: 20px; width: 320px; max-height: 90vh; 
+      background: var(--bg); backdrop-filter: blur(20px); border: 1px solid var(--brd); 
+      border-radius: 20px; padding: 15px; z-index: 100; transition: transform 0.3s ease;
     }
-    .ui-panel.minimized { transform: translateX(-450px); }
+    .minimized { transform: translateX(-380px); }
     
-    h2 { margin: 0 0 20px 0; font-size: 16px; color: var(--main-color); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--border-glass); padding-bottom: 12px; display: flex; justify-content: space-between; text-shadow: var(--text-glow); }
-    .sec-head { font-size: 11px; font-weight: 800; color: #aaa; margin: 20px 0 8px 0; text-transform: uppercase; letter-spacing: 1.5px; }
+    h2 { font-size: 14px; color: var(--main); border-bottom: 1px solid var(--brd); padding-bottom: 8px; margin: 0 0 10px 0; display: flex; justify-content: space-between; }
+    .sec { font-size: 10px; font-weight: 800; color: #888; margin: 10px 0 5px 0; text-transform: uppercase; }
+    .row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+    label { flex: 1; color: #ccc; } 
+    input[type=range] { flex: 2; accent-color: var(--main); }
     
-    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
-    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 500; }
+    button { flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: 700; background: var(--main); cursor: pointer; }
+    button.danger { background: #ff4757; color: white; }
     
-    input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow); }
-    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
-    .val { width: 36px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: bold; }
+    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid var(--main); color: var(--main); font-weight:bold; cursor: pointer; display: none; }
+    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 30px; background: var(--main); border-radius: 30px; font-weight: 800; z-index: 1000; display: none; }
+    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main); font-weight: 900; }
     
-    select, input[type=url] { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 8px 12px; border-radius: 8px; outline: none; transition: 0.3s; }
+    .layer-list { max-height: 100px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; }
+    .layer-item { padding: 5px; font-size: 10px; border-radius: 4px; margin-bottom: 2px; cursor: pointer; }
+    .layer-item.active { background: rgba(255,170,0,0.2); border-left: 3px solid var(--main); }
     
-    button { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; color: #000; background: var(--main-color); transition: 0.25s; font-size: 11px; text-transform: uppercase; box-shadow: var(--text-glow); }
-    button:active { transform: scale(0.97); }
-    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
-    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
-    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
-
-    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 44px; height: 44px; border-radius: 50%; background: var(--bg-glass); backdrop-filter: blur(20px); border: 2px solid var(--main-color); color: var(--main-color); font-weight:bold; cursor: pointer; display: none; box-shadow: var(--text-glow); font-size: 20px; align-items: center; justify-content: center; }
-    #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 50px; background: var(--main-color); color: #000; border-radius: 50px; font-weight: 900; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff; font-size: 14px; letter-spacing: 2px; }
-    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main-color); font-weight: 900; letter-spacing: 4px; font-size: 24px; text-shadow: var(--text-glow); }
-    
-    .color-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.2); transition: 0.2s; }
-    .color-btn:hover { transform: scale(1.15); border-color: #fff; box-shadow: 0 0 15px currentColor; }
-    #currentColorBox { width: 100%; height: 12px; border-radius: 6px; background: #0f0; margin-bottom: 12px; border: 2px solid rgba(255,255,255,0.3); }
-    .layer-list { max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; margin-bottom: 15px; border: 1px solid var(--border-glass); }
-    .layer-item { padding: 8px 10px; font-size: 11px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 4px; transition: 0.2s; font-weight: 600; }
-    .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main-color); color: #fff; }
+    /* Indicador de Modo Inspector */
+    #inspectorBadge {
+        position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); border: 1px solid #00ffff;
+        color: #00ffff; padding: 8px 15px; border-radius: 20px; font-weight: bold; font-size: 12px;
+        display: none; pointer-events: none;
+    }
   </style>
 </head>
 <body>
 
 <canvas id="c"></canvas>
-<div class="loader" id="loader">CARGANDO v24.0...</div>
+<div class="loader" id="loader">CARGANDO...</div>
 <button id="toggleUI" onclick="document.getElementById('ui').classList.toggle('minimized')">☰</button>
+<div id="inspectorBadge">📐 MODO INSPECTOR (BOTÓN X)</div>
 
 <div class="ui-panel" id="ui">
-  <h2>DIAMOND v24.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
+  <h2>DIAMOND v25.0 <span onclick="document.getElementById('ui').classList.toggle('minimized')" style="cursor:pointer;">×</span></h2>
 
-  <div class="sec-head">📐 Arquitectura</div>
+  <div class="sec">📐 Cotas (Activar con Botón X)</div>
   <div class="row">
-      <select id="unitSystem" onchange="updateUnits()">
+      <select id="unitSystem" onchange="updateUnits()" style="width:100%; background:#222; color:#fff; border:1px solid #444; padding:4px;">
           <option value="m">Metros (m)</option>
           <option value="cm">Centímetros (cm)</option>
           <option value="ft">Pies (ft)</option>
       </select>
   </div>
-  <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
-  <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
-  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
+  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Grilla Holográfica</label></div>
 
-  <div class="sec-head">☁️ Proyecto</div>
-  <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">CONECTAR DRIVE</button></div>
-  <div class="row" id="driveActions" style="display:none; gap:8px;">
-      <button onclick="saveSceneToDrive()" class="secondary">GUARDAR</button>
-      <button onclick="loadSceneFromDrive()" class="secondary">CARGAR</button>
+  <div class="sec">☁️ Nube</div>
+  <div class="row" id="authPanel"><button onclick="handleAuthClick()" style="background:#2ecc71; color:white;">CONECTAR DRIVE</button></div>
+  <div class="row" id="driveActions" style="display:none; gap:5px;">
+      <button onclick="saveSceneToDrive()" style="background:#444; color:white;">GUARDAR</button>
+      <button onclick="loadSceneFromDrive()" style="background:#444; color:white;">CARGAR</button>
   </div>
 
-  <div class="sec-head">📥 Importar</div>
+  <div class="sec">📥 Assets</div>
   <div class="row">
-    <input type="url" id="webUrl" placeholder="URL Video/Imagen">
-    <button onclick="loadFromWeb()" style="flex:0 0 40px;">+</button>
+    <input type="url" id="webUrl" placeholder="URL" style="flex:2; background:#222; border:1px solid #444; color:#fff;">
+    <button onclick="loadFromWeb()" style="flex:0.5;">+</button>
   </div>
-  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">📁 ABRIR LOCAL</button>
+  <button onclick="document.getElementById('fileInput').click()" style="width:100%; margin-top:5px; background:#333; color:#fff;">📁 LOCAL</button>
   <input type="file" id="fileInput" multiple style="display:none;">
   
-  <div class="sec-head">Capas</div>
+  <div class="sec">Capas</div>
   <div id="layerList" class="layer-list"></div>
 
   <div id="editorUI" style="display:none;">
-    <div class="sec-head">🎨 Imagen</div>
-    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
-    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
-    <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
-    <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
-    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+    <div class="sec">🎨 Ajustes</div>
+    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"></div>
+    <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"></div>
+    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"></div>
     
-    <div class="sec-head">🛠️ Chroma Key</div>
+    <div class="sec">🛠️ Chroma Key</div>
     <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir</label></div>
-    <div id="chromaPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--border-glass);">
-        <div id="currentColorBox"></div>
-        <div class="row" style="justify-content: space-around; margin-bottom:15px;">
-            <div class="color-btn" style="background:#00ff00;" onclick="setChromaPreset(0,1,0)"></div>
-            <div class="color-btn" style="background:#0000ff;" onclick="setChromaPreset(0,0,1)"></div>
-            <div class="color-btn" style="background:#000000;" onclick="setChromaPreset(0,0,0)"></div>
-        </div>
-        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"><span class="val" id="v_k1sim">0.4</span></div>
-        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_k1smooth">0.08</span></div>
-        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
-        <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
-            <div class="row"><label style="color:#f66">R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
-            <div class="row"><label style="color:#6f6">G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
-            <div class="row"><label style="color:#66f">B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
-        </div>
+    <div id="chromaPanel" style="display:none; padding:8px; background:rgba(255,255,255,0.05); border-radius:6px;">
+        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001"></div>
+        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001"></div>
+        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"></div>
+        <div class="row" style="margin-top:5px;"><label>R</label><input type="range" id="keyR" min="0" max="1" step="0.01"></div>
+        <div class="row"><label>G</label><input type="range" id="keyG" min="0" max="1" step="0.01"></div>
+        <div class="row"><label>B</label><input type="range" id="keyB" min="0" max="1" step="0.01"></div>
     </div>
     
-    <div class="row" style="margin-top:20px; gap:8px;">
-        <button onclick="mediaAction('play')" class="secondary">▶ REPRODUCIR</button>
-        <button onclick="mediaAction('pause')" class="secondary">⏸ PAUSAR</button>
-    </div>
-    <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:5px;">🗑️ ELIMINAR</button>
+    <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:10px;">🗑️ ELIMINAR</button>
   </div>
 
-  <div class="sec-head">⚙️ Realidad Mixta</div>
+  <div class="sec">⚙️ MR</div>
   <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
 </div>
 
-<button id="vrBtn">INICIAR ARQUITECTO MR</button>
+<button id="vrBtn">ENTRAR EN MR</button>
 
 <script type="importmap">
 { "imports": {
@@ -177,70 +141,58 @@ void main(){
 }`;
 
 // ==========================================
-// 🎨 PRO SHADER (V17 - HSV)
+// 🎨 PRO SHADER
 // ==========================================
 const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 const fShader = `
-uniform sampler2D map; 
-uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
-uniform bool chromaOn, chromaInvert; 
-uniform vec3 k1; 
-uniform float sim1, smooth1, despill;
+uniform sampler2D map; uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
+uniform bool chromaOn, chromaInvert; uniform vec3 k1; uniform float sim1, smooth1, despill;
 varying vec2 vUv;
-
 vec3 rgb2hsv(vec3 c) {
-    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
     vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
     vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-    float d = q.x - min(q.w, q.y);
-    float e = 1.0e-10;
+    float d = q.x - min(q.w, q.y); float e = 1.0e-10;
     return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
-
 void main() {
-  vec4 tex = texture2D(map, vUv);
-  vec3 col = tex.rgb;
-  float alpha = tex.a * uOpacity;
-
+  vec4 tex = texture2D(map, vUv); vec3 col = tex.rgb; float alpha = tex.a * uOpacity;
   if(chromaOn) {
       vec3 hsv = rgb2hsv(col); vec3 kHsv = rgb2hsv(k1);
-      float hueDist = abs(hsv.x - kHsv.x); if (hueDist > 0.5) hueDist = 1.0 - hueDist;
-      float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0) + pow(abs(hsv.z - kHsv.z) * 0.5, 2.0));
-      float mask = smoothstep(sim1, sim1 + smooth1, dist);
-      
-      if(!chromaInvert) {
-          alpha *= mask;
-          if(mask < 0.95 && despill > 0.0) {
-             if(k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
-             else if(k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
-          }
-      } else { alpha = (1.0 - mask) * uOpacity; col = vec3(1.0); }
+      float hueDist = abs(hsv.x - kHsv.x); if(hueDist>0.5) hueDist=1.0-hueDist;
+      float dist = sqrt(pow(hueDist*2.0,2.0)+pow(abs(hsv.y-kHsv.y),2.0)+pow(abs(hsv.z-kHsv.z)*0.5,2.0));
+      float mask = smoothstep(sim1, sim1+smooth1, dist);
+      if(!chromaInvert) { alpha*=mask; if(mask<0.95 && despill>0.0) {
+         if(k1.g>k1.r && k1.g>k1.b) col.g=mix(col.g,max(col.r,col.b),(1.0-mask)*despill);
+         else if(k1.b>k1.r && k1.b>k1.g) col.b=mix(col.b,max(col.r,col.g),(1.0-mask)*despill);
+      }} else { alpha=(1.0-mask)*uOpacity; col=vec3(1.0); }
   }
-
-  col += uBrightness; col = (col - 0.5) * uContrast + 0.5;
-  float gray = dot(col, vec3(0.299, 0.587, 0.114)); col = mix(vec3(gray), col, uSaturation);
-  col = pow(max(col, 0.0), vec3(1.0 / uGamma));
-
-  gl_FragColor = vec4(col, alpha); if(alpha < 0.01) discard; 
+  col+=uBrightness; col=(col-0.5)*uContrast+0.5;
+  float gray=dot(col,vec3(0.299,0.587,0.114)); col=mix(vec3(gray),col,uSaturation); col=pow(max(col,0.0),vec3(1.0/uGamma));
+  gl_FragColor=vec4(col,alpha); if(alpha<0.01) discard; 
 }`;
 
 // ==========================================
-// ⚙️ SISTEMA PRINCIPAL
+// ⚙️ VARIABLES GLOBALES
 // ==========================================
 let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
 let objects = [], activeId = null, clock = new THREE.Clock();
 let xrGlBinding = null, depthProgram = null, depthVao = null, depthTex = null, occlusionEnabled = false;
-
 let controller1, controller2, controllerGrip1, controllerGrip2, raycaster, tempMatrix = new THREE.Matrix4();
 
-let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null, d:null };
+// INGENIERÍA OPTIMIZADA
+let engGroup; 
+let coordLabels = { x:null, y:null, z:null };
+let dimLabels = { w:null, h:null };
 let currentUnit = 'm';
+let inspectorMode = false; // ESTADO GLOBAL DE COTAS (Performance Key)
+let btnXPressed = false;   // Debounce para botón X
 
 function init() {
   scene = new THREE.Scene(); scene.add(new THREE.AmbientLight(0xffedd5, 1.2));
   camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500); camera.position.set(0, 1.6, 2);
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(window.devicePixelRatio); 
+  renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
   renderer.xr.enabled = true; renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   orbit = new OrbitControls(camera, renderer.domElement);
@@ -248,85 +200,83 @@ function init() {
   transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
   scene.add(transformCtrl);
   
-  initEngineeringUI(); updateGrid(); setupXRControllers(); setupVR();
+  initEngineeringUI();
+  updateGrid(); 
+  setupXRControllers();
+  setupVR();
+  
   renderer.setAnimationLoop(animate);
   
-  // Bindings
+  // DOM Events
   document.getElementById('chromaToggle').addEventListener('change', updateMaterial);
   document.getElementById('chromaInvert').addEventListener('change', updateMaterial);
   document.querySelectorAll('input[type=range]').forEach(i => {
-      if(!i.id.startsWith('key')) i.addEventListener('input', e => {
-          const val = parseFloat(e.target.value);
-          const lbl = document.getElementById('v_' + e.target.id);
-          if(lbl) lbl.innerText = val.toFixed(3);
-          updateMaterialParam(e.target.id, val);
-      });
+      if(!i.id.startsWith('key')) i.addEventListener('input', e => updateMaterialParam(e.target.id, parseFloat(e.target.value)));
   });
   ['keyR', 'keyG', 'keyB'].forEach(id => document.getElementById(id).addEventListener('input', updateChromaManual));
   window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
   window.updateGrid = updateGrid;
-  window.setChromaPreset = (r,g,b) => { document.getElementById('keyR').value=r; document.getElementById('keyG').value=g; document.getElementById('keyB').value=b; updateChromaManual(); };
 }
 
 // ==========================================
-// 📐 VISUALIZACIÓN
+// 📐 VISUALIZACIÓN OPTIMIZADA (BAJO DEMANDA)
 // ==========================================
 function updateGrid() {
     const old = scene.getObjectByName("grid"); if(old) scene.remove(old);
     if(!document.getElementById('showGrid').checked) return;
-
     let gridSize = 15; let divisions = 15;
     if(currentUnit==='ft') { gridSize = 15*0.3048; divisions = 15; }
-    
-    const colorGrid = new THREE.Color(0xffaa00);
-
     const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
     const material = new THREE.ShaderMaterial({
         transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
-        uniforms: { uColor: { value: colorGrid }, uDivisions: { value: divisions } },
+        uniforms: { uColor: { value: new THREE.Color(0xffaa00) }, uDivisions: { value: divisions } },
         vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
         fragmentShader: `varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions; void main() { vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions); float line = min(grid.x, grid.y); float alpha = 1.0 - min(line, 1.0); alpha = pow(alpha, 0.3); float dist = distance(vUv, vec2(0.5)); float mask = 1.0 - smoothstep(0.2, 0.5, dist); gl_FragColor = vec4(uColor, alpha * mask * 0.6); }`
     });
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.001; mesh.name = "grid";
-    scene.add(mesh);
+    mesh.rotation.x = -Math.PI / 2; mesh.position.y = 0.001; mesh.name = "grid"; scene.add(mesh);
 }
 
 function initEngineeringUI() {
     engGroup = new THREE.Group(); scene.add(engGroup);
     
-    const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
+    // Lineas
+    const lineMat = new THREE.LineDashedMaterial({ color: 0x00ffff, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
     const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
     lineY.name = 'lineY'; engGroup.add(lineY);
     
+    // Sombra (Ring)
     const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); frameGeo.rotateZ(Math.PI/4);
-    const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.8, side:THREE.DoubleSide, depthWrite:false });
+    const frameMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent:true, opacity:0.5, side:THREE.DoubleSide, depthWrite:false });
     const shadow = new THREE.Mesh(frameGeo, frameMat);
     shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
 
-    coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
+    coordLabels.x = createLabel(); coordLabels.y = createLabel(); coordLabels.z = createLabel();
     engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
-    dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
-    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
+    dimLabels.w = createLabel(); dimLabels.h = createLabel(); 
+    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h);
     engGroup.visible = false;
 }
 
-function createLabel(txt) {
+function createLabel() {
     const cvs = document.createElement('canvas'); cvs.width=256; cvs.height=64;
     const tex = new THREE.CanvasTexture(cvs);
     const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
     const s = new THREE.Sprite(mat); s.scale.set(0.3, 0.075, 1);
-    s.userData = { cvs, ctx: cvs.getContext('2d'), tex };
+    s.userData = { cvs, ctx: cvs.getContext('2d'), tex, lastTxt: "" }; // Cache de texto
     return s;
 }
 
 function updateLabelText(sprite, text, isDim=false) {
+    if(sprite.userData.lastTxt === text) return; // OPTIMIZACIÓN: No redibujar si el texto es el mismo
+    sprite.userData.lastTxt = text;
+
     const { ctx, tex } = sprite.userData;
     ctx.clearRect(0,0,256,64);
-    ctx.fillStyle = "rgba(20, 15, 0, 0.85)"; ctx.roundRect(5,5,246,54,12); ctx.fill();
-    ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00"; ctx.lineWidth=3; ctx.stroke();
-    ctx.fillStyle = "#fff"; ctx.font = "bold 34px 'Fira Code', monospace"; 
-    ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.shadowColor = isDim ? "#ffff00" : "#ffaa00"; ctx.shadowBlur = 10;
+    ctx.fillStyle = "rgba(0, 0, 0, 0.7)"; ctx.roundRect(5,5,246,54,12); ctx.fill();
+    ctx.strokeStyle = isDim ? "#ffff00" : "#00ffff"; ctx.lineWidth=3; ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.font = "bold 34px monospace"; 
+    ctx.textAlign = "center"; ctx.textBaseline = "middle"; 
     ctx.fillText(text, 128, 32);
     tex.needsUpdate = true;
 }
@@ -338,9 +288,17 @@ function formatUnit(val) {
 }
 
 function updateEngineeringVisuals() {
-    if(!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
-    const obj = objects.find(o => o.id === activeId); if(!obj) return;
-    engGroup.visible = true;
+    // 🔥 OPTIMIZACIÓN CLAVE: Si el inspector está apagado, no calculamos NADA
+    if(!inspectorMode || !activeId) { 
+        if(engGroup.visible) engGroup.visible = false; 
+        return; 
+    }
+    
+    const obj = objects.find(o => o.id === activeId);
+    if(!obj) return;
+
+    if(!engGroup.visible) engGroup.visible = true;
+
     const P = obj.mesh.position; const S = obj.mesh.scale; const R = obj.mesh.rotation;
     let baseW = obj.originalAspect || 1; let realW = baseW * S.x; let realH = 1 * S.y;
 
@@ -348,34 +306,31 @@ function updateEngineeringVisuals() {
     lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]); lineY.computeLineDistances();
 
     const shadow = engGroup.getObjectByName('shadowPlane');
-    shadow.position.set(P.x, 0.005, P.z); shadow.rotation.set(-Math.PI/2, 0, R.y);
-    const frameScale = Math.max(realW, 0.5) * 1.1; shadow.scale.set(frameScale, frameScale, 1);
+    shadow.position.set(P.x, 0.005, P.z); 
+    shadow.rotation.set(-Math.PI/2, 0, R.y);
+    const frameScale = Math.max(realW, 0.5) * 1.1; 
+    shadow.scale.set(frameScale, frameScale, 1);
 
-    if(document.getElementById('showCoords').checked) {
-        coordLabels.x.visible = true; coordLabels.y.visible = true; coordLabels.z.visible = true;
-        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
-        coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
-        coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
-    } else {
-        coordLabels.x.visible = false; coordLabels.y.visible = false; coordLabels.z.visible = false;
-    }
+    // Coordenadas
+    coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z); updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
+    coordLabels.x.position.set(P.x, 0.1, P.z + 0.3); updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
+    coordLabels.z.position.set(P.x + 0.3, 0.1, P.z); updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
 
-    dimLabels.w.visible = true; dimLabels.h.visible = true;
+    // Cotas
     dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0)); updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true);
     dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0)); updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
 }
 
 // ==========================================
-// 🎮 CONTROLES XR (CORREGIDO v24)
+// 🎮 CONTROLES XR (INPUT SEGURO V22 + BOTÓN X)
 // ==========================================
 function setupXRControllers() {
-    controller1 = renderer.xr.getController(0); 
+    controller1 = renderer.xr.getController(0); // Der
     controller1.addEventListener('selectstart', onSelect); 
-    controller1.addEventListener('squeezestart', onGripStart); 
-    controller1.addEventListener('squeezeend', onGripEnd);
+    controller1.addEventListener('squeezestart', onGripStart); controller1.addEventListener('squeezeend', onGripEnd);
     scene.add(controller1);
 
-    controller2 = renderer.xr.getController(1); 
+    controller2 = renderer.xr.getController(1); // Izq
     controller2.addEventListener('selectstart', onSelect);
     scene.add(controller2);
 
@@ -390,11 +345,9 @@ function setupXRControllers() {
     raycaster = new THREE.Raycaster();
 }
 
-function handleStableControls() {
+function handleXRInput() {
     const s = renderer.xr.getSession();
-    if (!s || !activeId) return;
-    const obj = objects.find(o => o.id === activeId);
-    if (!obj || !obj.mesh) return; 
+    if (!s) return;
 
     for (const src of s.inputSources) {
         const gp = src.gamepad;
@@ -402,20 +355,34 @@ function handleStableControls() {
 
         // BOTÓN GRIP SEGURO
         const grip = gp.buttons?.[1]?.pressed === true;
+        
+        // BOTÓN X (Botón 3 en mando Izquierdo) - TOGGLE INSPECTOR
+        if(src.handedness === 'left') {
+            const btnX = gp.buttons?.[3]?.pressed === true;
+            if(btnX && !btnXPressed) {
+                inspectorMode = !inspectorMode; // Toggle estado
+                const badge = document.getElementById('inspectorBadge');
+                badge.style.display = inspectorMode ? 'block' : 'none';
+                if(!inspectorMode) engGroup.visible = false; // Apagar inmediato
+                btnXPressed = true;
+            } else if(!btnX) {
+                btnXPressed = false;
+            }
+        }
 
-        // FALLBACK EJES
+        // CONTROL DE MOVIMIENTO (Solo si hay objeto activo)
+        if(!activeId) continue;
+        const obj = objects.find(o => o.id === activeId);
+        if(!obj) continue;
+
         const axes = gp.axes || [];
         let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
         let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
+        if (!Number.isFinite(ax)) ax = 0; if (!Number.isFinite(ay)) ay = 0;
 
-        if (!Number.isFinite(ax)) ax = 0;
-        if (!Number.isFinite(ay)) ay = 0;
-
+        // IZQUIERDA: Altura / Escala
         if (src.handedness === 'left' && grip) {
-            if (Math.abs(ay) > 0.1) {
-                obj.mesh.position.y -= ay * 0.02;
-                if (obj.mesh.position.y < 0) obj.mesh.position.y = 0;
-            }
+            if (Math.abs(ay) > 0.1) { obj.mesh.position.y -= ay * 0.02; if(obj.mesh.position.y < 0) obj.mesh.position.y = 0; }
             if (Math.abs(ax) > 0.1) {
                 let scaleF = 1 + (ax * 0.02);
                 if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1; 
@@ -423,49 +390,29 @@ function handleStableControls() {
                 obj.mesh.scale.clampScalar(0.05, 50.0);
             }
         }
-
+        // DERECHA: Plano / Rotación
         if (src.handedness === 'right' && grip) {
             if (Math.abs(ay) > 0.1) {
                 const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize();
-                dir.y = 0;
-                obj.mesh.position.addScaledVector(dir, ay * -0.05);
+                dir.y = 0; obj.mesh.position.addScaledVector(dir, ay * -0.05);
             }
-            if (Math.abs(ax) > 0.1) {
-                obj.mesh.rotation.y -= ax * 0.05;
-            }
+            if (Math.abs(ax) > 0.1) { obj.mesh.rotation.y -= ax * 0.05; }
         }
     }
 }
 
-// 🔥 MEJORA DE INTERACCIÓN: SELECCIONAR AL AGARRAR 🔥
 function onGripStart(e) { 
-    const c = e.target; 
-    const hits = getIntersections(c); 
-    if(hits.length > 0) { 
-        const o = hits[0].object; 
-        // 1. Convertir el objeto que toco en el activo para la UI
-        if(o.userData.id) selectObject(o.userData.id);
-        
-        // 2. Attach físico para mover
-        c.attach(o); 
-        c.userData.selected = o; 
-    } 
+    const c = e.target; const hits = getIntersections(c); 
+    if(hits.length > 0) { const o = hits[0].object; if(o.userData.id) selectObject(o.userData.id); c.attach(o); c.userData.selected = o; } 
 }
-
 function onGripEnd(e) { 
-    const c = e.target; 
-    if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } 
+    const c = e.target; if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } 
 }
-
 function onSelect(e) { 
-    const hits = getIntersections(e.target); 
-    if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id); 
+    const hits = getIntersections(e.target); if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id); 
 }
-
 function getIntersections(c) { 
-    tempMatrix.identity().extractRotation(c.matrixWorld); 
-    raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld); 
-    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix); 
+    tempMatrix.identity().extractRotation(c.matrixWorld); raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld); raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix); 
     return raycaster.intersectObjects(objects.map(o=>o.mesh), false); 
 }
 
@@ -511,8 +458,8 @@ async function addAsset(url, type, name, isGif=false, isRestore=false) {
 function animate(time, frame) {
   const dt = clock.getElapsedTime();
   orbit.update();
-  handleStableControls();
-  updateEngineeringVisuals();
+  handleXRInput(); // Polling seguro
+  updateEngineeringVisuals(); // Solo si inspectorMode = true
   
   objects.forEach(o => {
       if(o.billboard) o.mesh.lookAt(camera.position.x, o.mesh.position.y, camera.position.z);
@@ -575,28 +522,12 @@ function updateChromaManual(){ const o=objects.find(x=>x.id===activeId); if(o) {
 function updateMaterial(){ const o=objects.find(x=>x.id===activeId); if(o) { o.mesh.material.uniforms.chromaOn.value=document.getElementById('chromaToggle').checked; o.mesh.material.uniforms.chromaInvert.value=document.getElementById('chromaInvert').checked; document.getElementById('chromaPanel').style.display=o.mesh.material.uniforms.chromaOn.value?'block':'none'; updateChromaManual(); }}
 function selectObject(id){ activeId=id; const o=objects.find(x=>x.id===id); if(o){ transformCtrl.attach(o.mesh); document.getElementById('editorUI').style.display='block'; document.getElementById('chromaToggle').checked=o.mesh.material.uniforms.chromaOn.value; document.getElementById('chromaInvert').checked=o.mesh.material.uniforms.chromaInvert.value; document.getElementById('brightness').value=o.mesh.material.uniforms.uBrightness.value; document.getElementById('contrast').value=o.mesh.material.uniforms.uContrast.value; document.getElementById('saturation').value=o.mesh.material.uniforms.uSaturation.value; document.getElementById('gamma').value=o.mesh.material.uniforms.uGamma.value; document.getElementById('k1sim').value=o.mesh.material.uniforms.sim1.value; document.getElementById('k1smooth').value=o.mesh.material.uniforms.smooth1.value; document.getElementById('despill').value=o.mesh.material.uniforms.despill.value; updateMaterial(); updateLayers(); } }
 function updateLayers() { const l=document.getElementById('layerList'); l.innerHTML=''; objects.forEach(o=>{ const d=document.createElement('div'); d.className=`layer-item ${o.id===activeId?'active':''}`; d.innerText=(o.type=='video'?'🎬 ':'🖼️ ')+o.name.slice(0,15); d.onclick=()=>selectObject(o.id); l.appendChild(d); }); }
-window.toggleUIPanel = () => document.getElementById('ui').classList.toggle('minimized');
 window.handleAuthClick = () => { if(!CLIENT_ID) alert("Falta API KEY"); gapi.load('client:auth2', ()=>{ gapi.client.init({apiKey:API_KEY, clientId:CLIENT_ID, discoveryDocs:["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"], scope:SCOPES}).then(()=>gapi.auth2.getAuthInstance().signIn()).then(()=>{ document.getElementById('authPanel').style.display='none'; document.getElementById('driveActions').style.display='flex'; }); }); };
 window.saveSceneToDrive = () => { /* Logica guardar */ };
 window.loadSceneFromDrive = () => { /* Logica cargar */ };
 window.loadFromWeb=()=>{ const u=document.getElementById('webUrl').value; if(u) addAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
 document.getElementById('fileInput').onchange=(e)=>{ for(let f of e.target.files) addAsset(URL.createObjectURL(f), f.type.includes('video')?'video':'image', f.name, f.name.includes('.gif')); };
-
-// 🔥 MEJORA DE LIMPIEZA 🔥
-window.deleteActive = () => {
-    const i = objects.findIndex(x => x.id === activeId);
-    if(i > -1) {
-        scene.remove(objects[i].mesh);
-        objects.splice(i, 1);
-    }
-    // RESETEAR ESTADO UI Y VISUALES
-    activeId = null;
-    transformCtrl.detach();
-    document.getElementById('editorUI').style.display = 'none';
-    if(engGroup) engGroup.visible = false; // Apagar cotas
-    updateLayers();
-};
-
+window.deleteActive=()=>{ const i=objects.findIndex(x=>x.id===activeId); if(i>-1) { scene.remove(objects[i].mesh); objects.splice(i,1); transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; } };
 window.mediaAction=(a)=>{ const o=objects.find(x=>x.id===activeId); if(o&&o.video) a=='play'?o.video.play():o.video.pause(); };
 
 init();
