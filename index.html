@@ -3,897 +3,1588 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v30.0 | Ultimate Architect</title>
-  
+  <title>MR Studio Diamond v24.x | Fusion Projections + 3D + 360</title>
+
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
     /* =========================================
-       🎨 UI SYSTEM: AMBER GLASS (Arquitectura)
+       ESTILO "AMBER GLASS" (base v24)
     ========================================= */
     :root {
-        --main: #ffaa00; /* Amber Neon */
-        --bg: rgba(15, 15, 20, 0.9);
-        --glass: rgba(255, 170, 0, 0.1);
-        --border: 1px solid rgba(255, 170, 0, 0.3);
-        --font: 'Segoe UI', system-ui, sans-serif;
+      --main-color: #ffaa00;
+      --bg-glass: rgba(20, 20, 25, 0.85);
+      --border-glass: rgba(255, 170, 0, 0.3);
+      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
     }
 
-    * { box-sizing: border-box; user-select: none; font-family: var(--font); }
-    body { margin: 0; overflow: hidden; background: #111; color: #eee; }
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
+
+    /* WebGL canvas */
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
 
-    /* PANEL PRINCIPAL */
-    .ui-panel { 
-      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 95vh; 
-      background: var(--bg); backdrop-filter: blur(20px); border: var(--border); 
-      border-radius: 16px; padding: 15px; z-index: 100; 
-      box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-      scrollbar-width: thin; scrollbar-color: var(--main) transparent;
-      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      display: flex; flex-direction: column; gap: 10px;
+    /* CSS3D canvas (para YouTube iframe) */
+    #css3d {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1;
     }
-    .minimized { transform: translateX(-420px); }
+    /* Permitimos interacción solo en iframes cuando el usuario activa "modo interactivo" */
+    #css3d.interactive { pointer-events: auto; }
 
-    /* TIPOGRAFÍA & ELEMENTOS */
-    h2 { margin: 0; font-size: 14px; color: var(--main); text-transform: uppercase; letter-spacing: 2px; border-bottom: var(--border); padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .sec-head { font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; margin-top: 10px; letter-spacing: 1px; }
-    
-    .row { display: flex; align-items: center; gap: 8px; font-size: 11px; margin-bottom: 4px; }
-    label { flex: 1; color: #ccc; cursor: pointer; white-space: nowrap; }
-    
-    /* INPUTS */
-    input[type=range] { flex: 2; height: 4px; accent-color: var(--main); background: #333; border-radius: 2px; -webkit-appearance: none; }
-    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: var(--main); border-radius: 50%; cursor: pointer; }
-    input[type=checkbox] { accent-color: var(--main); width: 14px; height: 14px; cursor: pointer; }
-    input[type=text], input[type=url] { width: 100%; background: #222; border: 1px solid #444; color: #fff; padding: 6px; border-radius: 4px; font-size: 11px; outline: none; }
-    select { width: 100%; background: #222; color: #fff; border: 1px solid #444; padding: 5px; border-radius: 4px; outline: none; }
-    .val { width: 35px; text-align: right; color: var(--main); font-family: monospace; font-weight: bold; }
-
-    /* BOTONES */
-    button { flex: 1; padding: 8px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; color: #000; background: var(--main); transition: 0.2s; font-size: 10px; text-transform: uppercase; }
-    button:hover { filter: brightness(1.2); }
-    button:active { transform: scale(0.96); }
-    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: var(--border); }
-    button.danger { background: #ff4757; color: white; }
-    button.drive { background: #2ecc71; color: white; }
-
-    /* LISTA DE CAPAS (DRAG & DROP) */
-    .layer-list { max-height: 150px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; border: 1px solid #333; }
-    .layer-item { 
-      padding: 6px 8px; font-size: 11px; border-radius: 4px; margin-bottom: 2px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; background: rgba(255,255,255,0.05); 
+    .ui-panel {
+      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
+      background: var(--bg-glass);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 20px; overflow-y: auto; z-index: 100;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
-    .layer-item:hover { background: rgba(255, 170, 0, 0.15); }
-    .layer-item.active { background: rgba(255, 170, 0, 0.25); border-left: 3px solid var(--main); }
-    .layer-drag-handle { cursor: grab; color: #666; font-size: 14px; }
-    .layer-vis { cursor: pointer; width: 14px; text-align: center; }
+    .ui-panel.minimized { transform: translateX(-460px); }
 
-    /* COLOR PICKER CUSTOM */
-    .color-presets { display: flex; justify-content: space-around; margin: 8px 0; }
-    .color-dot { width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 2px solid #444; transition: 0.2s; }
-    .color-dot:hover { transform: scale(1.2); border-color: #fff; }
-    #currentColorBox { width: 100%; height: 8px; border-radius: 4px; background: #0f0; margin-bottom: 8px; }
+    h2 {
+      margin: 0 0 18px 0; font-size: 15px; color: var(--main-color); font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px;
+      border-bottom: 2px solid var(--border-glass); padding-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      text-shadow: var(--text-glow);
+    }
+    .sec-head {
+      font-size: 11px; font-weight: 900; color: #aaa; margin: 18px 0 8px 0;
+      text-transform: uppercase; letter-spacing: 1.5px;
+    }
 
-    /* BOTONES FLOTANTES */
-    #toggleUI { position: fixed; left: 20px; top: 20px; z-index: 101; width: 40px; height: 40px; border-radius: 50%; background: #222; border: 2px solid var(--main); color: var(--main); font-size: 18px; cursor: pointer; display: none; align-items: center; justify-content: center; }
-    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 12px 40px; background: var(--main); color: #000; border-radius: 30px; font-weight: 800; z-index: 1000; display: none; box-shadow: 0 0 20px rgba(255, 170, 0, 0.6); border: 2px solid #fff; letter-spacing: 1px; }
-    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; flex-direction: column; gap: 10px; color: var(--main); font-weight: 900; letter-spacing: 2px; }
-    
-    /* MODOS XR */
-    #xrEnvControls { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid #444; }
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 600; }
+
+    input[type=range] {
+      flex: 2; height: 4px; accent-color: var(--main-color);
+      background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
+    }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
+    .val { width: 46px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+
+    select, input[type=url], input[type=text] {
+      width: 100%; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-glass); color: #fff;
+      padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
+    }
+
+    button {
+      flex: 1; padding: 10px; border-radius: 10px; border: none;
+      font-weight: 900; cursor: pointer;
+      color: #000; background: var(--main-color);
+      transition: 0.25s; font-size: 11px;
+      text-transform: uppercase; box-shadow: var(--text-glow);
+    }
+    button:active { transform: scale(0.97); }
+    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
+    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
+    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
+    button.small { padding: 8px; font-size: 10px; letter-spacing: 1px; }
+
+    #toggleUI {
+      position: fixed; left: 20px; top: 20px; z-index: 101;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--bg-glass); backdrop-filter: blur(20px);
+      border: 2px solid var(--main-color); color: var(--main-color);
+      font-weight: 900; cursor: pointer; display: none;
+      box-shadow: var(--text-glow); font-size: 20px;
+      align-items: center; justify-content: center;
+    }
+
+    #vrBtn {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      padding: 16px 50px; background: var(--main-color); color: #000;
+      border-radius: 50px; font-weight: 1000; z-index: 1000; display: none;
+      box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff;
+      font-size: 14px; letter-spacing: 2px;
+    }
+
+    .loader {
+      position: fixed; inset: 0; background: #000; z-index: 5000;
+      display: none; place-items: center; color: var(--main-color);
+      font-weight: 1000; letter-spacing: 4px; font-size: 22px;
+      text-shadow: var(--text-glow);
+    }
+
+    .layer-list {
+      max-height: 180px; overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px; padding: 8px; margin-bottom: 12px;
+      border: 1px solid var(--border-glass);
+    }
+
+    .layer-item {
+      padding: 8px 10px; font-size: 11px; border-radius: 10px;
+      cursor: pointer; display: grid;
+      grid-template-columns: 18px 1fr auto auto;
+      align-items: center; gap: 8px;
+      margin-bottom: 6px; transition: 0.2s; font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.12);
+    }
+    .layer-item.active {
+      background: rgba(255, 170, 0, 0.2);
+      border-left: 3px solid var(--main-color);
+      color: #fff;
+    }
+    .layer-item .tag {
+      font-weight: 900; color: rgba(255,255,255,0.75);
+      font-size: 10px; padding: 3px 6px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .layer-item .mini {
+      display:flex; gap:6px; align-items:center;
+    }
+    .layer-item .mini input { width: 16px; height: 16px; }
+
+    .note {
+      font-size: 11px; line-height: 1.35;
+      color: rgba(255,255,255,0.75);
+      border: 1px dashed rgba(255,170,0,0.35);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+    }
   </style>
 </head>
 <body>
 
-<canvas id="c"></canvas>
-<div class="loader" id="loader"><div>CARGANDO MOTOR...</div></div>
-<button id="toggleUI" onclick="togglePanel()">☰</button>
+  <canvas id="c"></canvas>
+  <div id="css3d"></div>
 
-<div class="ui-panel" id="ui">
-  <h2>DIAMOND v30.0 <span onclick="togglePanel()" style="cursor:pointer;">×</span></h2>
+  <div class="loader" id="loader">CARGANDO...</div>
+  <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
-  <div class="row" style="gap:5px;">
-    <button class="drive" onclick="handleAuthClick()">☁️ DRIVE</button>
-    <button class="secondary" onclick="saveScene()">💾 SAVE</button>
-    <button class="secondary" onclick="document.getElementById('jsonInput').click()">📂 LOAD</button>
-    <input type="file" id="jsonInput" accept=".json" style="display:none;" onchange="loadSceneLocal(this)">
-  </div>
+  <div class="ui-panel" id="ui">
+    <h2>
+      <span>DIAMOND v24.x FUSION</span>
+      <span style="cursor:pointer; font-size:18px;" onclick="toggleUIPanel()">×</span>
+    </h2>
 
-  <div class="sec-head">📥 Importar (Foto, Video, 3D)</div>
-  <div class="row">
-    <input type="url" id="webUrl" placeholder="Pegar URL...">
-    <button onclick="loadFromWeb()" style="flex:0.4;">+</button>
-  </div>
-  <button class="secondary" onclick="document.getElementById('fileInput').click()" style="width:100%;">📁 ABRIR ARCHIVO LOCAL</button>
-  <input type="file" id="fileInput" multiple style="display:none;" onchange="handleFileSelect(this)">
+    <div class="sec-head">📐 Arquitectura</div>
+    <div class="row">
+      <select id="unitSystem" onchange="updateUnits()">
+        <option value="m">Metros (m)</option>
+        <option value="cm">Centímetros (cm)</option>
+        <option value="ft">Pies (ft)</option>
+      </select>
+    </div>
+    <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
+    <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
+    <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
 
-  <div class="sec-head">Capas (Arrastrar para ordenar)</div>
-  <div id="layerList" class="layer-list"></div>
-
-  <div id="editorUI" style="display:none;">
-    
-    <div class="sec-head">📐 Transformación</div>
-    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.01" max="10" step="0.01"><span class="val" id="v_scale">1.0</span></div>
-    <div class="row"><label>Altura Y</label><input type="range" id="posY" min="-5" max="5" step="0.1"><span class="val" id="v_posY">0.0</span></div>
-    <div class="row"><label>Rotación Y</label><input type="range" id="rotY" min="0" max="6.28" step="0.1"><span class="val" id="v_rotY">0.0</span></div>
-    <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard (Mirar a cám)</label></div>
-
-    <div id="mediaControls">
-        <div class="sec-head">🎨 Edición de Imagen</div>
-        <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05"><span class="val" id="v_brightness">0</span></div>
-        <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1"><span class="val" id="v_contrast">1</span></div>
-        <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1"><span class="val" id="v_saturation">1</span></div>
-        <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1"><span class="val" id="v_gamma">1</span></div>
-        <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01"><span class="val" id="v_opacity">1</span></div>
-
-        <div class="sec-head">🛠️ Chroma Key Ultra</div>
-        <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar</label> <label><input type="checkbox" id="chromaInvert"> Invertir</label></div>
-        <div id="chromaPanel" style="display:none; background:rgba(255,255,255,0.05); padding:8px; border-radius:6px;">
-            <div id="currentColorBox"></div>
-            <div class="color-presets">
-                <div class="color-dot" style="background:#00ff00;" onclick="setChroma(0,1,0)"></div>
-                <div class="color-dot" style="background:#0000ff;" onclick="setChroma(0,0,1)"></div>
-                <div class="color-dot" style="background:#000000;" onclick="setChroma(0,0,0)"></div>
-                <div class="color-dot" style="background:#ffffff;" onclick="setChroma(1,1,1)"></div>
-                <div class="color-dot" style="background:#808080;" onclick="setChroma(0.5,0.5,0.5)"></div>
-            </div>
-            <div class="row"><label>Similitud</label><input type="range" id="sim" min="0" max="0.8" step="0.001"><span class="val" id="v_sim">0.4</span></div>
-            <div class="row"><label>Suavizado</label><input type="range" id="smooth" min="0" max="0.4" step="0.001"><span class="val" id="v_smooth">0.1</span></div>
-            <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01"><span class="val" id="v_despill">0.5</span></div>
-            <input type="hidden" id="keyR" value="0"><input type="hidden" id="keyG" value="1"><input type="hidden" id="keyB" value="0">
-        </div>
-        
-        <div class="row" style="margin-top:10px;">
-            <button onclick="mediaAction('play')">▶ PLAY</button>
-            <button onclick="mediaAction('pause')">⏸ PAUSE</button>
-            <button onclick="mediaAction('mute')">🔇 MUTE</button>
-        </div>
+    <div class="sec-head">☁️ Proyecto</div>
+    <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">Conectar Drive</button></div>
+    <div class="row" id="driveActions" style="display:none; gap:8px;">
+      <button onclick="saveSceneToDrive()" class="secondary">Guardar</button>
+      <button onclick="loadSceneFromDrive()" class="secondary">Cargar</button>
     </div>
 
-    <div class="sec-head">🌐 Proyección</div>
-    <select id="projSelect" onchange="updateProjection()">
-        <option value="plane">Plano 2D</option>
-        <option value="curved">Pantalla Curva</option>
-        <option value="360">Esfera 360°</option>
-        <option value="180">Domo 180°</option>
-        <option value="cube">Cubo</option>
-        <option value="sphere">Esfera (Externa)</option>
-    </select>
+    <div class="sec-head">📥 Importar</div>
+    <div class="row">
+      <input type="url" id="webUrl" placeholder="URL .mp4/.webm/.png/.jpg/.gif o 360 equirect">
+      <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
+    </div>
+    <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">
+      📁 Abrir local (img/video/gif/glb/gltf)
+    </button>
+    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf">
 
-    <button class="danger" onclick="deleteActive()" style="width:100%; margin-top:15px;">🗑️ ELIMINAR CAPA</button>
+    <div class="sec-head">▶ YouTube (3D DOM)</div>
+    <div class="row">
+      <input type="text" id="ytUrl" placeholder="Pega URL de YouTube (iframe 3D)">
+      <button onclick="addYouTube()" class="small" style="flex:0 0 70px;">ADD</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="css3dInteractive"> Interactuar (click)</label>
+    </div>
+    <div class="note">
+      Nota técnica: YouTube como <b>textura WebGL</b> suele fallar por CORS/DRM. Aquí se muestra como <b>plano 3D DOM</b> (CSS3D). En modo AR inmersivo puede no verse.
+    </div>
+
+    <div class="sec-head">Capas</div>
+    <div id="layerList" class="layer-list"></div>
+
+    <div id="editorUI" style="display:none;">
+      <div class="sec-head">🎛 Capa Activa</div>
+      <div class="row"><label><input type="checkbox" id="layerVisible"> Visible</label></div>
+      <div class="row"><label><input type="checkbox" id="layerLocked"> Bloquear</label></div>
+      <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard (mirar cámara)</label></div>
+
+      <div class="sec-head">🌐 Superficie / Proyección</div>
+      <div class="row">
+        <select id="projSelect" onchange="updateProjection()">
+          <option value="plane">Plano 2D</option>
+          <option value="curved">Pantalla Curva</option>
+          <option value="orb">Orbe</option>
+          <option value="360">Entorno 360°</option>
+        </select>
+      </div>
+
+      <div class="sec-head">🎨 Imagen/Video (shader)</div>
+      <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
+      <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
+      <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
+      <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
+      <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+      <div class="row"><label>Emisión</label><input type="range" id="emissive" min="0" max="2" step="0.01" value="0"><span class="val" id="v_emissive">0</span></div>
+
+      <div class="sec-head">🧪 Chroma Key</div>
+      <div class="row">
+        <label><input type="checkbox" id="chromaToggle"> Activar</label>
+        <label><input type="checkbox" id="chromaInvert"> Invertir</label>
+      </div>
+      <div id="chromaPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--border-glass);">
+        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001" value="0.4"><span class="val" id="v_k1sim">0.400</span></div>
+        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001" value="0.08"><span class="val" id="v_k1smooth">0.080</span></div>
+        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v_despill">0.500</span></div>
+
+        <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
+          <div class="row"><label style="color:#f66">Key R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+          <div class="row"><label style="color:#6f6">Key G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+          <div class="row"><label style="color:#66f">Key B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        </div>
+      </div>
+
+      <div class="sec-head">🎮 Media</div>
+      <div class="row" style="gap:8px;">
+        <button onclick="mediaAction('play')" class="secondary">▶ Play</button>
+        <button onclick="mediaAction('pause')" class="secondary">⏸ Pause</button>
+        <button onclick="mediaAction('mute')" class="secondary">🔇 Mute</button>
+      </div>
+
+      <div class="sec-head">🧭 Acciones</div>
+      <div class="row" style="gap:8px;">
+        <button onclick="centerActive()" class="secondary">🎯 Re-centrar</button>
+        <button onclick="deleteActive()" class="danger">🗑 Eliminar</button>
+      </div>
+    </div>
+
+    <div class="sec-head">⚙️ Realidad Mixta</div>
+    <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
   </div>
 
-  <div class="sec-head">⚙️ Escena & Arquitectura</div>
-  <div class="row">
-      <select id="unitSystem" onchange="updateUnits()">
-          <option value="m">Metros (m)</option>
-          <option value="cm">Centímetros (cm)</option>
-          <option value="ft">Pies (ft)</option>
-      </select>
-  </div>
-  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Holo Grid</label></div>
-  <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas (Dimensiones)</label></div>
-  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión (Depth API)</label></div>
-  
-  <div class="sec-head">🕶️ Entorno VR</div>
-  <select id="vrEnv" onchange="updateEnv()">
-      <option value="passthrough">Passthrough (MR)</option>
-      <option value="dark">Estudio Oscuro</option>
-      <option value="white">Estudio Blanco</option>
-      <option value="grid">Cyber Grid</option>
-  </select>
-</div>
+  <button id="vrBtn">INICIAR MR</button>
 
-<button id="vrBtn">INICIAR EXPERIENCIA MR</button>
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+  </script>
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TransformControls } from 'three/addons/controls/TransformControls.js';
+    import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
-<script type="importmap">
-{ "imports": {
-  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-} }
-</script>
+    // =========================
+    // Google Drive placeholders
+    // =========================
+    const CLIENT_ID = ''; 
+    const API_KEY = ''; 
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { TransformControls } from 'three/addons/controls/TransformControls.js';
-import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+    // =========================
+    // Shaders (v24 HSV + extras)
+    // =========================
+    const vShader = `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `;
 
-// ==========================================
-// 🔐 CREDENCIALES GOOGLE (Usuario debe llenar)
-// ==========================================
-const CLIENT_ID = ''; 
-const API_KEY = ''; 
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+    const fShader = `
+      uniform sampler2D map;
+      uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity, uEmissive;
 
-// ==========================================
-// 🎨 SHADERS (Universal: Foto/Video/Chroma/Grading)
-// ==========================================
-const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
-const fShader = `
-uniform sampler2D map; 
-uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity;
-uniform bool chromaOn, chromaInvert; 
-uniform vec3 k1; 
-uniform float sim1, smooth1, despill;
-varying vec2 vUv;
+      uniform bool chromaOn, chromaInvert;
+      uniform vec3 k1;
+      uniform float sim1, smooth1, despill;
 
-vec3 rgb2hsv(vec3 c) {
-    vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
-    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-    float d = q.x - min(q.w, q.y); float e = 1.0e-10;
-    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
-}
+      varying vec2 vUv;
 
-void main() {
-  vec4 tex = texture2D(map, vUv);
-  vec3 col = tex.rgb;
-  float alpha = tex.a * uOpacity;
-
-  if(chromaOn) {
-      vec3 hsv = rgb2hsv(col); vec3 kHsv = rgb2hsv(k1);
-      float hueDist = abs(hsv.x - kHsv.x); if (hueDist > 0.5) hueDist = 1.0 - hueDist;
-      float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0) + pow(abs(hsv.z - kHsv.z) * 0.5, 2.0));
-      float mask = smoothstep(sim1, sim1 + smooth1, dist);
-      
-      if(!chromaInvert) {
-          alpha *= mask;
-          // DESPILL AVANZADO
-          if(mask < 0.95 && despill > 0.0) {
-             if(k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
-             else if(k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
-          }
-      } else { 
-          alpha = (1.0 - mask) * uOpacity; 
-          col = vec3(1.0); // Máscara blanca para visualización
+      vec3 rgb2hsv(vec3 c) {
+        vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
+        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+        float d = q.x - min(q.w, q.y);
+        float e = 1.0e-10;
+        return vec3(abs(q.z + (q.w - q.y)/(6.0*d + e)), d/(q.x + e), q.x);
       }
-  }
 
-  // COLOR GRADING
-  col += uBrightness; 
-  col = (col - 0.5) * uContrast + 0.5;
-  float gray = dot(col, vec3(0.299, 0.587, 0.114)); 
-  col = mix(vec3(gray), col, uSaturation);
-  col = pow(max(col, 0.0), vec3(1.0 / uGamma));
+      void main() {
+        vec4 tex = texture2D(map, vUv);
+        vec3 col = tex.rgb;
+        float alpha = tex.a * uOpacity;
 
-  gl_FragColor = vec4(col, alpha); 
-  if(alpha < 0.01) discard; 
-}`;
+        if (chromaOn) {
+          vec3 hsv = rgb2hsv(col);
+          vec3 kHsv = rgb2hsv(k1);
 
-// OCLUSIÓN (DEPTH API)
-const depthVS = `#version 300 es
-in vec2 aPos; out vec2 vUv; void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }`;
-const depthFS = `#version 300 es
-precision highp float; precision highp sampler2D; in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj; out vec4 outColor;
-float decode(vec4 la){ return (la.r * 255.0 * 256.0 + la.a * 255.0); }
-void main(){ 
-  float z = -decode(texture(uDepth, vUv)) * uRawToMeters; if(z >= 0.0) discard;
-  float clipZ = uProj[2][2] * z + uProj[3][2]; float clipW = uProj[2][3] * z + uProj[3][3];
-  gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0); outColor = vec4(0.0); 
-}`;
+          float hueDist = abs(hsv.x - kHsv.x);
+          if (hueDist > 0.5) hueDist = 1.0 - hueDist;
 
-// ==========================================
-// ⚙️ VARIABLES DEL SISTEMA
-// ==========================================
-let scene, camera, renderer, orbit, transformCtrl, xrSession, xrRefSpace;
-let objects = [], activeId = null, clock = new THREE.Clock();
-let xrGlBinding, depthProgram, depthVao, depthTex, occlusionEnabled = false;
-let controller1, controller2, controllerGrip1, controllerGrip2, raycaster, tempMatrix = new THREE.Matrix4();
+          float dist = sqrt(
+            pow(hueDist * 2.0, 2.0) +
+            pow(abs(hsv.y - kHsv.y), 2.0) +
+            pow(abs(hsv.z - kHsv.z) * 0.5, 2.0)
+          );
 
-// UI Ingeniería
-let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null, d:null };
-let currentUnit = 'm';
-let activeEnv = 'passthrough';
+          float mask = smoothstep(sim1, sim1 + smooth1, dist);
 
-function init() {
-  const container = document.getElementById('c');
-  scene = new THREE.Scene(); 
-  scene.add(new THREE.AmbientLight(0xffffff, 1.5));
-  const dirLight = new THREE.DirectionalLight(0xffffff, 2); dirLight.position.set(5,10,5); scene.add(dirLight);
+          if (!chromaInvert) {
+            alpha *= mask;
 
-  camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 500); 
-  camera.position.set(0, 1.6, 2);
+            // despill básico (si key dominante)
+            if (mask < 0.95 && despill > 0.0) {
+              if (k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
+              else if (k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
+            }
+          } else {
+            alpha = (1.0 - mask) * uOpacity;
+            col = vec3(1.0);
+          }
+        }
 
-  renderer = new THREE.WebGLRenderer({ canvas: container, antialias: true, alpha: true });
-  renderer.setSize(window.innerWidth, window.innerHeight); 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.xr.enabled = true; 
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+        // ajustes imagen
+        col += uBrightness;
+        col = (col - 0.5) * uContrast + 0.5;
 
-  orbit = new OrbitControls(camera, renderer.domElement);
-  
-  transformCtrl = new TransformControls(camera, renderer.domElement);
-  transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
-  transformCtrl.addEventListener('change', () => { if(activeId) updateEngineeringVisuals(); });
-  scene.add(transformCtrl);
-  
-  initEngineeringUI();
-  updateGrid(); 
-  setupXRControllers();
-  setupVR();
-  
-  renderer.setAnimationLoop(animate);
-  window.addEventListener('resize', onResize);
-  
-  initUIEvents();
-}
+        float gray = dot(col, vec3(0.299, 0.587, 0.114));
+        col = mix(vec3(gray), col, uSaturation);
 
-// ==========================================
-// 🕹️ INTERACCIÓN & LÓGICA
-// ==========================================
-function initUIEvents() {
-    // Sliders de Material
-    const params = ['brightness','contrast','saturation','gamma','opacity','k1sim','k1smooth','despill'];
-    params.forEach(p => {
-        document.getElementById(p).addEventListener('input', e => updateObjSetting(p, parseFloat(e.target.value)));
-    });
-    
-    // Transform Sliders
-    ['scale','posY','rotY'].forEach(p => {
-        document.getElementById(p).addEventListener('input', e => {
-            const v = parseFloat(e.target.value);
-            document.getElementById('v_'+p).innerText = v.toFixed(2);
-            updateObjTransform(p, v);
-        });
-    });
+        col = pow(max(col, 0.0), vec3(1.0 / uGamma));
 
-    // Checkboxes
-    document.getElementById('chromaToggle').addEventListener('change', e => updateObjSetting('chromaOn', e.target.checked));
-    document.getElementById('chromaInvert').addEventListener('change', e => updateObjSetting('chromaInvert', e.target.checked));
-    document.getElementById('checkBillboard').addEventListener('change', e => updateObjSetting('billboard', e.target.checked));
-    
-    // Globales
-    window.togglePanel = () => document.getElementById('ui').classList.toggle('minimized');
-    window.setChroma = (r,g,b) => { updateObjSetting('k1', new THREE.Vector3(r,g,b)); };
-    window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); updateEngineeringVisuals(); };
-    window.updateEnv = () => { activeEnv = document.getElementById('vrEnv').value; if(activeEnv!=='passthrough') scene.background = new THREE.Color(activeEnv==='white'?0xffffff:0x111111); else scene.background = null; };
-    window.updateGrid = updateGrid;
-}
+        // emisión simple (look holográfico)
+        col = col * (1.0 + uEmissive);
 
-function updateObjSetting(key, val) {
-    if(!activeId) return;
-    const obj = objects.find(o => o.id === activeId);
-    if(!obj) return;
-    
-    // Actualizar datos del objeto
-    if(key === 'k1') {
-        obj.settings.k1 = val;
-        document.getElementById('currentColorBox').style.backgroundColor = `rgb(${val.x*255},${val.y*255},${val.z*255})`;
-    } else {
-        obj.settings[key] = val;
+        gl_FragColor = vec4(col, alpha);
+        if (alpha < 0.01) discard;
+      }
+    `;
+
+    // =========================
+    // Oclusión Depth (v24)
+    // =========================
+    const depthVS = `#version 300 es
+      in vec2 aPos; out vec2 vUv;
+      void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }
+    `;
+    const depthFS = `#version 300 es
+      precision highp float; precision highp sampler2D;
+      in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj;
+      out vec4 outColor;
+      float decode(vec4 la){ return (la.r * 255.0 * 256.0 + la.a * 255.0); }
+      void main(){
+        float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters; 
+        if(zMeters <= 0.0) discard;
+        float z = -zMeters;
+        float clipZ = uProj[2][2] * z + uProj[3][2];
+        float clipW = uProj[2][3] * z + uProj[3][3];
+        gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0);
+        outColor = vec4(0.0);
+      }
+    `;
+
+    // =========================
+    // Estado global
+    // =========================
+    let scene, camera, renderer, orbit, transformCtrl;
+    let xrSession, xrRefSpace;
+    let xrGlBinding=null, depthProgram=null, depthVao=null, depthTex=null, occlusionEnabled=false;
+
+    let cssRenderer;
+    const cssRoot = document.getElementById('css3d');
+
+    let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
+    const tempMatrix = new THREE.Matrix4();
+
+    let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null, d:null };
+    let currentUnit = 'm';
+
+    const objects = []; // capas
+    let activeId = null;
+
+    const clock = new THREE.Clock();
+    const gltfLoader = new GLTFLoader();
+
+    // =========================
+    // Utilidades
+    // =========================
+    function uid(){ return Math.random().toString(36).slice(2, 10); }
+
+    function toggleLoader(on, msg="CARGANDO...") {
+      const l = document.getElementById('loader');
+      l.textContent = msg;
+      l.style.display = on ? 'grid' : 'none';
     }
 
-    // Aplicar a material si existe
-    if(obj.mesh.material && obj.mesh.material.uniforms) {
-        const u = obj.mesh.material.uniforms;
-        if(key === 'brightness') u.uBrightness.value = val;
-        if(key === 'contrast') u.uContrast.value = val;
-        if(key === 'saturation') u.uSaturation.value = val;
-        if(key === 'gamma') u.uGamma.value = val;
-        if(key === 'opacity') u.uOpacity.value = val;
-        if(key === 'chromaOn') { u.chromaOn.value = val; document.getElementById('chromaPanel').style.display = val?'block':'none'; }
-        if(key === 'chromaInvert') u.chromaInvert.value = val;
-        if(key === 'k1sim') u.sim1.value = val;
-        if(key === 'k1smooth') u.smooth1.value = val;
-        if(key === 'despill') u.despill.value = val;
-        if(key === 'k1') u.k1.value.set(val.x, val.y, val.z);
-    }
-    
-    // Texto
-    const lbl = document.getElementById('v_'+key);
-    if(lbl && typeof val === 'number') lbl.innerText = val.toFixed(2);
-}
-
-function updateObjTransform(key, val) {
-    if(!activeId) return;
-    const obj = objects.find(o => o.id === activeId);
-    if(key === 'scale') obj.mesh.scale.setScalar(val);
-    if(key === 'posY') obj.mesh.position.y = val;
-    if(key === 'rotY') obj.mesh.rotation.y = val;
-    updateEngineeringVisuals();
-}
-
-function selectObject(id) {
-    activeId = id;
-    const obj = objects.find(o => o.id === id);
-    if(!obj) { transformCtrl.detach(); document.getElementById('editorUI').style.display='none'; return; }
-
-    transformCtrl.attach(obj.mesh);
-    document.getElementById('editorUI').style.display = 'block';
-    
-    // Sincronizar UI con Objeto
-    const s = obj.settings;
-    const setUI = (id, v) => {
-        const el = document.getElementById(id);
-        if(el.type === 'checkbox') el.checked = v;
-        else { el.value = v; const l = document.getElementById('v_'+id); if(l) l.innerText = v.toFixed(2); }
-    };
-
-    setUI('scale', obj.mesh.scale.x);
-    setUI('posY', obj.mesh.position.y);
-    setUI('rotY', obj.mesh.rotation.y);
-    setUI('checkBillboard', s.billboard);
-    
-    // Si tiene material shader
-    if(obj.mesh.material.uniforms) {
-        document.getElementById('mediaControls').style.display = 'block';
-        setUI('brightness', s.brightness);
-        setUI('contrast', s.contrast);
-        setUI('saturation', s.saturation);
-        setUI('gamma', s.gamma);
-        setUI('opacity', s.opacity);
-        setUI('chromaToggle', s.chromaOn);
-        setUI('chromaInvert', s.chromaInvert);
-        setUI('k1sim', s.k1sim);
-        setUI('k1smooth', s.k1smooth);
-        setUI('despill', s.despill);
-        document.getElementById('chromaPanel').style.display = s.chromaOn ? 'block' : 'none';
-        document.getElementById('currentColorBox').style.backgroundColor = `rgb(${s.k1.x*255},${s.k1.y*255},${s.k1.z*255})`;
-    } else {
-        document.getElementById('mediaControls').style.display = 'none'; // Es modelo 3D
-    }
-    
-    updateLayersUI();
-    updateEngineeringVisuals();
-}
-
-// ==========================================
-// 🏗️ INGENIERÍA UI (COTAS DINÁMICAS)
-// ==========================================
-function initEngineeringUI() {
-    engGroup = new THREE.Group(); scene.add(engGroup);
-    
-    const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
-    const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
-    lineY.name = 'lineY'; engGroup.add(lineY);
-    
-    const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); frameGeo.rotateZ(Math.PI/4);
-    const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.8, side:THREE.DoubleSide, depthWrite:false });
-    const shadow = new THREE.Mesh(frameGeo, frameMat);
-    shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
-
-    coordLabels.x = createLabel(); coordLabels.y = createLabel(); coordLabels.z = createLabel();
-    engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
-    dimLabels.w = createLabel(); dimLabels.h = createLabel(); 
-    engGroup.add(dimLabels.w); engGroup.add(dimLabels.h);
-    engGroup.visible = false;
-}
-
-function createLabel() {
-    const cvs = document.createElement('canvas'); cvs.width=256; cvs.height=64;
-    const tex = new THREE.CanvasTexture(cvs);
-    const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
-    const s = new THREE.Sprite(mat); s.scale.set(0.3, 0.075, 1);
-    s.userData = { cvs, ctx: cvs.getContext('2d'), tex, last: "" };
-    return s;
-}
-
-function updateLabel(sprite, text, isDim=false) {
-    if(sprite.userData.last === text) return;
-    sprite.userData.last = text;
-    const { ctx, tex } = sprite.userData;
-    ctx.clearRect(0,0,256,64);
-    ctx.fillStyle = "rgba(15, 15, 20, 0.8)"; ctx.roundRect(5,5,246,54,12); ctx.fill();
-    ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00"; ctx.lineWidth=3; ctx.stroke();
-    ctx.fillStyle = "#fff"; ctx.font = "bold 32px monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-    ctx.fillText(text, 128, 32); tex.needsUpdate = true;
-}
-
-function formatUnit(val) {
-    if(currentUnit==='cm') return (val*100).toFixed(0)+'cm';
-    if(currentUnit==='ft') return (val*3.28).toFixed(2)+'ft';
-    return val.toFixed(2)+'m';
-}
-
-function updateEngineeringVisuals() {
-    if(!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
-    const obj = objects.find(o => o.id === activeId); if(!obj) return;
-    engGroup.visible = true;
-
-    const P = obj.mesh.position; const S = obj.mesh.scale; const R = obj.mesh.rotation;
-    // Dimensiones aproximadas (Para planos es exacto, para 3D es BoundingBox)
-    let w = 1, h = 1;
-    if(obj.type === 'model') {
-        const box = new THREE.Box3().setFromObject(obj.mesh);
-        const sz = new THREE.Vector3(); box.getSize(sz);
-        w = sz.x; h = sz.y;
-    } else {
-        w = (obj.originalAspect || 1) * S.x; h = 1 * S.y;
+    function isYouTubeUrl(u="") {
+      return /youtube\.com\/watch\?v=|youtu\.be\//i.test(u);
     }
 
-    // Linea Y
-    const lineY = engGroup.getObjectByName('lineY');
-    lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]); lineY.computeLineDistances();
-
-    // Sombra
-    const shadow = engGroup.getObjectByName('shadowPlane');
-    shadow.position.set(P.x, 0.005, P.z); shadow.rotation.set(-Math.PI/2, 0, R.y);
-    shadow.scale.set(Math.max(w, 0.5)*1.1, Math.max(w, 0.5)*1.1, 1);
-
-    // Coordenadas
-    if(document.getElementById('showCoords').checked) {
-        coordLabels.x.visible=true; coordLabels.y.visible=true; coordLabels.z.visible=true;
-        coordLabels.y.position.set(P.x+0.3, P.y/2, P.z); updateLabel(coordLabels.y, "H: "+formatUnit(P.y));
-        coordLabels.x.position.set(P.x, 0.1, P.z+0.3); updateLabel(coordLabels.x, "X: "+formatUnit(P.x));
-        coordLabels.z.position.set(P.x+0.3, 0.1, P.z); updateLabel(coordLabels.z, "Z: "+formatUnit(P.z));
-    } else {
-        coordLabels.x.visible=false; coordLabels.y.visible=false; coordLabels.z.visible=false;
+    function parseYouTubeId(url) {
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes('youtu.be')) return u.pathname.replace('/','');
+        if (u.searchParams.get('v')) return u.searchParams.get('v');
+        return null;
+      } catch { return null; }
     }
 
-    // Cotas
-    dimLabels.w.visible=true; dimLabels.h.visible=true;
-    dimLabels.w.position.copy(P).add(new THREE.Vector3(0, h/2+0.2, 0)); updateLabel(dimLabels.w, "W: "+formatUnit(w), true);
-    dimLabels.h.position.copy(P).add(new THREE.Vector3(w/2+0.2, 0, 0)); updateLabel(dimLabels.h, "H: "+formatUnit(h), true);
-}
+    function iconFor(o) {
+      if (o.kind === 'model') return '🧊';
+      if (o.kind === 'youtube') return '▶';
+      if (o.kind === 'video') return o.projection === '360' ? '🌐' : '🎬';
+      if (o.kind === 'gif') return '👾';
+      return o.projection === '360' ? '🌐' : '🖼️';
+    }
 
-// ==========================================
-// 📦 LOADERS & ASSET MANAGEMENT
-// ==========================================
-async function loadAsset(url, type, name, isGif=false, fromSave=null) {
-    toggleLoader(true);
-    try {
-        let mesh, tex, video, gifData;
-        let aspect = 1.77;
+    function isMediaLayer(o){ return o && (o.kind === 'image' || o.kind === 'video' || o.kind === 'gif'); }
 
-        if (type === 'model') {
-            const ext = name.split('.').pop().toLowerCase();
-            let model;
-            if(ext === 'glb' || ext === 'gltf') model = (await new GLTFLoader().loadAsync(url)).scene;
-            else if(ext === 'fbx') model = await new FBXLoader().loadAsync(url);
-            else if(ext === 'obj') model = await new OBJLoader().loadAsync(url);
-            
-            // Auto-scale
-            const box = new THREE.Box3().setFromObject(model);
-            const size = box.getSize(new THREE.Vector3()).length();
-            const scalar = size > 0 ? 1 / size : 1;
-            model.scale.setScalar(scalar);
-            mesh = model;
+    // =========================
+    // Init
+    // =========================
+    function init() {
+      scene = new THREE.Scene();
+      scene.add(new THREE.AmbientLight(0xffedd5, 1.1));
+      const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+      dir.position.set(2,3,2);
+      scene.add(dir);
+
+      camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 800);
+      camera.position.set(0, 1.6, 2);
+
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.xr.enabled = true;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      orbit = new OrbitControls(camera, renderer.domElement);
+      orbit.enableDamping = true;
+
+      transformCtrl = new TransformControls(camera, renderer.domElement);
+      transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+      scene.add(transformCtrl);
+
+      // CSS3D (YouTube)
+      cssRenderer = new CSS3DRenderer();
+      cssRenderer.setSize(window.innerWidth, window.innerHeight);
+      cssRenderer.domElement.style.position = 'absolute';
+      cssRenderer.domElement.style.top = '0';
+      cssRenderer.domElement.style.left = '0';
+      cssRenderer.domElement.style.width = '100%';
+      cssRenderer.domElement.style.height = '100%';
+      cssRoot.appendChild(cssRenderer.domElement);
+
+      initEngineeringUI();
+      updateGrid();
+      setupXRControllers();
+      setupVR();
+
+      bindUI();
+
+      renderer.setAnimationLoop(animate);
+      window.addEventListener('resize', onResize);
+      updateLayers();
+    }
+
+    function onResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // =========================
+    // Ingeniería (grid + labels)
+    // =========================
+    function updateGrid() {
+      const old = scene.getObjectByName("grid"); 
+      if (old) scene.remove(old);
+      if (!document.getElementById('showGrid').checked) return;
+
+      let gridSize = 15, divisions = 15;
+      if (currentUnit === 'ft') { gridSize = 15*0.3048; divisions = 15; }
+
+      const colorGrid = new THREE.Color(0xffaa00);
+      const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
+      const material = new THREE.ShaderMaterial({
+        transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+        uniforms: { uColor: { value: colorGrid }, uDivisions: { value: divisions } },
+        vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+        fragmentShader: `
+          varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions;
+          void main(){
+            vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions);
+            float line = min(grid.x, grid.y);
+            float alpha = 1.0 - min(line, 1.0);
+            alpha = pow(alpha, 0.3);
+            float dist = distance(vUv, vec2(0.5));
+            float mask = 1.0 - smoothstep(0.2, 0.5, dist);
+            gl_FragColor = vec4(uColor, alpha * mask * 0.6);
+          }`
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.y = 0.001;
+      mesh.name = "grid";
+      scene.add(mesh);
+    }
+
+    function initEngineeringUI() {
+      engGroup = new THREE.Group(); scene.add(engGroup);
+
+      const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
+      const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
+      lineY.name = 'lineY'; engGroup.add(lineY);
+
+      const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); frameGeo.rotateZ(Math.PI/4);
+      const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.8, side:THREE.DoubleSide, depthWrite:false });
+      const shadow = new THREE.Mesh(frameGeo, frameMat);
+      shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
+
+      coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
+      engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
+
+      dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
+      engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
+
+      engGroup.visible = false;
+    }
+
+    function createLabel() {
+      const cvs = document.createElement('canvas'); cvs.width = 256; cvs.height = 64;
+      const tex = new THREE.CanvasTexture(cvs);
+      const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
+      const s = new THREE.Sprite(mat);
+      s.scale.set(0.3, 0.075, 1);
+      s.userData = { cvs, ctx: cvs.getContext('2d'), tex };
+      return s;
+    }
+
+    function updateLabelText(sprite, text, isDim=false) {
+      const { ctx, tex } = sprite.userData;
+      ctx.clearRect(0,0,256,64);
+
+      // fallback si roundRect no existe
+      const rr = (ctx.roundRect ? true : false);
+
+      ctx.fillStyle = "rgba(20, 15, 0, 0.85)";
+      if (rr) { ctx.beginPath(); ctx.roundRect(5,5,246,54,12); ctx.fill(); }
+      else { ctx.fillRect(5,5,246,54); }
+
+      ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00";
+      ctx.lineWidth = 3;
+      if (rr) { ctx.beginPath(); ctx.roundRect(5,5,246,54,12); ctx.stroke(); }
+      else { ctx.strokeRect(5,5,246,54); }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 30px 'Fira Code', monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.shadowColor = isDim ? "#ffff00" : "#ffaa00";
+      ctx.shadowBlur = 10;
+      ctx.fillText(text, 128, 32);
+
+      tex.needsUpdate = true;
+    }
+
+    function formatUnit(val) {
+      if (currentUnit === 'cm') return (val*100).toFixed(0)+'cm';
+      if (currentUnit === 'ft') return (val*3.28).toFixed(2)+'ft';
+      return val.toFixed(2)+'m';
+    }
+
+    function updateEngineeringVisuals() {
+      if (!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D) { engGroup.visible = false; return; }
+
+      // solo si no es YouTube (porque DOM) – igual mostramos posición/escala si quieres
+      engGroup.visible = true;
+
+      const P = o.root3D.position;
+      const S = o.root3D.scale;
+      const R = o.root3D.rotation;
+
+      // aproximación de tamaño para visual
+      const baseW = (o.originalAspect || 1);
+      const realW = baseW * S.x;
+      const realH = 1 * S.y;
+
+      const lineY = engGroup.getObjectByName('lineY');
+      lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
+      lineY.computeLineDistances();
+
+      const shadow = engGroup.getObjectByName('shadowPlane');
+      shadow.position.set(P.x, 0.005, P.z);
+      shadow.rotation.set(-Math.PI/2, 0, R.y);
+      const frameScale = Math.max(realW, 0.5) * 1.1;
+      shadow.scale.set(frameScale, frameScale, 1);
+
+      if (document.getElementById('showCoords').checked) {
+        coordLabels.x.visible = coordLabels.y.visible = coordLabels.z.visible = true;
+        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z);
+        updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
+        coordLabels.x.position.set(P.x, 0.1, P.z + 0.3);
+        updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
+        coordLabels.z.position.set(P.x + 0.3, 0.1, P.z);
+        updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
+      } else {
+        coordLabels.x.visible = coordLabels.y.visible = coordLabels.z.visible = false;
+      }
+
+      dimLabels.w.visible = true; dimLabels.h.visible = true;
+      dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0));
+      updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true);
+
+      dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0));
+      updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
+    }
+
+    // =========================
+    // XR Controllers (estable v24)
+    // =========================
+    function setupXRControllers() {
+      controller1 = renderer.xr.getController(0);
+      controller1.addEventListener('selectstart', onSelect);
+      controller1.addEventListener('squeezestart', onGripStart);
+      controller1.addEventListener('squeezeend', onGripEnd);
+      scene.add(controller1);
+
+      controller2 = renderer.xr.getController(1);
+      controller2.addEventListener('selectstart', onSelect);
+      scene.add(controller2);
+
+      const fac = new XRControllerModelFactory();
+      controllerGrip1 = renderer.xr.getControllerGrip(0); controllerGrip1.add(fac.createControllerModel(controllerGrip1)); scene.add(controllerGrip1);
+      controllerGrip2 = renderer.xr.getControllerGrip(1); controllerGrip2.add(fac.createControllerModel(controllerGrip2)); scene.add(controllerGrip2);
+
+      const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.5 });
+      const line = new THREE.Line(geo, lineMat); line.scale.z = 5;
+      controller1.add(line.clone()); controller2.add(line.clone());
+
+      raycaster = new THREE.Raycaster();
+    }
+
+    function getIntersections(c) {
+      tempMatrix.identity().extractRotation(c.matrixWorld);
+      raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
+      raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix);
+
+      // solo capas no bloqueadas y con root visible
+      const meshes = objects
+        .filter(o => !o.locked && o.visible && o.pickMesh)
+        .map(o => o.pickMesh);
+
+      return raycaster.intersectObjects(meshes, true);
+    }
+
+    function onSelect(e) {
+      const hits = getIntersections(e.target);
+      if (hits.length > 0) {
+        const h = hits[0].object;
+        const id = (h.userData && h.userData.layerId) ? h.userData.layerId : null;
+        if (id) selectObject(id);
+      }
+    }
+
+    // agarrar = seleccionar + attach físico
+    function onGripStart(e) {
+      const hits = getIntersections(e.target);
+      if (hits.length > 0) {
+        const h = hits[0].object;
+        const id = (h.userData && h.userData.layerId) ? h.userData.layerId : null;
+        if (id) selectObject(id);
+
+        // attach al controller el root de la capa (no el hijo)
+        const o = objects.find(x => x.id === id);
+        if (o && o.root3D) {
+          e.target.attach(o.root3D);
+          e.target.userData.selected = o.root3D;
+        }
+      }
+    }
+
+    function onGripEnd(e) {
+      if (e.target.userData.selected) {
+        scene.attach(e.target.userData.selected);
+        e.target.userData.selected = null;
+      }
+    }
+
+    function handleStableControls() {
+      const s = renderer.xr.getSession();
+      if (!s || !activeId) return;
+
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D || o.locked) return;
+
+      for (const src of s.inputSources) {
+        const gp = src.gamepad;
+        if (!gp) continue;
+
+        const grip = gp.buttons?.[1]?.pressed === true;
+        const axes = gp.axes || [];
+        let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
+        let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
+
+        if (!Number.isFinite(ax)) ax = 0;
+        if (!Number.isFinite(ay)) ay = 0;
+
+        if (src.handedness === 'left' && grip) {
+          if (Math.abs(ay) > 0.1) {
+            o.root3D.position.y -= ay * 0.02;
+            if (o.root3D.position.y < 0) o.root3D.position.y = 0;
+          }
+          if (Math.abs(ax) > 0.1) {
+            let scaleF = 1 + (ax * 0.02);
+            if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1;
+            o.root3D.scale.multiplyScalar(scaleF);
+            o.root3D.scale.clampScalar(0.05, 50.0);
+          }
+        }
+
+        if (src.handedness === 'right' && grip) {
+          if (Math.abs(ay) > 0.1) {
+            const dir = new THREE.Vector3().subVectors(o.root3D.position, camera.position).normalize();
+            dir.y = 0;
+            o.root3D.position.addScaledVector(dir, ay * -0.05);
+          }
+          if (Math.abs(ax) > 0.1) {
+            o.root3D.rotation.y -= ax * 0.05;
+          }
+        }
+      }
+    }
+
+    // =========================
+    // VR / AR session + Depth
+    // =========================
+    function setupVR() {
+      if (!navigator.xr) return;
+      navigator.xr.isSessionSupported('immersive-ar').then(ok => {
+        if (!ok) return;
+        const btn = document.getElementById('vrBtn');
+        btn.style.display = 'block';
+        btn.onclick = async () => {
+          occlusionEnabled = document.getElementById('checkOcclusion').checked;
+          const req = ['local-floor'];
+          const opt = ['dom-overlay'];
+          const init = {
+            requiredFeatures: req,
+            optionalFeatures: opt,
+            domOverlay: { root: document.body }
+          };
+          if (occlusionEnabled) {
+            opt.push('depth-sensing');
+            init.depthSensing = { usagePreference: ['cpu-optimized'], dataFormatPreference: ['luminance-alpha'] };
+          }
+          xrSession = await navigator.xr.requestSession('immersive-ar', init);
+          renderer.xr.setSession(xrSession);
+          xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+          if (occlusionEnabled) initDepthOcclusion(xrSession);
+        };
+      });
+    }
+
+    function initDepthOcclusion(s) {
+      const gl = renderer.getContext();
+      xrGlBinding = new XRWebGLBinding(s, gl);
+
+      const vs = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(vs, depthVS); gl.compileShader(vs);
+
+      const fs = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(fs, depthFS); gl.compileShader(fs);
+
+      depthProgram = gl.createProgram();
+      gl.attachShader(depthProgram, vs);
+      gl.attachShader(depthProgram, fs);
+      gl.linkProgram(depthProgram);
+
+      depthVao = gl.createVertexArray();
+      gl.bindVertexArray(depthVao);
+
+      const vbo = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,-1,  1,-1, -1, 1,
+        -1, 1,  1,-1,  1, 1
+      ]), gl.STATIC_DRAW);
+
+      const loc = gl.getAttribLocation(depthProgram, 'aPos');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      depthTex = gl.createTexture();
+    }
+
+    // =========================
+    // Asset loaders (img/video/gif/model/youtube)
+    // =========================
+    async function addAssetFromUrl(url, name="Web Asset") {
+      const lower = (url || "").toLowerCase();
+
+      // modelo 3D
+      if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
+        return addModel(url, name);
+      }
+
+      const isGif = lower.endsWith('.gif');
+      const isVideo = /\.(mp4|webm)$/i.test(lower);
+      const kind = isGif ? 'gif' : (isVideo ? 'video' : 'image');
+
+      return addMedia(url, kind, name);
+    }
+
+    async function addMedia(url, kind, name, isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO MEDIA...");
+
+      let tex=null, video=null, gifData=null;
+      try {
+        if (kind === 'gif') {
+          const buf = await (await fetch(url)).arrayBuffer();
+          const r = new window.Omggif.GifReader(new Uint8Array(buf));
+          const cvs = document.createElement('canvas');
+          cvs.width = r.width; cvs.height = r.height;
+          const ctx = cvs.getContext('2d');
+          const dat = ctx.createImageData(r.width, r.height);
+
+          tex = new THREE.CanvasTexture(cvs);
+          tex.colorSpace = THREE.SRGBColorSpace;
+
+          gifData = { r, ctx, dat, tex, f:0, nextTime:0, playing:true };
+        } 
+        else if (kind === 'video') {
+          video = document.createElement('video');
+          video.src = url;
+          video.crossOrigin = 'anonymous';
+          video.loop = true;
+          video.muted = true;
+          video.playsInline = true;
+          await video.play();
+          tex = new THREE.VideoTexture(video);
+          tex.colorSpace = THREE.SRGBColorSpace;
         } 
         else {
-            // 2D Media (Video/Photo/Gif)
-            if(isGif) {
-                const buf = await (await fetch(url)).arrayBuffer();
-                const r = new window.Omggif.GifReader(new Uint8Array(buf));
-                const cvs = document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height;
-                const ctx = cvs.getContext('2d'); const dat = ctx.createImageData(r.width, r.height);
-                tex = new THREE.CanvasTexture(cvs); tex.colorSpace = THREE.SRGBColorSpace;
-                gifData = { r, ctx, dat, tex, f:0, nextTime:0, playing:true };
-                aspect = r.width / r.height;
-            } else if(type === 'video') {
-                video = document.createElement('video'); video.src = url; video.crossOrigin = "anonymous";
-                video.loop = true; video.muted = true; video.playsInline = true; await video.play();
-                tex = new THREE.VideoTexture(video); tex.colorSpace = THREE.SRGBColorSpace;
-                aspect = video.videoWidth / video.videoHeight;
-            } else {
-                tex = await new THREE.TextureLoader().loadAsync(url); tex.colorSpace = THREE.SRGBColorSpace;
-                aspect = tex.image.width / tex.image.height;
-            }
-
-            const geo = new THREE.PlaneGeometry(aspect, 1);
-            const mat = new THREE.ShaderMaterial({
-                uniforms: {
-                    map: { value: tex },
-                    uBrightness: { value: 0 }, uContrast: { value: 1 }, uSaturation: { value: 1 }, uGamma: { value: 1 }, uOpacity: { value: 1 },
-                    chromaOn: { value: false }, chromaInvert: { value: false }, k1: { value: new THREE.Vector3(0,1,0) },
-                    sim1: { value: 0.4 }, smooth1: { value: 0.08 }, despill: { value: 0.5 }
-                },
-                vertexShader: vShader, fragmentShader: fShader, transparent: true, side: THREE.DoubleSide
-            });
-            mesh = new THREE.Mesh(geo, mat);
+          tex = await new THREE.TextureLoader().loadAsync(url);
+          tex.colorSpace = THREE.SRGBColorSpace;
         }
 
-        const id = fromSave ? fromSave.id : Math.random().toString(36).substr(2, 9);
-        mesh.userData.id = id;
-        
-        // Initial State
-        if (fromSave) {
-            mesh.position.fromArray(fromSave.pos);
-            mesh.rotation.fromArray(fromSave.rot);
-            mesh.scale.fromArray(fromSave.scl);
-            // Restaurar Settings
-            if(type!=='model') {
-                const s = fromSave.settings;
-                const u = mesh.material.uniforms;
-                u.uBrightness.value = s.brightness; u.uContrast.value = s.contrast; 
-                u.uSaturation.value = s.saturation; u.uGamma.value = s.gamma; u.uOpacity.value = s.opacity;
-                u.chromaOn.value = s.chromaOn; u.chromaInvert.value = s.chromaInvert;
-                u.k1.value.set(s.k1.x, s.k1.y, s.k1.z);
-                u.sim1.value = s.k1sim; u.smooth1.value = s.k1smooth; u.despill.value = s.despill;
-            }
-        } else {
-            mesh.position.set(0, 1.6, -2);
-        }
+        const aspect = video
+          ? (video.videoWidth / Math.max(1, video.videoHeight))
+          : (tex.image ? (tex.image.width / Math.max(1, tex.image.height)) : 1.77);
 
-        scene.add(mesh);
-        
-        const objData = { 
-            id, name, type, mesh, tex, video, gifData, originalAspect: aspect, sourceUrl: url,
-            settings: fromSave ? fromSave.settings : {
-                brightness:0, contrast:1, saturation:1, gamma:1, opacity:1,
-                chromaOn:false, chromaInvert:false, k1:{x:0,y:1,z:0}, k1sim:0.4, k1smooth:0.08, despill:0.5,
-                billboard:false
-            }
+        // Root container (para mantener consistencia con modelos/youtube)
+        const root = new THREE.Group();
+        root.position.set(0, 1.6, -2);
+
+        // shader material
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            map: { value: tex },
+            uBrightness: { value: 0 },
+            uContrast: { value: 1 },
+            uSaturation: { value: 1 },
+            uGamma: { value: 1 },
+            uOpacity: { value: 1 },
+            uEmissive: { value: 0 },
+
+            chromaOn: { value: false },
+            chromaInvert: { value: false },
+            k1: { value: new THREE.Color(0,1,0) },
+            sim1: { value: 0.4 },
+            smooth1: { value: 0.08 },
+            despill: { value: 0.5 }
+          },
+          vertexShader: vShader,
+          fragmentShader: fShader,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+
+        // mesh inicial (plane)
+        const planeGeo = new THREE.PlaneGeometry(aspect, 1);
+        const mesh = new THREE.Mesh(planeGeo, mat);
+        mesh.userData.layerId = null; // asignamos luego
+        root.add(mesh);
+        scene.add(root);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind,
+          projection: 'plane',         // plane | curved | orb | 360
+          root3D: root,                // TransformControls se attach aquí
+          pickMesh: mesh,              // para raycast (siempre un mesh)
+          mesh,                         // mesh principal cuando es media
+          mat,
+          tex,
+          video,
+          gifData,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: aspect,
+          sourceUrl: url
         };
-        
-        objects.push(objData);
-        updateLayersUI();
-        selectObject(id);
 
-    } catch(e) { console.error(e); alert("Error cargando asset"); }
-    toggleLoader(false);
-}
+        mesh.userData.layerId = layer.id;
+        objects.push(layer);
 
-// Wrappers
-window.loadFromWeb = () => { const u = document.getElementById('webUrl').value; if(u) loadAsset(u, u.match(/\.(mp4|webm)/i)?'video':'image', 'Web Asset'); };
-window.handleFileSelect = (input) => { 
-    for(let f of input.files) {
-        const url = URL.createObjectURL(f);
-        let type = 'image';
-        if(f.type.includes('video')) type = 'video';
-        if(f.name.match(/\.(glb|gltf|fbx|obj)$/i)) type = 'model';
-        loadAsset(url, type, f.name, f.name.includes('.gif'));
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        alert("Error cargando media. Revisa URL / CORS.");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
     }
-    input.value = '';
-};
 
-// ==========================================
-// 🖱️ CAPAS (LAYER MANAGER)
-// ==========================================
-function updateLayersUI() {
-    const list = document.getElementById('layerList'); list.innerHTML = '';
-    objects.slice().reverse().forEach(o => { // Reverse para ver arriba el ultimo
-        const div = document.createElement('div');
-        div.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
-        div.draggable = true;
-        div.innerHTML = `
-            <span style="font-size:14px;">${o.type==='model'?'📦':(o.type==='video'?'🎬':'🖼️')}</span>
-            <span style="flex:1; overflow:hidden; text-overflow:ellipsis;">${o.name}</span>
-            <span onclick="toggleVis('${o.id}')" style="cursor:pointer;">👁️</span>
-        `;
-        div.onclick = (e) => { if(e.target.tagName!=='SPAN') selectObject(o.id); };
-        
-        // Drag Logic Simple
-        div.ondragstart = (e) => { e.dataTransfer.setData('text/plain', o.id); };
-        div.ondragover = (e) => { e.preventDefault(); };
-        div.ondrop = (e) => {
-            e.preventDefault();
-            const draggedId = e.dataTransfer.getData('text/plain');
-            if(draggedId === o.id) return;
-            // Reordenar array objects
-            const fromIdx = objects.findIndex(x=>x.id===draggedId);
-            const toIdx = objects.findIndex(x=>x.id===o.id);
-            const item = objects.splice(fromIdx, 1)[0];
-            objects.splice(toIdx, 0, item);
-            updateLayersUI();
+    async function addModel(url, name="Model 3D", isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO MODELO 3D...");
+      try {
+        const gltf = await gltfLoader.loadAsync(url);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.2, -2);
+
+        const model = gltf.scene || gltf.scenes?.[0];
+        if (!model) throw new Error("GLTF sin scene");
+
+        model.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = false;
+            n.receiveShadow = false;
+            n.userData.layerId = null;
+          }
+        });
+
+        // escala auto suave
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const s = 0.8 / maxDim;
+        model.scale.setScalar(s);
+
+        root.add(model);
+        scene.add(root);
+
+        // pickMesh: usamos un mesh invisible simple para no depender del contenido del gltf
+        const pick = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.6),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+        );
+        pick.position.set(0, 0.3, 0);
+        root.add(pick);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind: 'model',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: pick,
+          model,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: 1,
+          sourceUrl: url
         };
-        list.appendChild(div);
-    });
-}
-window.toggleVis = (id) => { const o = objects.find(x=>x.id===id); if(o) { o.mesh.visible = !o.mesh.visible; } };
-window.deleteActive = () => {
-    const idx = objects.findIndex(x=>x.id===activeId);
-    if(idx > -1) {
-        scene.remove(objects[idx].mesh);
-        objects.splice(idx, 1);
+
+        // marcar layerId en meshes reales también
+        model.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
+        pick.userData.layerId = layer.id;
+
+        objects.push(layer);
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        alert("Error cargando modelo 3D (.glb/.gltf).");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    async function addYouTube() {
+      const url = document.getElementById('ytUrl').value.trim();
+      if (!url) return;
+
+      const id = parseYouTubeId(url);
+      if (!id) { alert("No pude leer el ID de YouTube."); return; }
+
+      // iframe embed
+      const iframe = document.createElement('iframe');
+      iframe.width = '960';
+      iframe.height = '540';
+      iframe.style.border = '0';
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+      iframe.allowFullscreen = true;
+
+      // nocookie + modest branding
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
+
+      const holder = document.createElement('div');
+      holder.style.width = '960px';
+      holder.style.height = '540px';
+      holder.style.borderRadius = '18px';
+      holder.style.overflow = 'hidden';
+      holder.style.boxShadow = '0 0 30px rgba(255,170,0,0.25)';
+      holder.style.border = '2px solid rgba(255,170,0,0.35)';
+      holder.appendChild(iframe);
+
+      const cssObj = new CSS3DObject(holder);
+
+      // Root 3D + helper pick mesh
+      const root = new THREE.Group();
+      root.position.set(0, 1.6, -2);
+
+      // helper para que TransformControls funcione en WebGL
+      const helper = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.0, 0.5625),
+        new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+      );
+      helper.userData.layerId = null;
+      root.add(helper);
+
+      // escalamos el CSS para que coincida con helper (1 x 0.5625)
+      cssObj.scale.set(1/960, 1/960, 1/960);
+      cssObj.position.copy(root.position);
+      cssObj.quaternion.copy(root.quaternion);
+
+      // guardamos referencia
+      scene.add(root);
+      scene.add(cssObj); // CSS3D usa escena igual, pero renderer CSS ignora materiales
+
+      const layer = {
+        id: uid(),
+        name: `YouTube ${id}`,
+        kind: 'youtube',
+        projection: 'plane',
+        root3D: root,
+        pickMesh: helper,
+        cssObj,
+        billboard: false,
+        visible: true,
+        locked: false,
+        originalAspect: 16/9,
+        sourceUrl: url
+      };
+      helper.userData.layerId = layer.id;
+
+      objects.push(layer);
+      selectObject(layer.id);
+      updateLayers();
+    }
+
+    // =========================
+    // Proyecciones (v7.2 reintroducido)
+    // =========================
+    function applyProjection(layer, mode) {
+      layer.projection = mode;
+
+      // YouTube: solo cambia helper geo (visual)
+      if (layer.kind === 'youtube') {
+        // mantenemos plane para DOM; si eligen 360/orb lo ignoramos
+        layer.projection = 'plane';
+        document.getElementById('projSelect').value = 'plane';
+        return;
+      }
+
+      // Modelos: no aplicamos geometrías de proyección (son 3D reales)
+      if (layer.kind === 'model') {
+        layer.projection = 'plane';
+        document.getElementById('projSelect').value = 'plane';
+        return;
+      }
+
+      // Media: reconstruimos geometry principal según modo
+      const mesh = layer.mesh;
+      if (!mesh) return;
+
+      // reset side
+      mesh.material.side = THREE.DoubleSide;
+      mesh.scale.set(1,1,1);
+
+      if (mode === '360') {
+        // Entorno 360: esfera grande por dentro
+        const geo = new THREE.SphereGeometry(50, 64, 32);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.material.side = THREE.BackSide;
+        // el root queda en (0,1.6,-2), pero una esfera grande conviene centrar en cámara:
+        mesh.position.set(0, 0, 0);
+        layer.root3D.position.set(0, 1.6, 0);
+      }
+      else if (mode === 'orb') {
+        const geo = new THREE.SphereGeometry(0.75, 64, 32);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.material.side = THREE.FrontSide;
+        mesh.position.set(0, 0, 0);
+      }
+      else if (mode === 'curved') {
+        // cilindro abierto – “pantalla curva”
+        const geo = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 48, 1, true, 3.8, 1.8);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        // invertir para mirar hacia adentro
+        mesh.scale.set(-1, 1, 1);
+        mesh.material.side = THREE.DoubleSide;
+        mesh.position.set(0, 0, 0);
+      }
+      else {
+        // plane
+        const geo = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.position.set(0, 0, 0);
+      }
+    }
+
+    // =========================
+    // UI bindings
+    // =========================
+    function bindUI() {
+      // css3d interactive
+      document.getElementById('css3dInteractive').addEventListener('change', (e) => {
+        cssRoot.classList.toggle('interactive', e.target.checked);
+      });
+
+      // sliders: actualizan label + uniform/params
+      document.querySelectorAll('input[type=range]').forEach(i => {
+        i.addEventListener('input', (e) => {
+          const id = e.target.id;
+          const val = parseFloat(e.target.value);
+          const lbl = document.getElementById('v_' + id);
+          if (lbl) lbl.textContent = (Number.isFinite(val) ? val.toFixed(3) : '0');
+          updateActiveParam(id, val);
+        });
+      });
+
+      // chroma toggles
+      document.getElementById('chromaToggle').addEventListener('change', () => updateActiveChroma());
+      document.getElementById('chromaInvert').addEventListener('change', () => updateActiveChroma());
+
+      // key rgb
+      ['keyR','keyG','keyB'].forEach(id => document.getElementById(id).addEventListener('input', () => updateActiveKeyRGB()));
+
+      // checkboxes capa
+      document.getElementById('layerVisible').addEventListener('change', (e)=> {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        setLayerVisible(o, e.target.checked);
+        updateLayers();
+      });
+
+      document.getElementById('layerLocked').addEventListener('change', (e)=> {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        o.locked = e.target.checked;
+        updateLayers();
+      });
+
+      document.getElementById('checkBillboard').addEventListener('change', (e)=> {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        o.billboard = e.target.checked;
+        if (!o.billboard && o.root3D) o.root3D.rotation.set(0,0,0);
+      });
+
+      // file input
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const files = [...e.target.files];
+        for (const f of files) {
+          const url = URL.createObjectURL(f);
+          const lower = f.name.toLowerCase();
+          if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
+            await addModel(url, f.name);
+          } else if (lower.endsWith('.gif')) {
+            await addMedia(url, 'gif', f.name);
+          } else if (f.type.includes('video')) {
+            await addMedia(url, 'video', f.name);
+          } else {
+            await addMedia(url, 'image', f.name);
+          }
+        }
+        e.target.value = '';
+      });
+
+      window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
+      window.updateGrid = updateGrid;
+
+      // Drive placeholders
+      window.handleAuthClick = () => {
+        if (!CLIENT_ID || !API_KEY) { alert("Falta CLIENT_ID / API_KEY"); return; }
+        gapi.load('client:auth2', () => {
+          gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+            scope: SCOPES
+          }).then(() => gapi.auth2.getAuthInstance().signIn())
+            .then(() => {
+              document.getElementById('authPanel').style.display='none';
+              document.getElementById('driveActions').style.display='flex';
+            });
+        });
+      };
+      window.saveSceneToDrive = () => { alert("TODO: implementar guardado."); };
+      window.loadSceneFromDrive = () => { alert("TODO: implementar carga."); };
+
+      // public APIs
+      window.loadFromWeb = async () => {
+        const url = document.getElementById('webUrl').value.trim();
+        if (!url) return;
+        if (isYouTubeUrl(url)) {
+          document.getElementById('ytUrl').value = url;
+          await addYouTube();
+          return;
+        }
+        await addAssetFromUrl(url, "Web Asset");
+      };
+
+      window.addYouTube = addYouTube;
+      window.updateProjection = () => {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        applyProjection(o, document.getElementById('projSelect').value);
+      };
+
+      window.mediaAction = (action) => {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+
+        if (o.kind === 'video' && o.video) {
+          if (action === 'play') o.video.play();
+          if (action === 'pause') o.video.pause();
+          if (action === 'mute') o.video.muted = !o.video.muted;
+        } else if (o.kind === 'gif' && o.gifData) {
+          if (action === 'play') o.gifData.playing = true;
+          if (action === 'pause') o.gifData.playing = false;
+          if (action === 'mute') o.gifData.playing = !o.gifData.playing; // placeholder
+        }
+      };
+
+      window.deleteActive = deleteActive;
+      window.centerActive = centerActive;
+      window.toggleUIPanel = toggleUIPanel;
+    }
+
+    function toggleUIPanel() {
+      const ui = document.getElementById('ui');
+      const btn = document.getElementById('toggleUI');
+      ui.classList.toggle('minimized');
+      btn.style.display = ui.classList.contains('minimized') ? 'flex' : 'none';
+    }
+
+    // =========================
+    // Selection + layer list
+    // =========================
+    function setLayerVisible(o, v) {
+      o.visible = v;
+      if (o.root3D) o.root3D.visible = v;
+
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.element.style.display = v ? 'block' : 'none';
+      }
+    }
+
+    function selectObject(id) {
+      activeId = id;
+      const o = objects.find(x=>x.id===id);
+      if (!o) return;
+
+      transformCtrl.detach();
+      if (o.root3D && !o.locked) transformCtrl.attach(o.root3D);
+
+      // mostrar editor
+      document.getElementById('editorUI').style.display = 'block';
+
+      // set UI layer toggles
+      document.getElementById('layerVisible').checked = !!o.visible;
+      document.getElementById('layerLocked').checked = !!o.locked;
+      document.getElementById('checkBillboard').checked = !!o.billboard;
+
+      // proyección
+      document.getElementById('projSelect').value = o.projection || 'plane';
+
+      // si es media, cargar uniforms a UI; si no, deshabilitar sliders (simple)
+      const media = isMediaLayer(o);
+      setEditorEnabled(media);
+
+      if (media && o.mat?.uniforms) {
+        const u = o.mat.uniforms;
+        setRange('brightness', u.uBrightness.value);
+        setRange('contrast', u.uContrast.value);
+        setRange('saturation', u.uSaturation.value);
+        setRange('gamma', u.uGamma.value);
+        setRange('opacity', u.uOpacity.value);
+        setRange('emissive', u.uEmissive.value);
+
+        document.getElementById('chromaToggle').checked = u.chromaOn.value;
+        document.getElementById('chromaInvert').checked = u.chromaInvert.value;
+        setRange('k1sim', u.sim1.value);
+        setRange('k1smooth', u.smooth1.value);
+        setRange('despill', u.despill.value);
+
+        // key RGB
+        document.getElementById('keyR').value = u.k1.value.r;
+        document.getElementById('keyG').value = u.k1.value.g;
+        document.getElementById('keyB').value = u.k1.value.b;
+
+        document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
+      } else {
+        document.getElementById('chromaPanel').style.display = 'none';
+      }
+
+      updateLayers();
+    }
+
+    function setEditorEnabled(enabled) {
+      // deshabilita los controles shader si no es media
+      const ids = ['brightness','contrast','saturation','gamma','opacity','emissive','chromaToggle','chromaInvert','k1sim','k1smooth','despill','keyR','keyG','keyB'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !enabled;
+      });
+    }
+
+    function setRange(id, v) {
+      const el = document.getElementById(id);
+      const val = (Number.isFinite(v) ? v : 0);
+      if (el) el.value = val;
+      const lbl = document.getElementById('v_' + id);
+      if (lbl) lbl.textContent = val.toFixed(3);
+    }
+
+    function updateLayers() {
+      const list = document.getElementById('layerList');
+      list.innerHTML = '';
+
+      for (const o of objects) {
+        const row = document.createElement('div');
+        row.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
+
+        const ico = document.createElement('div');
+        ico.textContent = iconFor(o);
+
+        const name = document.createElement('div');
+        name.textContent = (o.name || 'Layer').slice(0, 26);
+
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.textContent = (o.kind === 'model') ? '3D' : (o.kind === 'youtube' ? 'YT' : (o.projection || 'plane'));
+
+        const mini = document.createElement('div');
+        mini.className = 'mini';
+
+        // visible checkbox
+        const vis = document.createElement('input');
+        vis.type = 'checkbox';
+        vis.checked = !!o.visible;
+        vis.title = 'Visible';
+        vis.onclick = (ev) => ev.stopPropagation();
+        vis.onchange = () => { setLayerVisible(o, vis.checked); updateLayers(); };
+
+        // lock checkbox
+        const lock = document.createElement('input');
+        lock.type = 'checkbox';
+        lock.checked = !!o.locked;
+        lock.title = 'Lock';
+        lock.onclick = (ev) => ev.stopPropagation();
+        lock.onchange = () => { o.locked = lock.checked; if (o.locked && o.id===activeId) transformCtrl.detach(); updateLayers(); };
+
+        mini.appendChild(vis);
+        mini.appendChild(lock);
+
+        row.appendChild(ico);
+        row.appendChild(name);
+        row.appendChild(tag);
+        row.appendChild(mini);
+
+        row.onclick = () => selectObject(o.id);
+        list.appendChild(row);
+      }
+
+      // si no hay capas, ocultar editor
+      if (objects.length === 0) {
         activeId = null;
         transformCtrl.detach();
         document.getElementById('editorUI').style.display = 'none';
-        engGroup.visible = false;
-        updateLayersUI();
-    }
-};
-
-// ==========================================
-// 🎮 CONTROLES XR (STABLE POLLING)
-// ==========================================
-function setupXRControllers() {
-    controller1 = renderer.xr.getController(0); 
-    controller1.addEventListener('selectstart', onSelect); 
-    controller1.addEventListener('squeezestart', onGripStart); controller1.addEventListener('squeezeend', onGripEnd);
-    scene.add(controller1);
-
-    controller2 = renderer.xr.getController(1); 
-    controller2.addEventListener('selectstart', onSelect);
-    scene.add(controller2);
-
-    const fac = new XRControllerModelFactory();
-    controllerGrip1 = renderer.xr.getControllerGrip(0); controllerGrip1.add(fac.createControllerModel(controllerGrip1)); scene.add(controllerGrip1);
-    controllerGrip2 = renderer.xr.getControllerGrip(1); controllerGrip2.add(fac.createControllerModel(controllerGrip2)); scene.add(controllerGrip2);
-
-    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]);
-    const line = new THREE.Line(geo, new THREE.LineBasicMaterial({ color: 0xffaa00 })); 
-    controller1.add(line.clone()); controller2.add(line.clone());
-    raycaster = new THREE.Raycaster();
-}
-
-function handleXRInput() {
-    const s = renderer.xr.getSession();
-    if(!s || !activeId) return;
-    const obj = objects.find(o => o.id === activeId);
-    if(!obj) return;
-
-    for(const src of s.inputSources) {
-        const gp = src.gamepad;
-        if(!gp) continue;
-        const grip = gp.buttons[1]?.pressed;
-        const axes = gp.axes;
-        
-        // Fallback axes
-        const ax = (axes.length>=4) ? axes[2] : (axes[0]||0);
-        const ay = (axes.length>=4) ? axes[3] : (axes[1]||0);
-        
-        if(!Number.isFinite(ax) || !Number.isFinite(ay)) continue;
-
-        if(src.handedness === 'left' && grip) {
-            // IZQ: Escala (X) / Altura (Y)
-            if(Math.abs(ax) > 0.1) {
-                let sF = 1 + (ax * 0.02);
-                obj.mesh.scale.multiplyScalar(sF);
-                obj.mesh.scale.clampScalar(0.01, 50);
-            }
-            if(Math.abs(ay) > 0.1) {
-                obj.mesh.position.y -= ay * 0.02;
-                if(obj.mesh.position.y < 0) obj.mesh.position.y = 0;
-            }
-        }
-        if(src.handedness === 'right' && grip) {
-            // DER: Rotación (X) / Mover Plano (Y - Rayo tractor)
-            if(Math.abs(ax) > 0.1) obj.mesh.rotation.y -= ax * 0.05;
-            if(Math.abs(ay) > 0.1) {
-                const dir = new THREE.Vector3().subVectors(obj.mesh.position, camera.position).normalize();
-                dir.y = 0;
-                obj.mesh.position.addScaledVector(dir, ay * -0.05);
-            }
-        }
-    }
-}
-
-// Grip Select Logic
-function onGripStart(e) {
-    const c = e.target;
-    const hits = getIntersections(c);
-    if(hits.length > 0) {
-        const o = hits[0].object;
-        if(o.userData.id) selectObject(o.userData.id); // Auto-Select on Grip
-        c.attach(o); c.userData.selected = o;
-    }
-}
-function onGripEnd(e) { const c = e.target; if(c.userData.selected) { scene.attach(c.userData.selected); c.userData.selected = null; } }
-function onSelect(e) { const hits = getIntersections(e.target); if(hits.length>0 && hits[0].object.userData.id) selectObject(hits[0].object.userData.id); }
-function getIntersections(c) { 
-    tempMatrix.identity().extractRotation(c.matrixWorld); 
-    raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld); 
-    raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix); 
-    return raycaster.intersectObjects(objects.map(o=>o.mesh), false); 
-}
-
-// ==========================================
-// 🔁 ANIMATE
-// ==========================================
-function animate(time, frame) {
-    orbit.update();
-    const dt = clock.getElapsedTime();
-    handleXRInput();
-    updateEngineeringVisuals();
-
-    // GIFs
-    objects.forEach(o => {
-        if(o.billboard) o.mesh.lookAt(camera.position.x, o.mesh.position.y, camera.position.z);
-        if(o.gifData && o.gifData.playing && performance.now() > o.gifData.nextTime) {
-            const g=o.gifData; g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data); g.ctx.putImageData(g.dat,0,0);
-            g.tex.needsUpdate=true; g.nextTime=performance.now()+100; g.f=(g.f+1)%g.r.numFrames();
-        }
-    });
-
-    // OCLUSIÓN
-    if(frame && occlusionEnabled && xrGlBinding) {
-        const pose = frame.getViewerPose(xrRefSpace);
-        if(pose) {
-            const gl = renderer.getContext();
-            gl.colorMask(false,false,false,false);
-            for(const view of pose.views) {
-                const dInfo = xrGlBinding.getDepthInformation(view);
-                if(dInfo) {
-                    gl.bindTexture(gl.TEXTURE_2D, depthTex);
-                    gl.texImage2D(gl.TEXTURE_2D,0,gl.LUMINANCE_ALPHA, dInfo.width, dInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, dInfo.data);
-                    gl.useProgram(depthProgram);
-                    gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
-                    gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
-                    gl.bindVertexArray(depthVao); gl.drawArrays(gl.TRIANGLES,0,6);
-                }
-            }
-            gl.colorMask(true,true,true,true);
-        }
-    }
-    renderer.render(scene, camera);
-}
-
-// ==========================================
-// 💾 SAVE / LOAD (JSON)
-// ==========================================
-window.saveScene = () => {
-    const data = objects.map(o => ({
-        url: o.sourceUrl, type: o.type, name: o.name,
-        pos: o.mesh.position.toArray(), rot: o.mesh.rotation.toArray(), scl: o.mesh.scale.toArray(),
-        settings: o.settings
-    }));
-    const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'scene.json'; a.click();
-};
-
-window.loadSceneLocal = (input) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const data = JSON.parse(e.target.result);
-        objects.forEach(o => scene.remove(o.mesh)); objects = [];
-        data.forEach(d => loadAsset(d.url, d.type, d.name, d.url.includes('.gif'), d));
-    };
-    reader.readAsText(input.files[0]);
-};
-
-// Drive Logic Stubs (Requires API Setup)
-window.handleAuthClick = () => { gapi.auth2.getAuthInstance().signIn(); };
-window.saveSceneToDrive = () => { /* Implementar subida Multipart */ alert("Configurar API Key primero"); };
-window.loadSceneFromDrive = () => { /* Implementar Picker */ alert("Configurar API Key primero"); };
-
-// ==========================================
-// 🔧 HELPERS & INIT
-// ==========================================
-window.toggleLoader = (s) => document.getElementById('loader').style.display = s?'flex':'none';
-window.updateProjection = () => {
-    const o = objects.find(x=>x.id===activeId); if(!o || o.type==='model') return;
-    const m = document.getElementById('projSelect').value;
-    scene.remove(o.mesh);
-    let geo;
-    if(m==='plane') geo = new THREE.PlaneGeometry(o.originalAspect, 1);
-    else if(m==='360') geo = new THREE.SphereGeometry(100, 64, 32);
-    else if(m==='180') geo = new THREE.SphereGeometry(100, 64, 32, 0, Math.PI);
-    else if(m==='cube') geo = new THREE.BoxGeometry(100, 100, 100);
-    
-    // Recrear mesh con nuevo geo pero mismo material
-    const newMesh = new THREE.Mesh(geo, o.mesh.material);
-    if(m!=='plane') newMesh.material.side = THREE.BackSide; else newMesh.material.side = THREE.DoubleSide;
-    
-    newMesh.position.copy(o.mesh.position); newMesh.rotation.copy(o.mesh.rotation); newMesh.scale.copy(o.mesh.scale);
-    newMesh.userData = o.mesh.userData;
-    o.mesh = newMesh; scene.add(newMesh); selectObject(o.id);
-};
-
-function onResize() { camera.aspect = window.innerWidth/window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
-
-// VR Start
-function setupVR() {
-  if(navigator.xr) navigator.xr.isSessionSupported('immersive-ar').then(ok => {
-      if(ok) {
-          const btn = document.getElementById('vrBtn'); btn.style.display='block';
-          btn.onclick = async () => {
-              occlusionEnabled = document.getElementById('checkOcclusion').checked;
-              const feat = ['local-floor']; const opt = ['dom-overlay'];
-              if(occlusionEnabled) opt.push('depth-sensing');
-              xrSession = await navigator.xr.requestSession('immersive-ar', { requiredFeatures:feat, optionalFeatures:opt, domOverlay:{root:document.body}, depthSensing: { usagePreference:['cpu-optimized'], dataFormatPreference:['luminance-alpha'] } });
-              renderer.xr.setSession(xrSession); xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
-              if(occlusionEnabled) {
-                  const gl = renderer.getContext(); xrGlBinding = new XRWebGLBinding(xrSession, gl);
-                  const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, depthVS); gl.compileShader(vs);
-                  const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, depthFS); gl.compileShader(fs);
-                  depthProgram = gl.createProgram(); gl.attachShader(depthProgram, vs); gl.attachShader(depthProgram, fs); gl.linkProgram(depthProgram);
-                  depthVao = gl.createVertexArray(); gl.bindVertexArray(depthVao);
-                  const vbo = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-                  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
-                  depthTex = gl.createTexture();
-              }
-          };
+        if (engGroup) engGroup.visible = false;
       }
-  });
-}
+    }
 
-// Iniciar
-init();
-</script>
+    // =========================
+    // Update params (shader)
+    // =========================
+    function updateActiveParam(id, v) {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !isMediaLayer(o) || !o.mat?.uniforms) return;
+
+      const u = o.mat.uniforms;
+      if (id === 'brightness') u.uBrightness.value = v;
+      else if (id === 'contrast') u.uContrast.value = v;
+      else if (id === 'saturation') u.uSaturation.value = v;
+      else if (id === 'gamma') u.uGamma.value = v;
+      else if (id === 'opacity') u.uOpacity.value = v;
+      else if (id === 'emissive') u.uEmissive.value = v;
+      else if (id === 'k1sim') u.sim1.value = v;
+      else if (id === 'k1smooth') u.smooth1.value = v;
+      else if (id === 'despill') u.despill.value = v;
+    }
+
+    function updateActiveKeyRGB() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !isMediaLayer(o) || !o.mat?.uniforms) return;
+
+      const r = parseFloat(document.getElementById('keyR').value);
+      const g = parseFloat(document.getElementById('keyG').value);
+      const b = parseFloat(document.getElementById('keyB').value);
+      o.mat.uniforms.k1.value.setRGB(r,g,b);
+    }
+
+    function updateActiveChroma() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !isMediaLayer(o) || !o.mat?.uniforms) return;
+
+      o.mat.uniforms.chromaOn.value = document.getElementById('chromaToggle').checked;
+      o.mat.uniforms.chromaInvert.value = document.getElementById('chromaInvert').checked;
+      document.getElementById('chromaPanel').style.display = o.mat.uniforms.chromaOn.value ? 'block' : 'none';
+      updateActiveKeyRGB();
+    }
+
+    // =========================
+    // Actions
+    // =========================
+    function centerActive() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D) return;
+      o.root3D.position.set(0, 1.6, -2);
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.position.copy(o.root3D.position);
+      }
+    }
+
+    function deleteActive() {
+      const idx = objects.findIndex(x=>x.id===activeId);
+      if (idx < 0) return;
+
+      const o = objects[idx];
+
+      // remove from scene
+      if (o.kind === 'youtube' && o.cssObj) {
+        if (o.cssObj.element?.parentNode) o.cssObj.element.parentNode.removeChild(o.cssObj.element);
+        scene.remove(o.cssObj);
+      }
+
+      if (o.root3D) scene.remove(o.root3D);
+
+      // cleanup media
+      if (o.video) { try { o.video.pause(); } catch{} }
+      if (o.tex && o.tex.dispose) o.tex.dispose();
+      if (o.mesh?.geometry) o.mesh.geometry.dispose();
+      if (o.mat && o.mat.dispose) o.mat.dispose();
+
+      objects.splice(idx, 1);
+      activeId = null;
+      transformCtrl.detach();
+      if (engGroup) engGroup.visible = false;
+      updateLayers();
+    }
+
+    // =========================
+    // Render loop
+    // =========================
+    function animate(time, frame) {
+      orbit.update();
+      handleStableControls();
+      updateEngineeringVisuals();
+
+      // billboard + gifs
+      for (const o of objects) {
+        if (!o.visible) continue;
+
+        if (o.billboard && o.root3D) {
+          // billboard en Y estable
+          o.root3D.lookAt(camera.position.x, o.root3D.position.y, camera.position.z);
+        }
+
+        if (o.kind === 'gif' && o.gifData && o.gifData.playing) {
+          const g = o.gifData;
+          if (performance.now() > g.nextTime) {
+            g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data);
+            g.ctx.putImageData(g.dat, 0, 0);
+            g.tex.needsUpdate = true;
+
+            const d = g.r.frameInfo(g.f).delay * 10;
+            g.nextTime = performance.now() + (d || 100);
+            g.f = (g.f + 1) % g.r.numFrames();
+          }
+        }
+
+        // sync CSS3D YouTube with root transform
+        if (o.kind === 'youtube' && o.cssObj && o.root3D) {
+          o.cssObj.position.copy(o.root3D.position);
+          o.cssObj.quaternion.copy(o.root3D.quaternion);
+          o.cssObj.scale.copy(o.root3D.scale).multiplyScalar(1/960); // mantiene escala relativa
+        }
+      }
+
+      // depth occlusion
+      if (frame && occlusionEnabled && xrGlBinding) {
+        const pose = frame.getViewerPose(xrRefSpace);
+        if (pose) {
+          const gl = renderer.getContext();
+          gl.colorMask(false,false,false,false);
+
+          for (const view of pose.views) {
+            const dInfo = xrGlBinding.getDepthInformation(view);
+            if (dInfo) {
+              gl.bindTexture(gl.TEXTURE_2D, depthTex);
+              gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE_ALPHA, dInfo.width, dInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, dInfo.data);
+
+              gl.useProgram(depthProgram);
+              gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
+              gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
+
+              gl.bindVertexArray(depthVao);
+              gl.drawArrays(gl.TRIANGLES, 0, 6);
+            }
+          }
+          gl.colorMask(true,true,true,true);
+        }
+      }
+
+      renderer.render(scene, camera);
+      cssRenderer.render(scene, camera);
+    }
+
+    // =========================
+    // Boot
+    // =========================
+    init();
+  </script>
 </body>
 </html>
+
+  <!-- PARTE 2 abajo -->
