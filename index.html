@@ -71,13 +71,14 @@
       background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
     }
     input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
-    .val { width: 46px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+    .val { width: 58px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
 
-    select, input[type=url], input[type=text] {
+    select, input[type=url], input[type=text], input[type=number] {
       width: 100%; background: rgba(0,0,0,0.3);
       border: 1px solid var(--border-glass); color: #fff;
       padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
     }
+    input[type=number] { padding: 6px 10px; }
 
     button {
       flex: 1; padding: 10px; border-radius: 10px; border: none;
@@ -132,11 +133,19 @@
       margin-bottom: 6px; transition: 0.2s; font-weight: 800;
       border: 1px solid rgba(255,255,255,0.06);
       background: rgba(0,0,0,0.12);
+      touch-action: none;
     }
     .layer-item.active {
       background: rgba(255, 170, 0, 0.2);
       border-left: 3px solid var(--main-color);
       color: #fff;
+    }
+    .layer-item.dragging {
+      opacity: 0.6;
+      outline: 2px dashed rgba(255,170,0,0.6);
+    }
+    .layer-item.over {
+      outline: 2px solid rgba(255,170,0,0.45);
     }
     .layer-item .tag {
       font-weight: 900; color: rgba(255,255,255,0.75);
@@ -155,6 +164,12 @@
       border-radius: 12px;
       padding: 10px;
       background: rgba(0,0,0,0.18);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
     }
   </style>
 </head>
@@ -193,13 +208,13 @@
 
     <div class="sec-head">📥 Importar</div>
     <div class="row">
-      <input type="url" id="webUrl" placeholder="URL .mp4/.webm/.png/.jpg/.gif o 360 equirect">
+      <input type="url" id="webUrl" placeholder="URL .mp4/.webm/.png/.jpg/.gif/.glb/.gltf/.fbx/.obj o 360 equirect">
       <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
     </div>
     <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">
-      📁 Abrir local (img/video/gif/glb/gltf)
+      📁 Abrir local (img/video/gif/glb/gltf/fbx/obj)
     </button>
-    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf">
+    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf,.fbx,.obj">
 
     <div class="sec-head">▶ YouTube (3D DOM)</div>
     <div class="row">
@@ -213,7 +228,7 @@
       Nota técnica: YouTube como <b>textura WebGL</b> suele fallar por CORS/DRM. Aquí se muestra como <b>plano 3D DOM</b> (CSS3D). En modo AR inmersivo puede no verse.
     </div>
 
-    <div class="sec-head">Capas</div>
+    <div class="sec-head">Capas (reordenables)</div>
     <div id="layerList" class="layer-list"></div>
 
     <div id="editorUI" style="display:none;">
@@ -221,6 +236,25 @@
       <div class="row"><label><input type="checkbox" id="layerVisible"> Visible</label></div>
       <div class="row"><label><input type="checkbox" id="layerLocked"> Bloquear</label></div>
       <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard (mirar cámara)</label></div>
+
+      <!-- NUEVO: Transform sliders (PC/iPad/Móvil) -->
+      <div class="sec-head">🧊 Transform (sliders)</div>
+      <div class="note" style="margin-bottom:10px;">
+        Tip: Esto sirve en PC/iPad/móvil. En VR/AR sigues usando controles XR. Los sliders se sincronizan con el gizmo.
+      </div>
+
+      <div class="sec-head">Posición</div>
+      <div class="row"><label>X</label><input type="range" id="t_posx" min="-10" max="10" step="0.01" value="0"><span class="val" id="v_t_posx">0.00</span></div>
+      <div class="row"><label>Y</label><input type="range" id="t_posy" min="0" max="10" step="0.01" value="1.6"><span class="val" id="v_t_posy">1.60</span></div>
+      <div class="row"><label>Z</label><input type="range" id="t_posz" min="-20" max="5" step="0.01" value="-2"><span class="val" id="v_t_posz">-2.00</span></div>
+
+      <div class="sec-head">Rotación (grados)</div>
+      <div class="row"><label>X</label><input type="range" id="t_rotx" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_t_rotx">0.0°</span></div>
+      <div class="row"><label>Y</label><input type="range" id="t_roty" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_t_roty">0.0°</span></div>
+      <div class="row"><label>Z</label><input type="range" id="t_rotz" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_t_rotz">0.0°</span></div>
+
+      <div class="sec-head">Escala</div>
+      <div class="row"><label>Uniforme</label><input type="range" id="t_scale" min="0.05" max="50" step="0.01" value="1"><span class="val" id="v_t_scale">1.00</span></div>
 
       <div class="sec-head">🌐 Superficie / Proyección</div>
       <div class="row">
@@ -264,6 +298,34 @@
         <button onclick="mediaAction('mute')" class="secondary">🔇 Mute</button>
       </div>
 
+      <!-- NUEVO: Video controls (audio + scrub + recorte + loop/once) -->
+      <div id="videoUI" style="display:none;">
+        <div class="sec-head">🔊 Video (audio + avance)</div>
+
+        <div class="row"><label>Volumen</label><input type="range" id="vidVolume" min="0" max="1" step="0.01" value="0"><span class="val" id="v_vidVolume">0.00</span></div>
+        <div class="row"><label>Avance</label><input type="range" id="vidSeek" min="0" max="1000" step="1" value="0"><span class="val" id="v_vidSeek">0%</span></div>
+
+        <div class="grid-2" style="margin:8px 0;">
+          <div>
+            <div class="sec-head" style="margin:0 0 6px 0;">Inicio (s)</div>
+            <input type="number" id="vidStart" min="0" step="0.1" value="0">
+          </div>
+          <div>
+            <div class="sec-head" style="margin:0 0 6px 0;">Fin (s)</div>
+            <input type="number" id="vidEnd" min="0" step="0.1" value="0">
+          </div>
+        </div>
+
+        <div class="row">
+          <label><input type="checkbox" id="vidTrim"> Usar recorte</label>
+          <label><input type="checkbox" id="vidLoop" checked> Loop</label>
+        </div>
+
+        <div class="note">
+          Importante: Por políticas del navegador, el audio solo se habilita tras interacción del usuario (mover volumen o presionar play). Si el video viene de otro dominio sin CORS, puede fallar.
+        </div>
+      </div>
+
       <div class="sec-head">🧭 Acciones</div>
       <div class="row" style="gap:8px;">
         <button onclick="centerActive()" class="secondary">🎯 Re-centrar</button>
@@ -273,6 +335,12 @@
 
     <div class="sec-head">⚙️ Realidad Mixta</div>
     <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
+
+    <div class="sec-head">🧩 Nota CORS (rápida)</div>
+    <div class="note">
+      Si abres este HTML como <b>file://</b>, el navegador bloquea fetch/loads y dispara CORS en GIF/Modelos desde rutas locales o dominios sin headers.
+      Solución real: servir con un servidor local (ej: <b>VSCode Live Server</b>) o usar el botón <b>Abrir local</b> (Blob URL).
+    </div>
   </div>
 
   <button id="vrBtn">INICIAR MR</button>
@@ -283,12 +351,14 @@
     "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
   } }
   </script>
-  <script type="module">
+    <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { TransformControls } from 'three/addons/controls/TransformControls.js';
     import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
     import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
     // =========================
@@ -420,6 +490,11 @@
 
     const clock = new THREE.Clock();
     const gltfLoader = new GLTFLoader();
+    const fbxLoader = new FBXLoader();
+    const objLoader = new OBJLoader();
+
+    // Para drag reordenable (mouse + touch)
+    let dragLayerId = null;
 
     // =========================
     // Utilidades
@@ -455,6 +530,21 @@
 
     function isMediaLayer(o){ return o && (o.kind === 'image' || o.kind === 'video' || o.kind === 'gif'); }
 
+    function degToRad(d){ return d * Math.PI / 180; }
+    function radToDeg(r){ return r * 180 / Math.PI; }
+
+    function setVal(id, txt){
+      const el = document.getElementById(id);
+      if (el) el.textContent = txt;
+    }
+
+    // CORS: NO se puede “forzar” desde el cliente si el servidor no lo permite.
+    // Lo que sí hacemos:
+    // - loaders con crossOrigin = 'anonymous'
+    // - advertencias más claras
+    // - para local: recomendar servidor o usar input local (blob URL)
+    function looksLikeFileUrl(u=""){ return /^file:\/\//i.test(u); }
+
     // =========================
     // Init
     // =========================
@@ -479,6 +569,7 @@
 
       transformCtrl = new TransformControls(camera, renderer.domElement);
       transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+      transformCtrl.addEventListener('objectChange', () => syncTransformUIFromActive());
       scene.add(transformCtrl);
 
       // CSS3D (YouTube)
@@ -509,7 +600,6 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       cssRenderer.setSize(window.innerWidth, window.innerHeight);
     }
-
     // =========================
     // Ingeniería (grid + labels)
     // =========================
@@ -581,7 +671,6 @@
       const { ctx, tex } = sprite.userData;
       ctx.clearRect(0,0,256,64);
 
-      // fallback si roundRect no existe
       const rr = (ctx.roundRect ? true : false);
 
       ctx.fillStyle = "rgba(20, 15, 0, 0.85)";
@@ -614,14 +703,12 @@
       const o = objects.find(x => x.id === activeId);
       if (!o || !o.root3D) { engGroup.visible = false; return; }
 
-      // solo si no es YouTube (porque DOM) – igual mostramos posición/escala si quieres
       engGroup.visible = true;
 
       const P = o.root3D.position;
       const S = o.root3D.scale;
       const R = o.root3D.rotation;
 
-      // aproximación de tamaño para visual
       const baseW = (o.originalAspect || 1);
       const realW = baseW * S.x;
       const realH = 1 * S.y;
@@ -687,7 +774,6 @@
       raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
       raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix);
 
-      // solo capas no bloqueadas y con root visible
       const meshes = objects
         .filter(o => !o.locked && o.visible && o.pickMesh)
         .map(o => o.pickMesh);
@@ -704,7 +790,6 @@
       }
     }
 
-    // agarrar = seleccionar + attach físico
     function onGripStart(e) {
       const hits = getIntersections(e.target);
       if (hits.length > 0) {
@@ -712,7 +797,6 @@
         const id = (h.userData && h.userData.layerId) ? h.userData.layerId : null;
         if (id) selectObject(id);
 
-        // attach al controller el root de la capa (no el hijo)
         const o = objects.find(x => x.id === id);
         if (o && o.root3D) {
           e.target.attach(o.root3D);
@@ -841,10 +925,14 @@
     async function addAssetFromUrl(url, name="Web Asset") {
       const lower = (url || "").toLowerCase();
 
-      // modelo 3D
-      if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
-        return addModel(url, name);
+      if (looksLikeFileUrl(url)) {
+        alert("Bloqueo del navegador: no se puede cargar file:// por fetch/loaders. Usa 'Abrir local' o sirve este proyecto con un servidor (Live Server).");
+        return;
       }
+
+      if (lower.endsWith('.glb') || lower.endsWith('.gltf')) return addModel(url, name);
+      if (lower.endsWith('.fbx')) return addFBX(url, name);
+      if (lower.endsWith('.obj')) return addOBJ(url, name);
 
       const isGif = lower.endsWith('.gif');
       const isVideo = /\.(mp4|webm)$/i.test(lower);
@@ -859,7 +947,10 @@
       let tex=null, video=null, gifData=null;
       try {
         if (kind === 'gif') {
-          const buf = await (await fetch(url)).arrayBuffer();
+          // Si el servidor remoto no tiene CORS, esto fallará. No hay bypass del lado cliente.
+          const res = await fetch(url, { mode: 'cors' });
+          if (!res.ok) throw new Error("Fetch GIF falló (HTTP " + res.status + ")");
+          const buf = await res.arrayBuffer();
           const r = new window.Omggif.GifReader(new Uint8Array(buf));
           const cvs = document.createElement('canvas');
           cvs.width = r.width; cvs.height = r.height;
@@ -876,26 +967,30 @@
           video.src = url;
           video.crossOrigin = 'anonymous';
           video.loop = true;
-          video.muted = true;
+          video.muted = true; // default por autoplay policy
           video.playsInline = true;
-          await video.play();
+          video.preload = 'auto';
+
+          // Intento play: si el navegador lo bloquea, se queda listo y el usuario presiona Play
+          try { await video.play(); } catch {}
+
           tex = new THREE.VideoTexture(video);
           tex.colorSpace = THREE.SRGBColorSpace;
         } 
         else {
-          tex = await new THREE.TextureLoader().loadAsync(url);
+          const tl = new THREE.TextureLoader();
+          tl.setCrossOrigin('anonymous');
+          tex = await tl.loadAsync(url);
           tex.colorSpace = THREE.SRGBColorSpace;
         }
 
         const aspect = video
-          ? (video.videoWidth / Math.max(1, video.videoHeight))
+          ? (video.videoWidth / Math.max(1, video.videoHeight) || 1.77)
           : (tex.image ? (tex.image.width / Math.max(1, tex.image.height)) : 1.77);
 
-        // Root container (para mantener consistencia con modelos/youtube)
         const root = new THREE.Group();
         root.position.set(0, 1.6, -2);
 
-        // shader material
         const mat = new THREE.ShaderMaterial({
           uniforms: {
             map: { value: tex },
@@ -920,10 +1015,9 @@
           depthWrite: false
         });
 
-        // mesh inicial (plane)
         const planeGeo = new THREE.PlaneGeometry(aspect, 1);
         const mesh = new THREE.Mesh(planeGeo, mat);
-        mesh.userData.layerId = null; // asignamos luego
+        mesh.userData.layerId = null;
         root.add(mesh);
         scene.add(root);
 
@@ -931,10 +1025,10 @@
           id: uid(),
           name,
           kind,
-          projection: 'plane',         // plane | curved | orb | 360
-          root3D: root,                // TransformControls se attach aquí
-          pickMesh: mesh,              // para raycast (siempre un mesh)
-          mesh,                         // mesh principal cuando es media
+          projection: 'plane',
+          root3D: root,
+          pickMesh: mesh,
+          mesh,
           mat,
           tex,
           video,
@@ -943,7 +1037,12 @@
           visible: true,
           locked: false,
           originalAspect: aspect,
-          sourceUrl: url
+          sourceUrl: url,
+
+          // NUEVO: video playback range
+          vidTrim: false,
+          vidStart: 0,
+          vidEnd: 0
         };
 
         mesh.userData.layerId = layer.id;
@@ -954,7 +1053,7 @@
         return layer;
       } catch (e) {
         console.error(e);
-        alert("Error cargando media. Revisa URL / CORS.");
+        alert("Error cargando media. Revisa URL / CORS.\n\nSi estás en file:// (doble click al HTML), usa un servidor local o 'Abrir local'.");
       } finally {
         if (!isRestore) toggleLoader(false);
       }
@@ -963,6 +1062,7 @@
     async function addModel(url, name="Model 3D", isRestore=false) {
       if (!isRestore) toggleLoader(true, "CARGANDO MODELO 3D...");
       try {
+        gltfLoader.setCrossOrigin('anonymous');
         const gltf = await gltfLoader.loadAsync(url);
 
         const root = new THREE.Group();
@@ -979,7 +1079,6 @@
           }
         });
 
-        // escala auto suave
         const box = new THREE.Box3().setFromObject(model);
         const size = new THREE.Vector3();
         box.getSize(size);
@@ -990,7 +1089,6 @@
         root.add(model);
         scene.add(root);
 
-        // pickMesh: usamos un mesh invisible simple para no depender del contenido del gltf
         const pick = new THREE.Mesh(
           new THREE.BoxGeometry(0.6, 0.6, 0.6),
           new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
@@ -1013,7 +1111,6 @@
           sourceUrl: url
         };
 
-        // marcar layerId en meshes reales también
         model.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
         pick.userData.layerId = layer.id;
 
@@ -1023,7 +1120,133 @@
         return layer;
       } catch (e) {
         console.error(e);
-        alert("Error cargando modelo 3D (.glb/.gltf).");
+        alert("Error cargando modelo 3D (.glb/.gltf). Revisa CORS/URL.\n\nSi estás en file://, sirve con servidor local.");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    async function addFBX(url, name="FBX 3D", isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO FBX...");
+      try {
+        fbxLoader.setCrossOrigin?.('anonymous'); // algunos builds no lo exponen
+        const obj = await fbxLoader.loadAsync(url);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.2, -2);
+
+        obj.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = false;
+            n.receiveShadow = false;
+            n.userData.layerId = null;
+          }
+        });
+
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const s = 0.8 / maxDim;
+        obj.scale.setScalar(s);
+
+        root.add(obj);
+        scene.add(root);
+
+        const pick = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.6),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+        );
+        pick.position.set(0, 0.3, 0);
+        root.add(pick);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind: 'model',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: pick,
+          model: obj,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: 1,
+          sourceUrl: url
+        };
+
+        obj.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
+        pick.userData.layerId = layer.id;
+
+        objects.push(layer);
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+      } catch (e) {
+        console.error(e);
+        alert("Error cargando FBX. Revisa CORS/URL.\n\nNota: FBX con texturas externas requiere que esas URLs también tengan CORS.");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    async function addOBJ(url, name="OBJ 3D", isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO OBJ...");
+      try {
+        // OBJLoader no trae setCrossOrigin; depende de fetch interno/loader de file.
+        const obj = await objLoader.loadAsync(url);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.2, -2);
+
+        obj.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = false;
+            n.receiveShadow = false;
+            n.userData.layerId = null;
+          }
+        });
+
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const s = 0.8 / maxDim;
+        obj.scale.setScalar(s);
+
+        root.add(obj);
+        scene.add(root);
+
+        const pick = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.6),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+        );
+        pick.position.set(0, 0.3, 0);
+        root.add(pick);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind: 'model',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: pick,
+          model: obj,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: 1,
+          sourceUrl: url
+        };
+
+        obj.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
+        pick.userData.layerId = layer.id;
+
+        objects.push(layer);
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+      } catch (e) {
+        console.error(e);
+        alert("Error cargando OBJ. Revisa CORS/URL.\n\nSi el OBJ depende de .mtl/texturas, esas rutas también deben ser accesibles con CORS.");
       } finally {
         if (!isRestore) toggleLoader(false);
       }
@@ -1036,15 +1259,12 @@
       const id = parseYouTubeId(url);
       if (!id) { alert("No pude leer el ID de YouTube."); return; }
 
-      // iframe embed
       const iframe = document.createElement('iframe');
       iframe.width = '960';
       iframe.height = '540';
       iframe.style.border = '0';
       iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
       iframe.allowFullscreen = true;
-
-      // nocookie + modest branding
       iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
 
       const holder = document.createElement('div');
@@ -1058,11 +1278,9 @@
 
       const cssObj = new CSS3DObject(holder);
 
-      // Root 3D + helper pick mesh
       const root = new THREE.Group();
       root.position.set(0, 1.6, -2);
 
-      // helper para que TransformControls funcione en WebGL
       const helper = new THREE.Mesh(
         new THREE.PlaneGeometry(1.0, 0.5625),
         new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
@@ -1070,14 +1288,12 @@
       helper.userData.layerId = null;
       root.add(helper);
 
-      // escalamos el CSS para que coincida con helper (1 x 0.5625)
       cssObj.scale.set(1/960, 1/960, 1/960);
       cssObj.position.copy(root.position);
       cssObj.quaternion.copy(root.quaternion);
 
-      // guardamos referencia
       scene.add(root);
-      scene.add(cssObj); // CSS3D usa escena igual, pero renderer CSS ignora materiales
+      scene.add(cssObj);
 
       const layer = {
         id: uid(),
@@ -1106,36 +1322,29 @@
     function applyProjection(layer, mode) {
       layer.projection = mode;
 
-      // YouTube: solo cambia helper geo (visual)
       if (layer.kind === 'youtube') {
-        // mantenemos plane para DOM; si eligen 360/orb lo ignoramos
         layer.projection = 'plane';
         document.getElementById('projSelect').value = 'plane';
         return;
       }
 
-      // Modelos: no aplicamos geometrías de proyección (son 3D reales)
       if (layer.kind === 'model') {
         layer.projection = 'plane';
         document.getElementById('projSelect').value = 'plane';
         return;
       }
 
-      // Media: reconstruimos geometry principal según modo
       const mesh = layer.mesh;
       if (!mesh) return;
 
-      // reset side
       mesh.material.side = THREE.DoubleSide;
       mesh.scale.set(1,1,1);
 
       if (mode === '360') {
-        // Entorno 360: esfera grande por dentro
         const geo = new THREE.SphereGeometry(50, 64, 32);
         mesh.geometry.dispose();
         mesh.geometry = geo;
         mesh.material.side = THREE.BackSide;
-        // el root queda en (0,1.6,-2), pero una esfera grande conviene centrar en cámara:
         mesh.position.set(0, 0, 0);
         layer.root3D.position.set(0, 1.6, 0);
       }
@@ -1147,17 +1356,14 @@
         mesh.position.set(0, 0, 0);
       }
       else if (mode === 'curved') {
-        // cilindro abierto – “pantalla curva”
         const geo = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 48, 1, true, 3.8, 1.8);
         mesh.geometry.dispose();
         mesh.geometry = geo;
-        // invertir para mirar hacia adentro
         mesh.scale.set(-1, 1, 1);
         mesh.material.side = THREE.DoubleSide;
         mesh.position.set(0, 0, 0);
       }
       else {
-        // plane
         const geo = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
         mesh.geometry.dispose();
         mesh.geometry = geo;
@@ -1169,7 +1375,6 @@
     // UI bindings
     // =========================
     function bindUI() {
-      // css3d interactive
       document.getElementById('css3dInteractive').addEventListener('change', (e) => {
         cssRoot.classList.toggle('interactive', e.target.checked);
       });
@@ -1180,7 +1385,20 @@
           const id = e.target.id;
           const val = parseFloat(e.target.value);
           const lbl = document.getElementById('v_' + id);
-          if (lbl) lbl.textContent = (Number.isFinite(val) ? val.toFixed(3) : '0');
+
+          if (lbl) {
+            if (id.startsWith('t_rot')) lbl.textContent = (Number.isFinite(val) ? val.toFixed(1) : '0') + '°';
+            else if (id === 'vidSeek') lbl.textContent = Math.round((val/1000)*100) + '%';
+            else lbl.textContent = Number.isFinite(val) ? val.toFixed(2) : '0';
+          }
+
+          // transform sliders
+          if (id.startsWith('t_')) applyTransformFromUI();
+
+          // video controls
+          if (id === 'vidVolume') applyVideoUIToActive();
+          if (id === 'vidSeek') seekVideoFromUI();
+
           updateActiveParam(id, val);
         });
       });
@@ -1189,10 +1407,8 @@
       document.getElementById('chromaToggle').addEventListener('change', () => updateActiveChroma());
       document.getElementById('chromaInvert').addEventListener('change', () => updateActiveChroma());
 
-      // key rgb
       ['keyR','keyG','keyB'].forEach(id => document.getElementById(id).addEventListener('input', () => updateActiveKeyRGB()));
 
-      // checkboxes capa
       document.getElementById('layerVisible').addEventListener('change', (e)=> {
         const o = objects.find(x=>x.id===activeId); if(!o) return;
         setLayerVisible(o, e.target.checked);
@@ -1202,6 +1418,7 @@
       document.getElementById('layerLocked').addEventListener('change', (e)=> {
         const o = objects.find(x=>x.id===activeId); if(!o) return;
         o.locked = e.target.checked;
+        if (o.locked) transformCtrl.detach();
         updateLayers();
       });
 
@@ -1211,21 +1428,19 @@
         if (!o.billboard && o.root3D) o.root3D.rotation.set(0,0,0);
       });
 
-      // file input
+      // file input (local): evita CORS usando Blob URLs
       document.getElementById('fileInput').addEventListener('change', async (e) => {
         const files = [...e.target.files];
         for (const f of files) {
           const url = URL.createObjectURL(f);
           const lower = f.name.toLowerCase();
-          if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
-            await addModel(url, f.name);
-          } else if (lower.endsWith('.gif')) {
-            await addMedia(url, 'gif', f.name);
-          } else if (f.type.includes('video')) {
-            await addMedia(url, 'video', f.name);
-          } else {
-            await addMedia(url, 'image', f.name);
-          }
+
+          if (lower.endsWith('.glb') || lower.endsWith('.gltf')) await addModel(url, f.name);
+          else if (lower.endsWith('.fbx')) await addFBX(url, f.name);
+          else if (lower.endsWith('.obj')) await addOBJ(url, f.name);
+          else if (lower.endsWith('.gif')) await addMedia(url, 'gif', f.name);
+          else if (f.type.includes('video')) await addMedia(url, 'video', f.name);
+          else await addMedia(url, 'image', f.name);
         }
         e.target.value = '';
       });
@@ -1252,10 +1467,10 @@
       window.saveSceneToDrive = () => { alert("TODO: implementar guardado."); };
       window.loadSceneFromDrive = () => { alert("TODO: implementar carga."); };
 
-      // public APIs
       window.loadFromWeb = async () => {
         const url = document.getElementById('webUrl').value.trim();
         if (!url) return;
+
         if (isYouTubeUrl(url)) {
           document.getElementById('ytUrl').value = url;
           await addYouTube();
@@ -1274,19 +1489,29 @@
         const o = objects.find(x=>x.id===activeId); if(!o) return;
 
         if (o.kind === 'video' && o.video) {
-          if (action === 'play') o.video.play();
+          if (action === 'play') {
+            // si el usuario presiona play, podemos habilitar audio si volumen>0
+            if (o.video.muted && (parseFloat(document.getElementById('vidVolume').value) || 0) > 0) o.video.muted = false;
+            o.video.play();
+          }
           if (action === 'pause') o.video.pause();
           if (action === 'mute') o.video.muted = !o.video.muted;
         } else if (o.kind === 'gif' && o.gifData) {
           if (action === 'play') o.gifData.playing = true;
           if (action === 'pause') o.gifData.playing = false;
-          if (action === 'mute') o.gifData.playing = !o.gifData.playing; // placeholder
+          if (action === 'mute') o.gifData.playing = !o.gifData.playing;
         }
       };
 
       window.deleteActive = deleteActive;
       window.centerActive = centerActive;
       window.toggleUIPanel = toggleUIPanel;
+
+      // Video UI extra
+      document.getElementById('vidTrim').addEventListener('change', applyVideoUIToActive);
+      document.getElementById('vidLoop').addEventListener('change', applyVideoUIToActive);
+      document.getElementById('vidStart').addEventListener('input', applyVideoUIToActive);
+      document.getElementById('vidEnd').addEventListener('input', applyVideoUIToActive);
     }
 
     function toggleUIPanel() {
@@ -1297,7 +1522,147 @@
     }
 
     // =========================
-    // Selection + layer list
+    // Transform sliders sync
+    // =========================
+    function syncTransformUIFromActive() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D) return;
+
+      const P = o.root3D.position;
+      const R = o.root3D.rotation;
+      const S = o.root3D.scale;
+
+      setSlider('t_posx', P.x, 2);
+      setSlider('t_posy', P.y, 2);
+      setSlider('t_posz', P.z, 2);
+
+      setSlider('t_rotx', radToDeg(R.x), 1, true);
+      setSlider('t_roty', radToDeg(R.y), 1, true);
+      setSlider('t_rotz', radToDeg(R.z), 1, true);
+
+      // escala uniforme (usa x como referencia)
+      setSlider('t_scale', S.x, 2);
+    }
+
+    function setSlider(id, v, digits=2, isDeg=false){
+      const el = document.getElementById(id);
+      if (!el) return;
+      const val = Number.isFinite(v) ? v : 0;
+      el.value = val;
+      const lbl = document.getElementById('v_' + id);
+      if (lbl) lbl.textContent = isDeg ? val.toFixed(digits) + '°' : val.toFixed(digits);
+    }
+
+    function applyTransformFromUI() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D || o.locked) return;
+
+      const px = parseFloat(document.getElementById('t_posx').value);
+      const py = parseFloat(document.getElementById('t_posy').value);
+      const pz = parseFloat(document.getElementById('t_posz').value);
+
+      const rx = degToRad(parseFloat(document.getElementById('t_rotx').value));
+      const ry = degToRad(parseFloat(document.getElementById('t_roty').value));
+      const rz = degToRad(parseFloat(document.getElementById('t_rotz').value));
+
+      const sc = parseFloat(document.getElementById('t_scale').value);
+
+      o.root3D.position.set(px, py, pz);
+      o.root3D.rotation.set(rx, ry, rz);
+      o.root3D.scale.set(sc, sc, sc);
+
+      // YouTube CSS3D sync inmediato
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.position.copy(o.root3D.position);
+        o.cssObj.quaternion.copy(o.root3D.quaternion);
+      }
+    }
+
+    // =========================
+    // Video UI
+    // =========================
+    function applyVideoUIToActive() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || o.kind !== 'video' || !o.video) return;
+
+      const vol = parseFloat(document.getElementById('vidVolume').value);
+      setVal('v_vidVolume', (Number.isFinite(vol) ? vol.toFixed(2) : '0.00'));
+
+      // volumen => habilita audio (muted off) si usuario sube >0
+      o.video.volume = Math.max(0, Math.min(1, vol));
+      if (o.video.volume > 0) o.video.muted = false;
+
+      const useTrim = document.getElementById('vidTrim').checked;
+      const loop = document.getElementById('vidLoop').checked;
+
+      const start = Math.max(0, parseFloat(document.getElementById('vidStart').value) || 0);
+      const endRaw = parseFloat(document.getElementById('vidEnd').value) || 0;
+
+      o.vidTrim = !!useTrim;
+      o.vidStart = start;
+      o.vidEnd = Math.max(0, endRaw);
+
+      o.video.loop = (!useTrim) && loop; // si hay trim, lo manejamos manual
+
+      // Si el usuario activa trim y el end es 0, lo dejamos "auto" (duración)
+      // Ajuste suave: si currentTime cae fuera, lo llevamos al inicio
+      if (useTrim) {
+        const dur = o.video.duration || 0;
+        const end = (o.vidEnd > 0) ? Math.min(o.vidEnd, dur || o.vidEnd) : (dur || 0);
+        if (Number.isFinite(end) && end > 0 && o.video.currentTime > end) o.video.currentTime = start;
+        if (o.video.currentTime < start) o.video.currentTime = start;
+      }
+    }
+
+    function seekVideoFromUI() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || o.kind !== 'video' || !o.video) return;
+
+      const s = parseFloat(document.getElementById('vidSeek').value);
+      const tNorm = (Number.isFinite(s) ? s : 0) / 1000;
+
+      const dur = o.video.duration || 0;
+      if (!dur || !Number.isFinite(dur)) return;
+
+      let start = 0, end = dur;
+      if (o.vidTrim) {
+        start = Math.max(0, o.vidStart || 0);
+        end = (o.vidEnd && o.vidEnd > 0) ? Math.min(o.vidEnd, dur) : dur;
+        if (end <= start) end = dur;
+      }
+      const target = start + (end - start) * tNorm;
+      o.video.currentTime = Math.max(0, Math.min(dur, target));
+    }
+
+    function updateVideoSeekUI() {
+      const o = objects.find(x=>x.id===activeId);
+      const box = document.getElementById('videoUI');
+      if (!o || o.kind !== 'video' || !o.video) { box.style.display = 'none'; return; }
+
+      box.style.display = 'block';
+
+      const v = o.video;
+      const dur = v.duration || 0;
+      if (!dur || !Number.isFinite(dur)) return;
+
+      let start = 0, end = dur;
+      if (o.vidTrim) {
+        start = Math.max(0, o.vidStart || 0);
+        end = (o.vidEnd && o.vidEnd > 0) ? Math.min(o.vidEnd, dur) : dur;
+        if (end <= start) end = dur;
+      }
+
+      const cur = v.currentTime || 0;
+      const t = (end > start) ? (cur - start) / (end - start) : 0;
+      const clamped = Math.max(0, Math.min(1, t));
+
+      const seek = document.getElementById('vidSeek');
+      seek.value = Math.round(clamped * 1000);
+      setVal('v_vidSeek', Math.round(clamped * 100) + '%');
+    }
+
+    // =========================
+    // Selection + layer list (reordenable)
     // =========================
     function setLayerVisible(o, v) {
       o.visible = v;
@@ -1316,18 +1681,14 @@
       transformCtrl.detach();
       if (o.root3D && !o.locked) transformCtrl.attach(o.root3D);
 
-      // mostrar editor
       document.getElementById('editorUI').style.display = 'block';
 
-      // set UI layer toggles
       document.getElementById('layerVisible').checked = !!o.visible;
       document.getElementById('layerLocked').checked = !!o.locked;
       document.getElementById('checkBillboard').checked = !!o.billboard;
 
-      // proyección
       document.getElementById('projSelect').value = o.projection || 'plane';
 
-      // si es media, cargar uniforms a UI; si no, deshabilitar sliders (simple)
       const media = isMediaLayer(o);
       setEditorEnabled(media);
 
@@ -1346,7 +1707,6 @@
         setRange('k1smooth', u.smooth1.value);
         setRange('despill', u.despill.value);
 
-        // key RGB
         document.getElementById('keyR').value = u.k1.value.r;
         document.getElementById('keyG').value = u.k1.value.g;
         document.getElementById('keyB').value = u.k1.value.b;
@@ -1356,11 +1716,31 @@
         document.getElementById('chromaPanel').style.display = 'none';
       }
 
+      // NUEVO: Transform sliders sync
+      syncTransformUIFromActive();
+
+      // NUEVO: Video UI sync
+      const vbox = document.getElementById('videoUI');
+      if (o.kind === 'video' && o.video) {
+        vbox.style.display = 'block';
+        document.getElementById('vidVolume').value = (o.video.volume ?? 0);
+        setVal('v_vidVolume', (o.video.volume ?? 0).toFixed(2));
+
+        document.getElementById('vidTrim').checked = !!o.vidTrim;
+        document.getElementById('vidLoop').checked = !!(o.video.loop || true);
+        document.getElementById('vidStart').value = (o.vidStart ?? 0);
+        document.getElementById('vidEnd').value = (o.vidEnd ?? 0);
+
+        applyVideoUIToActive();
+        updateVideoSeekUI();
+      } else {
+        vbox.style.display = 'none';
+      }
+
       updateLayers();
     }
 
     function setEditorEnabled(enabled) {
-      // deshabilita los controles shader si no es media
       const ids = ['brightness','contrast','saturation','gamma','opacity','emissive','chromaToggle','chromaInvert','k1sim','k1smooth','despill','keyR','keyG','keyB'];
       ids.forEach(id => {
         const el = document.getElementById(id);
@@ -1376,6 +1756,23 @@
       if (lbl) lbl.textContent = val.toFixed(3);
     }
 
+    function reorderLayers(dragId, dropId) {
+      if (!dragId || !dropId || dragId === dropId) return;
+      const a = objects.findIndex(x => x.id === dragId);
+      const b = objects.findIndex(x => x.id === dropId);
+      if (a < 0 || b < 0) return;
+
+      const [item] = objects.splice(a, 1);
+      objects.splice(b, 0, item);
+
+      // opcional: renderOrder para media (si quieres jerarquía visual)
+      objects.forEach((o, idx) => {
+        if (o.mesh) o.mesh.renderOrder = idx;
+      });
+
+      updateLayers();
+    }
+
     function updateLayers() {
       const list = document.getElementById('layerList');
       list.innerHTML = '';
@@ -1383,6 +1780,7 @@
       for (const o of objects) {
         const row = document.createElement('div');
         row.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
+        row.draggable = true;
 
         const ico = document.createElement('div');
         ico.textContent = iconFor(o);
@@ -1397,7 +1795,6 @@
         const mini = document.createElement('div');
         mini.className = 'mini';
 
-        // visible checkbox
         const vis = document.createElement('input');
         vis.type = 'checkbox';
         vis.checked = !!o.visible;
@@ -1405,7 +1802,6 @@
         vis.onclick = (ev) => ev.stopPropagation();
         vis.onchange = () => { setLayerVisible(o, vis.checked); updateLayers(); };
 
-        // lock checkbox
         const lock = document.createElement('input');
         lock.type = 'checkbox';
         lock.checked = !!o.locked;
@@ -1422,10 +1818,65 @@
         row.appendChild(mini);
 
         row.onclick = () => selectObject(o.id);
+
+        // Desktop drag
+        row.addEventListener('dragstart', (e) => {
+          dragLayerId = o.id;
+          row.classList.add('dragging');
+          e.dataTransfer?.setData('text/plain', o.id);
+        });
+        row.addEventListener('dragend', () => {
+          row.classList.remove('dragging');
+          dragLayerId = null;
+          [...list.querySelectorAll('.layer-item')].forEach(x => x.classList.remove('over'));
+        });
+        row.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          row.classList.add('over');
+        });
+        row.addEventListener('dragleave', () => row.classList.remove('over'));
+        row.addEventListener('drop', (e) => {
+          e.preventDefault();
+          const id = e.dataTransfer?.getData('text/plain') || dragLayerId;
+          row.classList.remove('over');
+          reorderLayers(id, o.id);
+        });
+
+        // Touch drag (pinchar y arrastrar)
+        row.addEventListener('pointerdown', (e) => {
+          // solo si apunta al item (no a checkboxes)
+          if (e.target && (e.target.tagName === 'INPUT')) return;
+          dragLayerId = o.id;
+          row.setPointerCapture(e.pointerId);
+          row.classList.add('dragging');
+        });
+
+        row.addEventListener('pointermove', (e) => {
+          if (!dragLayerId) return;
+          const el = document.elementFromPoint(e.clientX, e.clientY);
+          const over = el?.closest?.('.layer-item');
+          [...list.querySelectorAll('.layer-item')].forEach(x => x.classList.remove('over'));
+          if (over && over !== row) over.classList.add('over');
+        });
+
+        row.addEventListener('pointerup', (e) => {
+          if (!dragLayerId) return;
+          const el = document.elementFromPoint(e.clientX, e.clientY);
+          const over = el?.closest?.('.layer-item');
+          row.classList.remove('dragging');
+          [...list.querySelectorAll('.layer-item')].forEach(x => x.classList.remove('over'));
+          if (over && over !== row) {
+            // drop target is "over" element; we need its id
+            const idx = [...list.children].indexOf(over);
+            const target = objects[idx];
+            if (target) reorderLayers(dragLayerId, target.id);
+          }
+          dragLayerId = null;
+        });
+
         list.appendChild(row);
       }
 
-      // si no hay capas, ocultar editor
       if (objects.length === 0) {
         activeId = null;
         transformCtrl.detach();
@@ -1483,6 +1934,7 @@
       if (o.kind === 'youtube' && o.cssObj) {
         o.cssObj.position.copy(o.root3D.position);
       }
+      syncTransformUIFromActive();
     }
 
     function deleteActive() {
@@ -1491,7 +1943,6 @@
 
       const o = objects[idx];
 
-      // remove from scene
       if (o.kind === 'youtube' && o.cssObj) {
         if (o.cssObj.element?.parentNode) o.cssObj.element.parentNode.removeChild(o.cssObj.element);
         scene.remove(o.cssObj);
@@ -1499,7 +1950,6 @@
 
       if (o.root3D) scene.remove(o.root3D);
 
-      // cleanup media
       if (o.video) { try { o.video.pause(); } catch{} }
       if (o.tex && o.tex.dispose) o.tex.dispose();
       if (o.mesh?.geometry) o.mesh.geometry.dispose();
@@ -1519,13 +1969,12 @@
       orbit.update();
       handleStableControls();
       updateEngineeringVisuals();
+      updateVideoSeekUI();
 
-      // billboard + gifs
       for (const o of objects) {
         if (!o.visible) continue;
 
         if (o.billboard && o.root3D) {
-          // billboard en Y estable
           o.root3D.lookAt(camera.position.x, o.root3D.position.y, camera.position.z);
         }
 
@@ -1542,11 +1991,33 @@
           }
         }
 
-        // sync CSS3D YouTube with root transform
+        // NUEVO: trim playback del video
+        if (o.kind === 'video' && o.video && o.vidTrim) {
+          const v = o.video;
+          const dur = v.duration || 0;
+          if (dur && Number.isFinite(dur)) {
+            const start = Math.max(0, o.vidStart || 0);
+            const end = (o.vidEnd && o.vidEnd > 0) ? Math.min(o.vidEnd, dur) : dur;
+
+            const loop = document.getElementById('vidLoop').checked;
+
+            if (v.currentTime < start) v.currentTime = start;
+            if (v.currentTime >= end) {
+              if (loop) {
+                v.currentTime = start;
+                // si está pausado, no lo forzamos
+                if (!v.paused) v.play().catch(()=>{});
+              } else {
+                v.pause();
+              }
+            }
+          }
+        }
+
         if (o.kind === 'youtube' && o.cssObj && o.root3D) {
           o.cssObj.position.copy(o.root3D.position);
           o.cssObj.quaternion.copy(o.root3D.quaternion);
-          o.cssObj.scale.copy(o.root3D.scale).multiplyScalar(1/960); // mantiene escala relativa
+          o.cssObj.scale.copy(o.root3D.scale).multiplyScalar(1/960);
         }
       }
 
@@ -1586,5 +2057,3 @@
   </script>
 </body>
 </html>
-
-  <!-- PARTE 2 abajo -->
