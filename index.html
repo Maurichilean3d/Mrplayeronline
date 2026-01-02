@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>MR Studio Diamond v24.x | Fusion Projections + 3D + 360</title>
 
+  <!-- IMPORTANTE: omggif expone window.omggif (no window.Omggif) -->
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
@@ -71,14 +72,13 @@
       background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
     }
     input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
-    .val { width: 58px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+    .val { width: 70px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
 
-    select, input[type=url], input[type=text], input[type=number] {
+    select, input[type=url], input[type=text] {
       width: 100%; background: rgba(0,0,0,0.3);
       border: 1px solid var(--border-glass); color: #fff;
       padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
     }
-    input[type=number] { padding: 6px 10px; }
 
     button {
       flex: 1; padding: 10px; border-radius: 10px; border: none;
@@ -133,19 +133,11 @@
       margin-bottom: 6px; transition: 0.2s; font-weight: 800;
       border: 1px solid rgba(255,255,255,0.06);
       background: rgba(0,0,0,0.12);
-      touch-action: none;
     }
     .layer-item.active {
       background: rgba(255, 170, 0, 0.2);
       border-left: 3px solid var(--main-color);
       color: #fff;
-    }
-    .layer-item.dragging {
-      opacity: 0.6;
-      outline: 2px dashed rgba(255,170,0,0.6);
-    }
-    .layer-item.over {
-      outline: 2px solid rgba(255,170,0,0.45);
     }
     .layer-item .tag {
       font-weight: 900; color: rgba(255,255,255,0.75);
@@ -164,12 +156,6 @@
       border-radius: 12px;
       padding: 10px;
       background: rgba(0,0,0,0.18);
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
     }
   </style>
 </head>
@@ -208,13 +194,18 @@
 
     <div class="sec-head">📥 Importar</div>
     <div class="row">
-      <input type="url" id="webUrl" placeholder="URL .mp4/.webm/.png/.jpg/.gif/.glb/.gltf/.fbx/.obj o 360 equirect">
+      <input type="url" id="webUrl" placeholder="URL .mp4/.webm/.png/.jpg/.gif/.glb/.gltf/.obj/.fbx o 360 equirect">
       <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
     </div>
     <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">
-      📁 Abrir local (img/video/gif/glb/gltf/fbx/obj)
+      📁 Abrir local (img/video/gif/glb/gltf/obj/fbx)
     </button>
-    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf,.fbx,.obj">
+    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf,.obj,.fbx">
+
+    <div class="note" style="margin-top:10px;">
+      Si intentas cargar desde <b>file://</b> (ruta local pegada en URL), el navegador bloqueará por seguridad (CORS).
+      Usa <b>📁 Abrir local</b> o ejecuta un servidor local (ej: <code>python -m http.server</code>).
+    </div>
 
     <div class="sec-head">▶ YouTube (3D DOM)</div>
     <div class="row">
@@ -228,7 +219,7 @@
       Nota técnica: YouTube como <b>textura WebGL</b> suele fallar por CORS/DRM. Aquí se muestra como <b>plano 3D DOM</b> (CSS3D). En modo AR inmersivo puede no verse.
     </div>
 
-    <div class="sec-head">Capas (reordenables)</div>
+    <div class="sec-head">Capas (arrastra para reordenar)</div>
     <div id="layerList" class="layer-list"></div>
 
     <div id="editorUI" style="display:none;">
@@ -237,24 +228,18 @@
       <div class="row"><label><input type="checkbox" id="layerLocked"> Bloquear</label></div>
       <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard (mirar cámara)</label></div>
 
-      <!-- NUEVO: Transform sliders (PC/iPad/Móvil) -->
-      <div class="sec-head">🧊 Transform (sliders)</div>
-      <div class="note" style="margin-bottom:10px;">
-        Tip: Esto sirve en PC/iPad/móvil. En VR/AR sigues usando controles XR. Los sliders se sincronizan con el gizmo.
-      </div>
+      <!-- ✅ NUEVO: TRANSFORM SLIDERS (PC / iPad / móvil) -->
+      <div class="sec-head">🧩 Transform (sliders)</div>
 
-      <div class="sec-head">Posición</div>
-      <div class="row"><label>X</label><input type="range" id="t_posx" min="-10" max="10" step="0.01" value="0"><span class="val" id="v_t_posx">0.00</span></div>
-      <div class="row"><label>Y</label><input type="range" id="t_posy" min="0" max="10" step="0.01" value="1.6"><span class="val" id="v_t_posy">1.60</span></div>
-      <div class="row"><label>Z</label><input type="range" id="t_posz" min="-20" max="5" step="0.01" value="-2"><span class="val" id="v_t_posz">-2.00</span></div>
+      <div class="row"><label>Pos X</label><input type="range" id="posX" min="-10" max="10" step="0.01" value="0"><span class="val" id="v_posX">0</span></div>
+      <div class="row"><label>Pos Y</label><input type="range" id="posY" min="0" max="10" step="0.01" value="1.6"><span class="val" id="v_posY">1.6</span></div>
+      <div class="row"><label>Pos Z</label><input type="range" id="posZ" min="-20" max="5" step="0.01" value="-2"><span class="val" id="v_posZ">-2</span></div>
 
-      <div class="sec-head">Rotación (grados)</div>
-      <div class="row"><label>X</label><input type="range" id="t_rotx" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_t_rotx">0.0°</span></div>
-      <div class="row"><label>Y</label><input type="range" id="t_roty" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_t_roty">0.0°</span></div>
-      <div class="row"><label>Z</label><input type="range" id="t_rotz" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_t_rotz">0.0°</span></div>
+      <div class="row"><label>Rot X</label><input type="range" id="rotX" min="-180" max="180" step="0.1" value="0"><span class="val" id="v_rotX">0</span></div>
+      <div class="row"><label>Rot Y</label><input type="range" id="rotY" min="-180" max="180" step="0.1" value="0"><span class="val" id="v_rotY">0</span></div>
+      <div class="row"><label>Rot Z</label><input type="range" id="rotZ" min="-180" max="180" step="0.1" value="0"><span class="val" id="v_rotZ">0</span></div>
 
-      <div class="sec-head">Escala</div>
-      <div class="row"><label>Uniforme</label><input type="range" id="t_scale" min="0.05" max="50" step="0.01" value="1"><span class="val" id="v_t_scale">1.00</span></div>
+      <div class="row"><label>Escala</label><input type="range" id="scl" min="0.05" max="50" step="0.01" value="1"><span class="val" id="v_scl">1</span></div>
 
       <div class="sec-head">🌐 Superficie / Proyección</div>
       <div class="row">
@@ -291,40 +276,22 @@
         </div>
       </div>
 
-      <div class="sec-head">🎮 Media</div>
+      <!-- ✅ NUEVO: VIDEO CONTROLS (audio, seek, recorte A/B, loop) -->
+      <div class="sec-head">🎬 Video (audio + seek + recorte)</div>
       <div class="row" style="gap:8px;">
         <button onclick="mediaAction('play')" class="secondary">▶ Play</button>
         <button onclick="mediaAction('pause')" class="secondary">⏸ Pause</button>
         <button onclick="mediaAction('mute')" class="secondary">🔇 Mute</button>
       </div>
 
-      <!-- NUEVO: Video controls (audio + scrub + recorte + loop/once) -->
-      <div id="videoUI" style="display:none;">
-        <div class="sec-head">🔊 Video (audio + avance)</div>
+      <div class="row"><label>Volumen</label><input type="range" id="vidVol" min="0" max="1" step="0.01" value="0.8"><span class="val" id="v_vidVol">0.80</span></div>
+      <div class="row"><label>Progreso</label><input type="range" id="vidSeek" min="0" max="1" step="0.001" value="0"><span class="val" id="v_vidSeek">0%</span></div>
 
-        <div class="row"><label>Volumen</label><input type="range" id="vidVolume" min="0" max="1" step="0.01" value="0"><span class="val" id="v_vidVolume">0.00</span></div>
-        <div class="row"><label>Avance</label><input type="range" id="vidSeek" min="0" max="1000" step="1" value="0"><span class="val" id="v_vidSeek">0%</span></div>
+      <div class="row"><label><input type="checkbox" id="vidLoop" checked> Loop</label></div>
+      <div class="row"><label><input type="checkbox" id="vidOnce"> Reproducir una vez</label></div>
 
-        <div class="grid-2" style="margin:8px 0;">
-          <div>
-            <div class="sec-head" style="margin:0 0 6px 0;">Inicio (s)</div>
-            <input type="number" id="vidStart" min="0" step="0.1" value="0">
-          </div>
-          <div>
-            <div class="sec-head" style="margin:0 0 6px 0;">Fin (s)</div>
-            <input type="number" id="vidEnd" min="0" step="0.1" value="0">
-          </div>
-        </div>
-
-        <div class="row">
-          <label><input type="checkbox" id="vidTrim"> Usar recorte</label>
-          <label><input type="checkbox" id="vidLoop" checked> Loop</label>
-        </div>
-
-        <div class="note">
-          Importante: Por políticas del navegador, el audio solo se habilita tras interacción del usuario (mover volumen o presionar play). Si el video viene de otro dominio sin CORS, puede fallar.
-        </div>
-      </div>
+      <div class="row"><label>Inicio (s)</label><input type="range" id="vidIn" min="0" max="1" step="0.01" value="0"><span class="val" id="v_vidIn">0.00</span></div>
+      <div class="row"><label>Fin (s)</label><input type="range" id="vidOut" min="0" max="1" step="0.01" value="1"><span class="val" id="v_vidOut">--</span></div>
 
       <div class="sec-head">🧭 Acciones</div>
       <div class="row" style="gap:8px;">
@@ -335,12 +302,6 @@
 
     <div class="sec-head">⚙️ Realidad Mixta</div>
     <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
-
-    <div class="sec-head">🧩 Nota CORS (rápida)</div>
-    <div class="note">
-      Si abres este HTML como <b>file://</b>, el navegador bloquea fetch/loads y dispara CORS en GIF/Modelos desde rutas locales o dominios sin headers.
-      Solución real: servir con un servidor local (ej: <b>VSCode Live Server</b>) o usar el botón <b>Abrir local</b> (Blob URL).
-    </div>
   </div>
 
   <button id="vrBtn">INICIAR MR</button>
@@ -364,8 +325,8 @@
     // =========================
     // Google Drive placeholders
     // =========================
-    const CLIENT_ID = ''; 
-    const API_KEY = ''; 
+    const CLIENT_ID = '';
+    const API_KEY = '';
     const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 
     // =========================
@@ -418,7 +379,6 @@
           if (!chromaInvert) {
             alpha *= mask;
 
-            // despill básico (si key dominante)
             if (mask < 0.95 && despill > 0.0) {
               if (k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
               else if (k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
@@ -429,7 +389,6 @@
           }
         }
 
-        // ajustes imagen
         col += uBrightness;
         col = (col - 0.5) * uContrast + 0.5;
 
@@ -437,8 +396,6 @@
         col = mix(vec3(gray), col, uSaturation);
 
         col = pow(max(col, 0.0), vec3(1.0 / uGamma));
-
-        // emisión simple (look holográfico)
         col = col * (1.0 + uEmissive);
 
         gl_FragColor = vec4(col, alpha);
@@ -459,7 +416,7 @@
       out vec4 outColor;
       float decode(vec4 la){ return (la.r * 255.0 * 256.0 + la.a * 255.0); }
       void main(){
-        float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters; 
+        float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters;
         if(zMeters <= 0.0) discard;
         float z = -zMeters;
         float clipZ = uProj[2][2] * z + uProj[3][2];
@@ -488,13 +445,13 @@
     const objects = []; // capas
     let activeId = null;
 
-    const clock = new THREE.Clock();
     const gltfLoader = new GLTFLoader();
     const fbxLoader = new FBXLoader();
     const objLoader = new OBJLoader();
 
-    // Para drag reordenable (mouse + touch)
-    let dragLayerId = null;
+    // video UI state
+    let vidUiBound = false;
+    let vidSeekIsDragging = false;
 
     // =========================
     // Utilidades
@@ -530,20 +487,16 @@
 
     function isMediaLayer(o){ return o && (o.kind === 'image' || o.kind === 'video' || o.kind === 'gif'); }
 
-    function degToRad(d){ return d * Math.PI / 180; }
-    function radToDeg(r){ return r * 180 / Math.PI; }
+    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+    function rad(deg){ return deg * Math.PI / 180; }
+    function deg(radv){ return radv * 180 / Math.PI; }
 
-    function setVal(id, txt){
-      const el = document.getElementById(id);
-      if (el) el.textContent = txt;
+    function setValLabel(id, val, fmt=3) {
+      const lbl = document.getElementById('v_' + id);
+      if (!lbl) return;
+      if (id === 'vidSeek') lbl.textContent = Math.round(val * 100) + '%';
+      else lbl.textContent = (Number.isFinite(val) ? val.toFixed(fmt) : '0');
     }
-
-    // CORS: NO se puede “forzar” desde el cliente si el servidor no lo permite.
-    // Lo que sí hacemos:
-    // - loaders con crossOrigin = 'anonymous'
-    // - advertencias más claras
-    // - para local: recomendar servidor o usar input local (blob URL)
-    function looksLikeFileUrl(u=""){ return /^file:\/\//i.test(u); }
 
     // =========================
     // Init
@@ -569,6 +522,7 @@
 
       transformCtrl = new TransformControls(camera, renderer.domElement);
       transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+      // ✅ Cuando mueves con TransformControls, sincroniza sliders
       transformCtrl.addEventListener('objectChange', () => syncTransformUIFromActive());
       scene.add(transformCtrl);
 
@@ -600,11 +554,12 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
       cssRenderer.setSize(window.innerWidth, window.innerHeight);
     }
+
     // =========================
-    // Ingeniería (grid + labels)
+    // Ingeniería (grid + labels)  (SIN CAMBIOS IMPORTANTES)
     // =========================
     function updateGrid() {
-      const old = scene.getObjectByName("grid"); 
+      const old = scene.getObjectByName("grid");
       if (old) scene.remove(old);
       if (!document.getElementById('showGrid').checked) return;
 
@@ -744,7 +699,7 @@
     }
 
     // =========================
-    // XR Controllers (estable v24)
+    // XR Controllers (SIN CAMBIOS IMPORTANTES)
     // =========================
     function setupXRControllers() {
       controller1 = renderer.xr.getController(0);
@@ -923,16 +878,18 @@
     // Asset loaders (img/video/gif/model/youtube)
     // =========================
     async function addAssetFromUrl(url, name="Web Asset") {
-      const lower = (url || "").toLowerCase();
+      const lower = (url || "").toLowerCase().trim();
 
-      if (looksLikeFileUrl(url)) {
-        alert("Bloqueo del navegador: no se puede cargar file:// por fetch/loaders. Usa 'Abrir local' o sirve este proyecto con un servidor (Live Server).");
+      // Bloqueo explícito: file:// no se puede por CORS del navegador
+      if (lower.startsWith('file://')) {
+        alert("El navegador bloquea cargas desde file:// por seguridad (CORS). Usa 📁 Abrir local o ejecuta un servidor local.");
         return;
       }
 
-      if (lower.endsWith('.glb') || lower.endsWith('.gltf')) return addModel(url, name);
-      if (lower.endsWith('.fbx')) return addFBX(url, name);
-      if (lower.endsWith('.obj')) return addOBJ(url, name);
+      // modelos 3D
+      if (lower.endsWith('.glb') || lower.endsWith('.gltf') || lower.endsWith('.obj') || lower.endsWith('.fbx')) {
+        return addModel(url, name);
+      }
 
       const isGif = lower.endsWith('.gif');
       const isVideo = /\.(mp4|webm)$/i.test(lower);
@@ -945,13 +902,21 @@
       if (!isRestore) toggleLoader(true, "CARGANDO MEDIA...");
 
       let tex=null, video=null, gifData=null;
+
       try {
         if (kind === 'gif') {
-          // Si el servidor remoto no tiene CORS, esto fallará. No hay bypass del lado cliente.
-          const res = await fetch(url, { mode: 'cors' });
-          if (!res.ok) throw new Error("Fetch GIF falló (HTTP " + res.status + ")");
-          const buf = await res.arrayBuffer();
-          const r = new window.Omggif.GifReader(new Uint8Array(buf));
+          // ✅ FIX: omggif global correcto
+          const OMG = window.omggif;
+          if (!OMG || !OMG.GifReader) {
+            throw new Error("Librería omggif no cargada. Revisa conexión o bloqueos (adblock/CSP).");
+          }
+
+          // Para URLs remotas: fetch puede fallar por CORS del servidor
+          const resp = await fetch(url, { mode: 'cors' });
+          if (!resp.ok) throw new Error("No se pudo descargar GIF. HTTP " + resp.status);
+          const buf = await resp.arrayBuffer();
+
+          const r = new OMG.GifReader(new Uint8Array(buf));
           const cvs = document.createElement('canvas');
           cvs.width = r.width; cvs.height = r.height;
           const ctx = cvs.getContext('2d');
@@ -961,31 +926,34 @@
           tex.colorSpace = THREE.SRGBColorSpace;
 
           gifData = { r, ctx, dat, tex, f:0, nextTime:0, playing:true };
-        } 
+        }
         else if (kind === 'video') {
           video = document.createElement('video');
           video.src = url;
+
+          // ✅ audio habilitado por defecto
           video.crossOrigin = 'anonymous';
           video.loop = true;
-          video.muted = true; // default por autoplay policy
+          video.muted = false;          // ✅ audio ON
+          video.volume = 0.8;
           video.playsInline = true;
           video.preload = 'auto';
+          video.controls = false;
 
-          // Intento play: si el navegador lo bloquea, se queda listo y el usuario presiona Play
+          // iOS/Chrome: play con audio requiere interacción del usuario.
+          // Se intenta play; si falla, queda listo para play al tocar botón.
           try { await video.play(); } catch {}
 
           tex = new THREE.VideoTexture(video);
           tex.colorSpace = THREE.SRGBColorSpace;
-        } 
+        }
         else {
-          const tl = new THREE.TextureLoader();
-          tl.setCrossOrigin('anonymous');
-          tex = await tl.loadAsync(url);
+          tex = await new THREE.TextureLoader().loadAsync(url);
           tex.colorSpace = THREE.SRGBColorSpace;
         }
 
         const aspect = video
-          ? (video.videoWidth / Math.max(1, video.videoHeight) || 1.77)
+          ? (video.videoWidth / Math.max(1, video.videoHeight))
           : (tex.image ? (tex.image.width / Math.max(1, tex.image.height)) : 1.77);
 
         const root = new THREE.Group();
@@ -1039,10 +1007,10 @@
           originalAspect: aspect,
           sourceUrl: url,
 
-          // NUEVO: video playback range
-          vidTrim: false,
-          vidStart: 0,
-          vidEnd: 0
+          // ✅ video segment controls
+          clipIn: 0,
+          clipOut: null,
+          playOnce: false
         };
 
         mesh.userData.layerId = layer.id;
@@ -1051,9 +1019,22 @@
         if (!isRestore) selectObject(layer.id);
         updateLayers();
         return layer;
+
       } catch (e) {
         console.error(e);
-        alert("Error cargando media. Revisa URL / CORS.\n\nSi estás en file:// (doble click al HTML), usa un servidor local o 'Abrir local'.");
+
+        // Mensaje más útil si el problema fue CORS
+        const msg = String(e?.message || e);
+        if (/cors/i.test(msg) || /Failed to fetch/i.test(msg)) {
+          alert(
+            "Error cargando media (posible CORS).\n\n" +
+            "Si es un GIF/Video/Imagen remota, el servidor debe permitir CORS.\n" +
+            "Solución: hospedar el archivo en un dominio con CORS, o usar un proxy/servidor propio.\n\n" +
+            "Detalle: " + msg
+          );
+        } else {
+          alert("Error cargando media.\n\nDetalle: " + msg);
+        }
       } finally {
         if (!isRestore) toggleLoader(false);
       }
@@ -1062,14 +1043,27 @@
     async function addModel(url, name="Model 3D", isRestore=false) {
       if (!isRestore) toggleLoader(true, "CARGANDO MODELO 3D...");
       try {
-        gltfLoader.setCrossOrigin('anonymous');
-        const gltf = await gltfLoader.loadAsync(url);
+        const lower = (url || "").toLowerCase();
 
         const root = new THREE.Group();
         root.position.set(0, 1.2, -2);
 
-        const model = gltf.scene || gltf.scenes?.[0];
-        if (!model) throw new Error("GLTF sin scene");
+        let model = null;
+
+        if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
+          const gltf = await gltfLoader.loadAsync(url);
+          model = gltf.scene || gltf.scenes?.[0];
+          if (!model) throw new Error("GLTF sin scene");
+        }
+        else if (lower.endsWith('.fbx')) {
+          model = await fbxLoader.loadAsync(url);
+        }
+        else if (lower.endsWith('.obj')) {
+          model = await objLoader.loadAsync(url);
+        }
+        else {
+          throw new Error("Formato 3D no soportado");
+        }
 
         model.traverse(n => {
           if (n.isMesh) {
@@ -1079,6 +1073,7 @@
           }
         });
 
+        // escala auto suave
         const box = new THREE.Box3().setFromObject(model);
         const size = new THREE.Vector3();
         box.getSize(size);
@@ -1089,6 +1084,7 @@
         root.add(model);
         scene.add(root);
 
+        // pickMesh invisible
         const pick = new THREE.Mesh(
           new THREE.BoxGeometry(0.6, 0.6, 0.6),
           new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
@@ -1118,135 +1114,19 @@
         if (!isRestore) selectObject(layer.id);
         updateLayers();
         return layer;
+
       } catch (e) {
         console.error(e);
-        alert("Error cargando modelo 3D (.glb/.gltf). Revisa CORS/URL.\n\nSi estás en file://, sirve con servidor local.");
-      } finally {
-        if (!isRestore) toggleLoader(false);
-      }
-    }
-
-    async function addFBX(url, name="FBX 3D", isRestore=false) {
-      if (!isRestore) toggleLoader(true, "CARGANDO FBX...");
-      try {
-        fbxLoader.setCrossOrigin?.('anonymous'); // algunos builds no lo exponen
-        const obj = await fbxLoader.loadAsync(url);
-
-        const root = new THREE.Group();
-        root.position.set(0, 1.2, -2);
-
-        obj.traverse(n => {
-          if (n.isMesh) {
-            n.castShadow = false;
-            n.receiveShadow = false;
-            n.userData.layerId = null;
-          }
-        });
-
-        const box = new THREE.Box3().setFromObject(obj);
-        const size = new THREE.Vector3();
-        box.getSize(size);
-        const maxDim = Math.max(size.x, size.y, size.z) || 1;
-        const s = 0.8 / maxDim;
-        obj.scale.setScalar(s);
-
-        root.add(obj);
-        scene.add(root);
-
-        const pick = new THREE.Mesh(
-          new THREE.BoxGeometry(0.6, 0.6, 0.6),
-          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
-        );
-        pick.position.set(0, 0.3, 0);
-        root.add(pick);
-
-        const layer = {
-          id: uid(),
-          name,
-          kind: 'model',
-          projection: 'plane',
-          root3D: root,
-          pickMesh: pick,
-          model: obj,
-          billboard: false,
-          visible: true,
-          locked: false,
-          originalAspect: 1,
-          sourceUrl: url
-        };
-
-        obj.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
-        pick.userData.layerId = layer.id;
-
-        objects.push(layer);
-        if (!isRestore) selectObject(layer.id);
-        updateLayers();
-      } catch (e) {
-        console.error(e);
-        alert("Error cargando FBX. Revisa CORS/URL.\n\nNota: FBX con texturas externas requiere que esas URLs también tengan CORS.");
-      } finally {
-        if (!isRestore) toggleLoader(false);
-      }
-    }
-
-    async function addOBJ(url, name="OBJ 3D", isRestore=false) {
-      if (!isRestore) toggleLoader(true, "CARGANDO OBJ...");
-      try {
-        // OBJLoader no trae setCrossOrigin; depende de fetch interno/loader de file.
-        const obj = await objLoader.loadAsync(url);
-
-        const root = new THREE.Group();
-        root.position.set(0, 1.2, -2);
-
-        obj.traverse(n => {
-          if (n.isMesh) {
-            n.castShadow = false;
-            n.receiveShadow = false;
-            n.userData.layerId = null;
-          }
-        });
-
-        const box = new THREE.Box3().setFromObject(obj);
-        const size = new THREE.Vector3();
-        box.getSize(size);
-        const maxDim = Math.max(size.x, size.y, size.z) || 1;
-        const s = 0.8 / maxDim;
-        obj.scale.setScalar(s);
-
-        root.add(obj);
-        scene.add(root);
-
-        const pick = new THREE.Mesh(
-          new THREE.BoxGeometry(0.6, 0.6, 0.6),
-          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
-        );
-        pick.position.set(0, 0.3, 0);
-        root.add(pick);
-
-        const layer = {
-          id: uid(),
-          name,
-          kind: 'model',
-          projection: 'plane',
-          root3D: root,
-          pickMesh: pick,
-          model: obj,
-          billboard: false,
-          visible: true,
-          locked: false,
-          originalAspect: 1,
-          sourceUrl: url
-        };
-
-        obj.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
-        pick.userData.layerId = layer.id;
-
-        objects.push(layer);
-        if (!isRestore) selectObject(layer.id);
-        updateLayers();
-      } catch (e) {
-        console.error(e);
-        alert("Error cargando OBJ. Revisa CORS/URL.\n\nSi el OBJ depende de .mtl/texturas, esas rutas también deben ser accesibles con CORS.");
+        const msg = String(e?.message || e);
+        if (/cors/i.test(msg) || /Failed to fetch/i.test(msg)) {
+          alert(
+            "Error cargando modelo (posible CORS).\n\n" +
+            "Si el modelo está en un servidor externo, debe habilitar CORS.\n" +
+            "Si es local, usa 📁 Abrir local.\n\nDetalle: " + msg
+          );
+        } else {
+          alert("Error cargando modelo 3D (.glb/.gltf/.obj/.fbx).\n\nDetalle: " + msg);
+        }
       } finally {
         if (!isRestore) toggleLoader(false);
       }
@@ -1317,7 +1197,7 @@
     }
 
     // =========================
-    // Proyecciones (v7.2 reintroducido)
+    // Proyecciones
     // =========================
     function applyProjection(layer, mode) {
       layer.projection = mode;
@@ -1372,6 +1252,231 @@
     }
 
     // =========================
+    // ✅ Transform sliders
+    // =========================
+    function syncTransformUIFromActive() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D) return;
+
+      const p = o.root3D.position;
+      const r = o.root3D.rotation;
+      const s = o.root3D.scale;
+
+      setUIRange('posX', p.x, 2);
+      setUIRange('posY', p.y, 2);
+      setUIRange('posZ', p.z, 2);
+
+      setUIRange('rotX', deg(r.x), 1);
+      setUIRange('rotY', deg(r.y), 1);
+      setUIRange('rotZ', deg(r.z), 1);
+
+      // usamos escala uniforme como promedio
+      const scl = (s.x + s.y + s.z) / 3;
+      setUIRange('scl', scl, 2);
+
+      // también YouTube debe seguir root, pero se sincroniza en animate
+    }
+
+    function applyTransformFromUI() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D || o.locked) return;
+
+      const px = parseFloat(document.getElementById('posX').value);
+      const py = parseFloat(document.getElementById('posY').value);
+      const pz = parseFloat(document.getElementById('posZ').value);
+
+      const rx = rad(parseFloat(document.getElementById('rotX').value));
+      const ry = rad(parseFloat(document.getElementById('rotY').value));
+      const rz = rad(parseFloat(document.getElementById('rotZ').value));
+
+      const sc = parseFloat(document.getElementById('scl').value);
+
+      o.root3D.position.set(px, py, pz);
+      o.root3D.rotation.set(rx, ry, rz);
+      o.root3D.scale.set(sc, sc, sc);
+
+      // para YouTube la sync real ocurre en animate()
+    }
+
+    function setUIRange(id, v, fmt=3) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.value = v;
+      setValLabel(id, v, fmt);
+    }
+
+    // =========================
+    // ✅ Video controls (seek/volume/clip)
+    // =========================
+    function bindVideoUIOnce() {
+      if (vidUiBound) return;
+      vidUiBound = true;
+
+      const vol = document.getElementById('vidVol');
+      const seek = document.getElementById('vidSeek');
+      const loop = document.getElementById('vidLoop');
+      const once = document.getElementById('vidOnce');
+      const vin = document.getElementById('vidIn');
+      const vout = document.getElementById('vidOut');
+
+      vol.addEventListener('input', () => {
+        setValLabel('vidVol', parseFloat(vol.value), 2);
+        const o = objects.find(x=>x.id===activeId);
+        if (o?.video) o.video.volume = clamp(parseFloat(vol.value), 0, 1);
+      });
+
+      seek.addEventListener('pointerdown', () => { vidSeekIsDragging = true; });
+      seek.addEventListener('pointerup', () => { vidSeekIsDragging = false; });
+
+      seek.addEventListener('input', () => {
+        setValLabel('vidSeek', parseFloat(seek.value), 3);
+        const o = objects.find(x=>x.id===activeId);
+        if (!o?.video || !Number.isFinite(o.video.duration) || o.video.duration <= 0) return;
+
+        const seg = getVideoSegment(o);
+        const t = seg.in + (seg.out - seg.in) * clamp(parseFloat(seek.value), 0, 1);
+        o.video.currentTime = clamp(t, 0, o.video.duration);
+      });
+
+      loop.addEventListener('change', () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o?.video) return;
+        o.video.loop = loop.checked;
+      });
+
+      once.addEventListener('change', () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o) return;
+        o.playOnce = !!once.checked;
+        if (o.playOnce) {
+          // playOnce y loop no deberían estar ambos encendidos (preferimos playOnce)
+          document.getElementById('vidLoop').checked = false;
+          if (o.video) o.video.loop = false;
+        }
+      });
+
+      vin.addEventListener('input', () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o?.video) return;
+        const dur = o.video.duration || 0;
+        if (!dur) return;
+
+        const frac = clamp(parseFloat(vin.value), 0, 1);
+        o.clipIn = frac * dur;
+
+        // asegurar clipOut válido
+        if (o.clipOut != null && o.clipOut < o.clipIn) o.clipOut = o.clipIn;
+
+        setValLabel('vidIn', o.clipIn, 2);
+      });
+
+      vout.addEventListener('input', () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o?.video) return;
+        const dur = o.video.duration || 0;
+        if (!dur) return;
+
+        const frac = clamp(parseFloat(vout.value), 0, 1);
+        o.clipOut = frac * dur;
+
+        // asegurar clipOut >= clipIn
+        if (o.clipOut < o.clipIn) o.clipOut = o.clipIn;
+
+        setValLabel('vidOut', o.clipOut, 2);
+      });
+    }
+
+    function getVideoSegment(o) {
+      const dur = o.video?.duration || 0;
+      const vin = clamp(o.clipIn || 0, 0, dur);
+      const vout = (o.clipOut == null) ? dur : clamp(o.clipOut, 0, dur);
+      return { in: vin, out: Math.max(vout, vin + 0.01), dur };
+    }
+
+    function syncVideoUIFromActive() {
+      bindVideoUIOnce();
+
+      const o = objects.find(x=>x.id===activeId);
+      const isVid = (o && o.kind === 'video' && o.video);
+      const ids = ['vidVol','vidSeek','vidLoop','vidOnce','vidIn','vidOut'];
+      ids.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = !isVid; });
+
+      if (!isVid) {
+        setUIRange('vidSeek', 0, 3);
+        setValLabel('vidSeek', 0, 3);
+        return;
+      }
+
+      const v = o.video;
+
+      document.getElementById('vidVol').value = clamp(v.volume ?? 0.8, 0, 1);
+      setValLabel('vidVol', parseFloat(document.getElementById('vidVol').value), 2);
+
+      document.getElementById('vidLoop').checked = !!v.loop;
+      document.getElementById('vidOnce').checked = !!o.playOnce;
+
+      // si duration aún no está lista, se ajusta cuando loadedmetadata
+      const dur = v.duration || 0;
+      if (dur > 0) {
+        // sliders de in/out son fracción [0..1]
+        const inFrac = clamp((o.clipIn || 0) / dur, 0, 1);
+        const outFrac = clamp(((o.clipOut == null ? dur : o.clipOut) / dur), 0, 1);
+
+        document.getElementById('vidIn').value = inFrac;
+        document.getElementById('vidOut').value = outFrac;
+        setValLabel('vidIn', (o.clipIn || 0), 2);
+        setValLabel('vidOut', (o.clipOut == null ? dur : o.clipOut), 2);
+      } else {
+        document.getElementById('vidIn').value = 0;
+        document.getElementById('vidOut').value = 1;
+        document.getElementById('v_vidOut').textContent = '--';
+      }
+    }
+
+    function attachVideoEvents(o) {
+      if (!o?.video || o._videoEventsAttached) return;
+      o._videoEventsAttached = true;
+
+      o.video.addEventListener('loadedmetadata', () => {
+        // si clipOut no está definido, lo dejamos al final
+        if (o.clipOut == null) o.clipOut = o.video.duration;
+        syncVideoUIFromActive();
+      });
+
+      o.video.addEventListener('timeupdate', () => {
+        // mantener en segmento
+        const seg = getVideoSegment(o);
+
+        if (o.video.currentTime < seg.in) {
+          o.video.currentTime = seg.in;
+        }
+
+        if (o.video.currentTime > seg.out) {
+          if (o.playOnce) {
+            o.video.pause();
+            // queda al final del segmento
+            o.video.currentTime = seg.out;
+          } else {
+            // loop dentro del segmento, independientemente de v.loop
+            o.video.currentTime = seg.in;
+            if (!o.video.paused) o.video.play().catch(()=>{});
+          }
+        }
+
+        // barra de progreso (si no está arrastrando)
+        if (activeId === o.id && !vidSeekIsDragging) {
+          const t = clamp(o.video.currentTime, seg.in, seg.out);
+          const frac = (t - seg.in) / Math.max(0.001, (seg.out - seg.in));
+          const seek = document.getElementById('vidSeek');
+          if (seek) {
+            seek.value = frac;
+            setValLabel('vidSeek', frac, 3);
+          }
+        }
+      });
+    }
+
+    // =========================
     // UI bindings
     // =========================
     function bindUI() {
@@ -1379,34 +1484,30 @@
         cssRoot.classList.toggle('interactive', e.target.checked);
       });
 
-      // sliders: actualizan label + uniform/params
+      // sliders: actualizan label + uniform/params + transform/video
       document.querySelectorAll('input[type=range]').forEach(i => {
         i.addEventListener('input', (e) => {
           const id = e.target.id;
           const val = parseFloat(e.target.value);
-          const lbl = document.getElementById('v_' + id);
 
-          if (lbl) {
-            if (id.startsWith('t_rot')) lbl.textContent = (Number.isFinite(val) ? val.toFixed(1) : '0') + '°';
-            else if (id === 'vidSeek') lbl.textContent = Math.round((val/1000)*100) + '%';
-            else lbl.textContent = Number.isFinite(val) ? val.toFixed(2) : '0';
-          }
+          // labels
+          if (id.startsWith('pos') || id.startsWith('rot') || id === 'scl') setValLabel(id, val, (id.startsWith('rot') ? 1 : 2));
+          else if (id === 'vidVol') setValLabel(id, val, 2);
+          else if (id === 'vidSeek') setValLabel(id, val, 3);
+          else if (id === 'vidIn') {/* label lo maneja listener específico */}
+          else if (id === 'vidOut') {/* label lo maneja listener específico */}
+          else setValLabel(id, val, 3);
 
-          // transform sliders
-          if (id.startsWith('t_')) applyTransformFromUI();
-
-          // video controls
-          if (id === 'vidVolume') applyVideoUIToActive();
-          if (id === 'vidSeek') seekVideoFromUI();
-
+          // shader params
           updateActiveParam(id, val);
+
+          // transform params
+          if (id.startsWith('pos') || id.startsWith('rot') || id === 'scl') applyTransformFromUI();
         });
       });
 
-      // chroma toggles
       document.getElementById('chromaToggle').addEventListener('change', () => updateActiveChroma());
       document.getElementById('chromaInvert').addEventListener('change', () => updateActiveChroma());
-
       ['keyR','keyG','keyB'].forEach(id => document.getElementById(id).addEventListener('input', () => updateActiveKeyRGB()));
 
       document.getElementById('layerVisible').addEventListener('change', (e)=> {
@@ -1428,19 +1529,24 @@
         if (!o.billboard && o.root3D) o.root3D.rotation.set(0,0,0);
       });
 
-      // file input (local): evita CORS usando Blob URLs
+      // file input (local) ✅ soporta gif/video/obj/fbx/glb/gltf
       document.getElementById('fileInput').addEventListener('change', async (e) => {
         const files = [...e.target.files];
         for (const f of files) {
           const url = URL.createObjectURL(f);
           const lower = f.name.toLowerCase();
 
-          if (lower.endsWith('.glb') || lower.endsWith('.gltf')) await addModel(url, f.name);
-          else if (lower.endsWith('.fbx')) await addFBX(url, f.name);
-          else if (lower.endsWith('.obj')) await addOBJ(url, f.name);
-          else if (lower.endsWith('.gif')) await addMedia(url, 'gif', f.name);
-          else if (f.type.includes('video')) await addMedia(url, 'video', f.name);
-          else await addMedia(url, 'image', f.name);
+          if (lower.endsWith('.glb') || lower.endsWith('.gltf') || lower.endsWith('.obj') || lower.endsWith('.fbx')) {
+            await addModel(url, f.name);
+          } else if (lower.endsWith('.gif')) {
+            // ✅ Para blobs locales NO usamos fetch(url) porque algunas políticas rompen; usamos File.arrayBuffer
+            // pero para mantener estructura, creamos un "blobUrl" y lo resolvemos con arrayBuffer directo
+            await addGifFromFile(f);
+          } else if (f.type.includes('video')) {
+            await addMedia(url, 'video', f.name);
+          } else {
+            await addMedia(url, 'image', f.name);
+          }
         }
         e.target.value = '';
       });
@@ -1467,10 +1573,10 @@
       window.saveSceneToDrive = () => { alert("TODO: implementar guardado."); };
       window.loadSceneFromDrive = () => { alert("TODO: implementar carga."); };
 
+      // public APIs
       window.loadFromWeb = async () => {
         const url = document.getElementById('webUrl').value.trim();
         if (!url) return;
-
         if (isYouTubeUrl(url)) {
           document.getElementById('ytUrl').value = url;
           await addYouTube();
@@ -1489,17 +1595,15 @@
         const o = objects.find(x=>x.id===activeId); if(!o) return;
 
         if (o.kind === 'video' && o.video) {
-          if (action === 'play') {
-            // si el usuario presiona play, podemos habilitar audio si volumen>0
-            if (o.video.muted && (parseFloat(document.getElementById('vidVolume').value) || 0) > 0) o.video.muted = false;
-            o.video.play();
-          }
+          attachVideoEvents(o);
+
+          if (action === 'play') o.video.play().catch(()=>{});
           if (action === 'pause') o.video.pause();
           if (action === 'mute') o.video.muted = !o.video.muted;
         } else if (o.kind === 'gif' && o.gifData) {
           if (action === 'play') o.gifData.playing = true;
           if (action === 'pause') o.gifData.playing = false;
-          if (action === 'mute') o.gifData.playing = !o.gifData.playing;
+          if (action === 'mute') o.gifData.playing = !o.gifData.playing; // placeholder
         }
       };
 
@@ -1507,11 +1611,90 @@
       window.centerActive = centerActive;
       window.toggleUIPanel = toggleUIPanel;
 
-      // Video UI extra
-      document.getElementById('vidTrim').addEventListener('change', applyVideoUIToActive);
-      document.getElementById('vidLoop').addEventListener('change', applyVideoUIToActive);
-      document.getElementById('vidStart').addEventListener('input', applyVideoUIToActive);
-      document.getElementById('vidEnd').addEventListener('input', applyVideoUIToActive);
+      // ✅ video UI events
+      bindVideoUIOnce();
+    }
+
+    async function addGifFromFile(file) {
+      toggleLoader(true, "CARGANDO GIF...");
+      try {
+        const OMG = window.omggif;
+        if (!OMG || !OMG.GifReader) throw new Error("Librería omggif no cargada.");
+
+        const buf = await file.arrayBuffer();
+        const r = new OMG.GifReader(new Uint8Array(buf));
+        const cvs = document.createElement('canvas');
+        cvs.width = r.width; cvs.height = r.height;
+        const ctx = cvs.getContext('2d');
+        const dat = ctx.createImageData(r.width, r.height);
+
+        const tex = new THREE.CanvasTexture(cvs);
+        tex.colorSpace = THREE.SRGBColorSpace;
+
+        // crea capa tipo gif usando el mismo pipeline (sin fetch blob:)
+        const aspect = r.width / Math.max(1, r.height);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.6, -2);
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            map: { value: tex },
+            uBrightness: { value: 0 },
+            uContrast: { value: 1 },
+            uSaturation: { value: 1 },
+            uGamma: { value: 1 },
+            uOpacity: { value: 1 },
+            uEmissive: { value: 0 },
+
+            chromaOn: { value: false },
+            chromaInvert: { value: false },
+            k1: { value: new THREE.Color(0,1,0) },
+            sim1: { value: 0.4 },
+            smooth1: { value: 0.08 },
+            despill: { value: 0.5 }
+          },
+          vertexShader: vShader,
+          fragmentShader: fShader,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+
+        const planeGeo = new THREE.PlaneGeometry(aspect, 1);
+        const mesh = new THREE.Mesh(planeGeo, mat);
+        root.add(mesh);
+        scene.add(root);
+
+        const layer = {
+          id: uid(),
+          name: file.name,
+          kind: 'gif',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: mesh,
+          mesh,
+          mat,
+          tex,
+          video: null,
+          gifData: { r, ctx, dat, tex, f:0, nextTime:0, playing:true },
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: aspect,
+          sourceUrl: 'local-file'
+        };
+        mesh.userData.layerId = layer.id;
+
+        objects.push(layer);
+        selectObject(layer.id);
+        updateLayers();
+      } catch (e) {
+        console.error(e);
+        alert("Error cargando GIF local.\n\nDetalle: " + (e?.message || e));
+      } finally {
+        toggleLoader(false);
+      }
     }
 
     function toggleUIPanel() {
@@ -1522,147 +1705,7 @@
     }
 
     // =========================
-    // Transform sliders sync
-    // =========================
-    function syncTransformUIFromActive() {
-      const o = objects.find(x=>x.id===activeId);
-      if (!o || !o.root3D) return;
-
-      const P = o.root3D.position;
-      const R = o.root3D.rotation;
-      const S = o.root3D.scale;
-
-      setSlider('t_posx', P.x, 2);
-      setSlider('t_posy', P.y, 2);
-      setSlider('t_posz', P.z, 2);
-
-      setSlider('t_rotx', radToDeg(R.x), 1, true);
-      setSlider('t_roty', radToDeg(R.y), 1, true);
-      setSlider('t_rotz', radToDeg(R.z), 1, true);
-
-      // escala uniforme (usa x como referencia)
-      setSlider('t_scale', S.x, 2);
-    }
-
-    function setSlider(id, v, digits=2, isDeg=false){
-      const el = document.getElementById(id);
-      if (!el) return;
-      const val = Number.isFinite(v) ? v : 0;
-      el.value = val;
-      const lbl = document.getElementById('v_' + id);
-      if (lbl) lbl.textContent = isDeg ? val.toFixed(digits) + '°' : val.toFixed(digits);
-    }
-
-    function applyTransformFromUI() {
-      const o = objects.find(x=>x.id===activeId);
-      if (!o || !o.root3D || o.locked) return;
-
-      const px = parseFloat(document.getElementById('t_posx').value);
-      const py = parseFloat(document.getElementById('t_posy').value);
-      const pz = parseFloat(document.getElementById('t_posz').value);
-
-      const rx = degToRad(parseFloat(document.getElementById('t_rotx').value));
-      const ry = degToRad(parseFloat(document.getElementById('t_roty').value));
-      const rz = degToRad(parseFloat(document.getElementById('t_rotz').value));
-
-      const sc = parseFloat(document.getElementById('t_scale').value);
-
-      o.root3D.position.set(px, py, pz);
-      o.root3D.rotation.set(rx, ry, rz);
-      o.root3D.scale.set(sc, sc, sc);
-
-      // YouTube CSS3D sync inmediato
-      if (o.kind === 'youtube' && o.cssObj) {
-        o.cssObj.position.copy(o.root3D.position);
-        o.cssObj.quaternion.copy(o.root3D.quaternion);
-      }
-    }
-
-    // =========================
-    // Video UI
-    // =========================
-    function applyVideoUIToActive() {
-      const o = objects.find(x=>x.id===activeId);
-      if (!o || o.kind !== 'video' || !o.video) return;
-
-      const vol = parseFloat(document.getElementById('vidVolume').value);
-      setVal('v_vidVolume', (Number.isFinite(vol) ? vol.toFixed(2) : '0.00'));
-
-      // volumen => habilita audio (muted off) si usuario sube >0
-      o.video.volume = Math.max(0, Math.min(1, vol));
-      if (o.video.volume > 0) o.video.muted = false;
-
-      const useTrim = document.getElementById('vidTrim').checked;
-      const loop = document.getElementById('vidLoop').checked;
-
-      const start = Math.max(0, parseFloat(document.getElementById('vidStart').value) || 0);
-      const endRaw = parseFloat(document.getElementById('vidEnd').value) || 0;
-
-      o.vidTrim = !!useTrim;
-      o.vidStart = start;
-      o.vidEnd = Math.max(0, endRaw);
-
-      o.video.loop = (!useTrim) && loop; // si hay trim, lo manejamos manual
-
-      // Si el usuario activa trim y el end es 0, lo dejamos "auto" (duración)
-      // Ajuste suave: si currentTime cae fuera, lo llevamos al inicio
-      if (useTrim) {
-        const dur = o.video.duration || 0;
-        const end = (o.vidEnd > 0) ? Math.min(o.vidEnd, dur || o.vidEnd) : (dur || 0);
-        if (Number.isFinite(end) && end > 0 && o.video.currentTime > end) o.video.currentTime = start;
-        if (o.video.currentTime < start) o.video.currentTime = start;
-      }
-    }
-
-    function seekVideoFromUI() {
-      const o = objects.find(x=>x.id===activeId);
-      if (!o || o.kind !== 'video' || !o.video) return;
-
-      const s = parseFloat(document.getElementById('vidSeek').value);
-      const tNorm = (Number.isFinite(s) ? s : 0) / 1000;
-
-      const dur = o.video.duration || 0;
-      if (!dur || !Number.isFinite(dur)) return;
-
-      let start = 0, end = dur;
-      if (o.vidTrim) {
-        start = Math.max(0, o.vidStart || 0);
-        end = (o.vidEnd && o.vidEnd > 0) ? Math.min(o.vidEnd, dur) : dur;
-        if (end <= start) end = dur;
-      }
-      const target = start + (end - start) * tNorm;
-      o.video.currentTime = Math.max(0, Math.min(dur, target));
-    }
-
-    function updateVideoSeekUI() {
-      const o = objects.find(x=>x.id===activeId);
-      const box = document.getElementById('videoUI');
-      if (!o || o.kind !== 'video' || !o.video) { box.style.display = 'none'; return; }
-
-      box.style.display = 'block';
-
-      const v = o.video;
-      const dur = v.duration || 0;
-      if (!dur || !Number.isFinite(dur)) return;
-
-      let start = 0, end = dur;
-      if (o.vidTrim) {
-        start = Math.max(0, o.vidStart || 0);
-        end = (o.vidEnd && o.vidEnd > 0) ? Math.min(o.vidEnd, dur) : dur;
-        if (end <= start) end = dur;
-      }
-
-      const cur = v.currentTime || 0;
-      const t = (end > start) ? (cur - start) / (end - start) : 0;
-      const clamped = Math.max(0, Math.min(1, t));
-
-      const seek = document.getElementById('vidSeek');
-      seek.value = Math.round(clamped * 1000);
-      setVal('v_vidSeek', Math.round(clamped * 100) + '%');
-    }
-
-    // =========================
-    // Selection + layer list (reordenable)
+    // Selection + layer list (✅ reordenar capas)
     // =========================
     function setLayerVisible(o, v) {
       o.visible = v;
@@ -1692,6 +1735,9 @@
       const media = isMediaLayer(o);
       setEditorEnabled(media);
 
+      // ✅ transform sliders siempre activos si hay root3D
+      syncTransformUIFromActive();
+
       if (media && o.mat?.uniforms) {
         const u = o.mat.uniforms;
         setRange('brightness', u.uBrightness.value);
@@ -1716,26 +1762,11 @@
         document.getElementById('chromaPanel').style.display = 'none';
       }
 
-      // NUEVO: Transform sliders sync
-      syncTransformUIFromActive();
-
-      // NUEVO: Video UI sync
-      const vbox = document.getElementById('videoUI');
+      // ✅ video controls
       if (o.kind === 'video' && o.video) {
-        vbox.style.display = 'block';
-        document.getElementById('vidVolume').value = (o.video.volume ?? 0);
-        setVal('v_vidVolume', (o.video.volume ?? 0).toFixed(2));
-
-        document.getElementById('vidTrim').checked = !!o.vidTrim;
-        document.getElementById('vidLoop').checked = !!(o.video.loop || true);
-        document.getElementById('vidStart').value = (o.vidStart ?? 0);
-        document.getElementById('vidEnd').value = (o.vidEnd ?? 0);
-
-        applyVideoUIToActive();
-        updateVideoSeekUI();
-      } else {
-        vbox.style.display = 'none';
+        attachVideoEvents(o);
       }
+      syncVideoUIFromActive();
 
       updateLayers();
     }
@@ -1752,35 +1783,48 @@
       const el = document.getElementById(id);
       const val = (Number.isFinite(v) ? v : 0);
       if (el) el.value = val;
-      const lbl = document.getElementById('v_' + id);
-      if (lbl) lbl.textContent = val.toFixed(3);
-    }
-
-    function reorderLayers(dragId, dropId) {
-      if (!dragId || !dropId || dragId === dropId) return;
-      const a = objects.findIndex(x => x.id === dragId);
-      const b = objects.findIndex(x => x.id === dropId);
-      if (a < 0 || b < 0) return;
-
-      const [item] = objects.splice(a, 1);
-      objects.splice(b, 0, item);
-
-      // opcional: renderOrder para media (si quieres jerarquía visual)
-      objects.forEach((o, idx) => {
-        if (o.mesh) o.mesh.renderOrder = idx;
-      });
-
-      updateLayers();
+      setValLabel(id, val, 3);
     }
 
     function updateLayers() {
       const list = document.getElementById('layerList');
       list.innerHTML = '';
 
-      for (const o of objects) {
+      for (let idx = 0; idx < objects.length; idx++) {
+        const o = objects[idx];
+
         const row = document.createElement('div');
         row.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
+
+        // ✅ Drag & drop reorder
         row.draggable = true;
+        row.dataset.layerId = o.id;
+
+        row.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', o.id);
+          ev.dataTransfer.effectAllowed = 'move';
+        });
+
+        row.addEventListener('dragover', (ev) => {
+          ev.preventDefault();
+          ev.dataTransfer.dropEffect = 'move';
+        });
+
+        row.addEventListener('drop', (ev) => {
+          ev.preventDefault();
+          const fromId = ev.dataTransfer.getData('text/plain');
+          const toId = o.id;
+          if (!fromId || !toId || fromId === toId) return;
+
+          const fromIndex = objects.findIndex(x=>x.id===fromId);
+          const toIndex = objects.findIndex(x=>x.id===toId);
+          if (fromIndex < 0 || toIndex < 0) return;
+
+          const [moved] = objects.splice(fromIndex, 1);
+          objects.splice(toIndex, 0, moved);
+
+          updateLayers();
+        });
 
         const ico = document.createElement('div');
         ico.textContent = iconFor(o);
@@ -1818,62 +1862,6 @@
         row.appendChild(mini);
 
         row.onclick = () => selectObject(o.id);
-
-        // Desktop drag
-        row.addEventListener('dragstart', (e) => {
-          dragLayerId = o.id;
-          row.classList.add('dragging');
-          e.dataTransfer?.setData('text/plain', o.id);
-        });
-        row.addEventListener('dragend', () => {
-          row.classList.remove('dragging');
-          dragLayerId = null;
-          [...list.querySelectorAll('.layer-item')].forEach(x => x.classList.remove('over'));
-        });
-        row.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          row.classList.add('over');
-        });
-        row.addEventListener('dragleave', () => row.classList.remove('over'));
-        row.addEventListener('drop', (e) => {
-          e.preventDefault();
-          const id = e.dataTransfer?.getData('text/plain') || dragLayerId;
-          row.classList.remove('over');
-          reorderLayers(id, o.id);
-        });
-
-        // Touch drag (pinchar y arrastrar)
-        row.addEventListener('pointerdown', (e) => {
-          // solo si apunta al item (no a checkboxes)
-          if (e.target && (e.target.tagName === 'INPUT')) return;
-          dragLayerId = o.id;
-          row.setPointerCapture(e.pointerId);
-          row.classList.add('dragging');
-        });
-
-        row.addEventListener('pointermove', (e) => {
-          if (!dragLayerId) return;
-          const el = document.elementFromPoint(e.clientX, e.clientY);
-          const over = el?.closest?.('.layer-item');
-          [...list.querySelectorAll('.layer-item')].forEach(x => x.classList.remove('over'));
-          if (over && over !== row) over.classList.add('over');
-        });
-
-        row.addEventListener('pointerup', (e) => {
-          if (!dragLayerId) return;
-          const el = document.elementFromPoint(e.clientX, e.clientY);
-          const over = el?.closest?.('.layer-item');
-          row.classList.remove('dragging');
-          [...list.querySelectorAll('.layer-item')].forEach(x => x.classList.remove('over'));
-          if (over && over !== row) {
-            // drop target is "over" element; we need its id
-            const idx = [...list.children].indexOf(over);
-            const target = objects[idx];
-            if (target) reorderLayers(dragLayerId, target.id);
-          }
-          dragLayerId = null;
-        });
-
         list.appendChild(row);
       }
 
@@ -1931,9 +1919,7 @@
       const o = objects.find(x=>x.id===activeId);
       if (!o || !o.root3D) return;
       o.root3D.position.set(0, 1.6, -2);
-      if (o.kind === 'youtube' && o.cssObj) {
-        o.cssObj.position.copy(o.root3D.position);
-      }
+      if (o.kind === 'youtube' && o.cssObj) o.cssObj.position.copy(o.root3D.position);
       syncTransformUIFromActive();
     }
 
@@ -1961,7 +1947,6 @@
       if (engGroup) engGroup.visible = false;
       updateLayers();
     }
-
     // =========================
     // Render loop
     // =========================
@@ -1969,7 +1954,6 @@
       orbit.update();
       handleStableControls();
       updateEngineeringVisuals();
-      updateVideoSeekUI();
 
       for (const o of objects) {
         if (!o.visible) continue;
@@ -1991,29 +1975,7 @@
           }
         }
 
-        // NUEVO: trim playback del video
-        if (o.kind === 'video' && o.video && o.vidTrim) {
-          const v = o.video;
-          const dur = v.duration || 0;
-          if (dur && Number.isFinite(dur)) {
-            const start = Math.max(0, o.vidStart || 0);
-            const end = (o.vidEnd && o.vidEnd > 0) ? Math.min(o.vidEnd, dur) : dur;
-
-            const loop = document.getElementById('vidLoop').checked;
-
-            if (v.currentTime < start) v.currentTime = start;
-            if (v.currentTime >= end) {
-              if (loop) {
-                v.currentTime = start;
-                // si está pausado, no lo forzamos
-                if (!v.paused) v.play().catch(()=>{});
-              } else {
-                v.pause();
-              }
-            }
-          }
-        }
-
+        // sync CSS3D YouTube with root transform
         if (o.kind === 'youtube' && o.cssObj && o.root3D) {
           o.cssObj.position.copy(o.root3D.position);
           o.cssObj.quaternion.copy(o.root3D.quaternion);
