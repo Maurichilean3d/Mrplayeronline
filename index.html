@@ -3,401 +3,266 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MR Studio Diamond V24 - FUSION PRO</title>
+    <title>MR Studio Diamond V24 - FIXED LOCAL</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js"></script>
     <style>
         :root {
             --ui-primary: #ffaa00;
-            --ui-bg: rgba(15, 15, 20, 0.9);
-            --ui-border: rgba(255, 170, 0, 0.3);
-            --ui-text: #ffffff;
+            --ui-bg: rgba(15, 15, 20, 0.95);
+            --ui-border: rgba(255, 170, 0, 0.4);
         }
 
         body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
 
-        /* Panel Lateral con Scroll */
+        /* Contenedor Principal con SCROLL */
         #ui-container {
             position: fixed;
             top: 10px;
             left: 10px;
             bottom: 10px;
-            width: 340px;
+            width: 320px;
             z-index: 10000;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding: 10px;
+            gap: 15px;
+            padding: 15px;
             overflow-y: auto;
+            background: rgba(0, 0, 0, 0.3);
+            pointer-events: auto;
             scrollbar-width: thin;
             scrollbar-color: var(--ui-primary) transparent;
-            background: linear-gradient(180deg, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 100%);
-            pointer-events: auto;
         }
-
-        #ui-container::-webkit-scrollbar { width: 6px; }
-        #ui-container::-webkit-scrollbar-thumb { background: var(--ui-primary); border-radius: 10px; }
 
         .panel {
             background: var(--ui-bg);
             border: 1px solid var(--ui-border);
-            border-radius: 16px;
-            padding: 18px;
-            color: var(--ui-text);
-            backdrop-filter: blur(15px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            padding: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
         }
 
         .panel-title {
-            font-size: 14px;
-            font-weight: 900;
-            margin-bottom: 15px;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 12px;
             color: var(--ui-primary);
             text-transform: uppercase;
-            letter-spacing: 1px;
             border-bottom: 1px solid var(--ui-border);
-            padding-bottom: 8px;
+            padding-bottom: 5px;
         }
 
-        /* Grilla de Botones */
-        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-
         .btn {
-            background: rgba(255, 170, 0, 0.15);
+            background: rgba(255, 170, 0, 0.2);
             border: 1px solid var(--ui-primary);
             padding: 10px;
-            border-radius: 8px;
+            border-radius: 6px;
             color: white;
             cursor: pointer;
-            font-size: 12px;
+            width: 100%;
             font-weight: bold;
-            transition: all 0.2s;
+            margin-bottom: 5px;
         }
 
         .btn:hover { background: var(--ui-primary); color: black; }
-        .btn-danger { border-color: #ff4444; color: #ff4444; }
-        .btn-danger:hover { background: #ff4444; color: white; }
 
-        /* Inputs y Sliders */
         input[type="text"], select {
             width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--ui-border);
-            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 10px;
+            background: #111;
+            border: 1px solid #444;
             color: white;
+            border-radius: 4px;
         }
 
-        .slider-group { margin: 12px 0; }
-        .slider-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #bbb; }
-        input[type="range"] { width: 100%; accent-color: var(--ui-primary); cursor: pointer; }
-
-        /* Lista de Capas (Layers) */
         .layer-list {
-            background: rgba(0,0,0,0.3);
-            border-radius: 8px;
-            max-height: 200px;
+            max-height: 150px;
             overflow-y: auto;
-            border: 1px solid var(--ui-border);
+            border: 1px solid #333;
+            background: #050505;
         }
 
         .layer-item {
-            padding: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid rgba(255,170,0,0.1);
-            cursor: pointer;
+            padding: 8px;
             font-size: 12px;
+            border-bottom: 1px solid #222;
+            cursor: pointer;
         }
 
-        .layer-item:hover { background: rgba(255,170,0,0.1); }
-        .layer-item.active { background: rgba(255,170,0,0.25); border-left: 4px solid var(--ui-primary); }
-        
+        .layer-item.active { background: var(--ui-primary); color: black; }
+
+        .slider-group { margin: 10px 0; }
+        .slider-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+        input[type="range"] { width: 100%; accent-color: var(--ui-primary); }
+
         .hidden { display: none; }
-        .notification {
-            position: fixed; top: 20px; right: 20px; background: var(--ui-bg);
-            border: 1px solid var(--ui-primary); padding: 15px; border-radius: 10px;
-            color: white; z-index: 30000; animation: fadeIn 0.3s;
-        }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="ui-container">
         <div class="panel">
-            <div class="panel-title">📥 Entrada de Datos</div>
-            <input type="text" id="url-input" placeholder="URL (YT, Imagen, Video, 3D)">
-            <button class="btn" style="width: 100%; margin-top: 5px;" onclick="document.getElementById('file-input').click()">📂 Cargar Archivo Local</button>
-            <input type="file" id="file-input" class="hidden" accept="image/*,video/*,.glb,.gltf,.obj" onchange="handleFile(event)">
+            <div class="panel-title">📥 Cargar Media</div>
+            <label style="font-size: 11px; color: #888;">URL Directa:</label>
+            <input type="text" id="url-input" placeholder="https://...">
             
-            <div class="slider-group">
-                <div class="slider-label"><span>🎭 Proyección</span></div>
-                <select id="projection-type">
-                    <option value="plane">Plano Estándar</option>
-                    <option value="sphere">360° Equirectangular</option>
-                    <option value="cylinder">Cilindro Envolvente</option>
-                </select>
-            </div>
-            <button class="btn" style="width: 100%; background: var(--ui-primary); color: black;" onclick="createUniverse()">➕ Crear Universo</button>
+            <button class="btn" onclick="document.getElementById('file-input').click()">📁 Seleccionar Archivo PC</button>
+            <input type="file" id="file-input" class="hidden" onchange="processFile(event)">
+            
+            <label style="font-size: 11px; color: #888;">Proyección:</label>
+            <select id="proj-type">
+                <option value="plane">Plano (Video/Foto)</option>
+                <option value="sphere">360° (Equirectangular)</option>
+            </select>
+            <button class="btn" style="background: var(--ui-primary); color: black;" onclick="addFromUrl()">Añadir a Escena</button>
         </div>
 
         <div class="panel">
-            <div class="panel-title">📦 Capas de Escena</div>
-            <div id="layer-list" class="layer-list">
-                </div>
-            <div class="grid-layout">
-                <button class="btn btn-danger" onclick="deleteSelected()">🗑️ Borrar</button>
-                <button class="btn" onclick="duplicateSelected()">📋 Duplicar</button>
-            </div>
+            <div class="panel-title">📦 Capas (Layers)</div>
+            <div id="layer-list" class="layer-list"></div>
+            <button class="btn" style="margin-top:10px; border-color: red; color: red;" onclick="deleteActive()">Eliminar Seleccionado</button>
         </div>
 
-        <div id="transform-panel" class="panel">
-            <div class="panel-title">🔧 Transformación</div>
+        <div class="panel">
+            <div class="panel-title">🔧 Transformar</div>
             <div class="slider-group">
-                <div class="slider-label"><span>X (Lateral)</span><span id="v-x">0</span></div>
-                <input type="range" id="p-x" min="-20" max="20" step="0.1" value="0" oninput="updateTransform()">
+                <div class="slider-label"><span>Altura (Y)</span><span id="v-y">1.6</span></div>
+                <input type="range" id="p-y" min="0" max="5" step="0.1" value="1.6" oninput="liveUpdate()">
             </div>
             <div class="slider-group">
-                <div class="slider-label"><span>Y (Altura)</span><span id="v-y">1.6</span></div>
-                <input type="range" id="p-y" min="0" max="10" step="0.1" value="1.6" oninput="updateTransform()">
-            </div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Z (Profundidad)</span><span id="v-z">-3</span></div>
-                <input type="range" id="p-z" min="-30" max="5" step="0.1" value="-3" oninput="updateTransform()">
+                <div class="slider-label"><span>Distancia (Z)</span><span id="v-z">-3</span></div>
+                <input type="range" id="p-z" min="-10" max="0" step="0.1" value="-3" oninput="liveUpdate()">
             </div>
             <div class="slider-group">
                 <div class="slider-label"><span>Escala</span><span id="v-s">1</span></div>
-                <input type="range" id="p-s" min="0.1" max="10" step="0.1" value="1" oninput="updateTransform()">
-            </div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Rotación Y</span><span id="v-ry">0</span></div>
-                <input type="range" id="p-ry" min="0" max="360" step="1" value="0" oninput="updateTransform()">
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">✨ Shaders de Imagen</div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Brillo</span><span id="v-br">1</span></div>
-                <input type="range" id="s-br" min="0" max="3" step="0.1" value="1" oninput="updateShaders()">
-            </div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Saturación</span><span id="v-sa">1</span></div>
-                <input type="range" id="s-sa" min="0" max="3" step="0.1" value="1" oninput="updateShaders()">
-            </div>
-            <button class="btn" style="width: 100%" onclick="resetShaders()">🔄 Reset Efectos</button>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">💾 Configuración</div>
-            <div class="row"><label style="font-size: 12px;"><input type="checkbox" id="grid-toggle" checked onchange="toggleGrid()"> Grilla Holográfica</label></div>
-            <div class="grid-layout">
-                <button class="btn" onclick="saveScene()">💾 Guardar</button>
-                <button class="btn" onclick="exportJSON()">📤 Exportar</button>
+                <input type="range" id="p-s" min="0.1" max="5" step="0.1" value="1" oninput="liveUpdate()">
             </div>
         </div>
     </div>
 
-    <a-scene
-        renderer="colorManagement: true; antialias: true; alpha: true;"
-        webxr="optionalFeatures: hit-test, local-floor, dom-overlay; overlayElement: #ui-container;">
-        
-        <a-assets id="main-assets"></a-assets>
-
-        <a-entity id="hologrid">
-            <a-grid material="color: #ffaa00; opacity: 0.2; transparent: true;" size="50" step="1"></a-grid>
-            <a-circle rotation="-90 0 0" radius="10" material="shader: flat; color: #ffaa00; opacity: 0.05; transparent: true;"></a-circle>
+    <a-scene renderer="colorManagement: true;" webxr="overlayElement: #ui-container;">
+        <a-entity id="grid" geometry="primitive: plane; width: 20; height: 20" 
+                  rotation="-90 0 0" 
+                  material="src: https://cdn.aframe.io/a-grid/grid.png; repeat: 20 20; transparent: true; opacity: 0.2">
         </a-entity>
 
-        <a-entity id="rig" position="0 0 0">
-            <a-camera look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 20">
-                <a-cursor raycaster="objects: .interactive" color="#ffaa00"></a-cursor>
-            </a-camera>
-        </a-entity>
-
-        <a-sky color="#050508"></a-sky>
-        <a-light type="ambient" intensity="0.7"></a-light>
-        <a-light type="directional" position="1 2 1" intensity="0.5"></a-light>
+        <a-camera position="0 1.6 0"></a-camera>
+        <a-sky color="#0a0a0c"></a-sky>
     </a-scene>
 
     <script>
-        let universes = [];
-        let selectedId = null;
-        let counter = 0;
+        let elements = [];
+        let activeId = null;
+        let lastFileBlob = null;
+        let lastFileType = null;
 
-        // --- SISTEMA DE CREACIÓN ---
-        async function createUniverse() {
-            const url = document.getElementById('url-input').value;
-            const type = detectType(url);
-            const projection = document.getElementById('projection-type').value;
+        // 1. PROCESAR ARCHIVO LOCAL (CORREGIDO)
+        function processFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-            const id = `uni_${counter++}`;
-            const config = {
-                id,
-                url,
-                type,
-                projection,
-                pos: {x: 0, y: 1.6, z: -3},
-                rot: {x: 0, y: 0, z: 0},
-                scale: 1,
-                brightness: 1,
-                saturation: 1
-            };
+            // Creamos una URL temporal que el navegador SÍ puede leer
+            lastFileBlob = URL.createObjectURL(file);
+            lastFileType = file.type.split('/')[0]; // "image" o "video" o "application"
+            
+            // Si es un modelo 3D por extensión
+            if(file.name.endsWith('.glb') || file.name.endsWith('.gltf')) lastFileType = 'model';
 
-            universes.push(config);
-            renderEntity(config);
-            updateLayerUI();
-            selectLayer(id);
-            showNotif(`✅ Universo ${type} Creado`);
+            document.getElementById('url-input').value = file.name;
+            alert("Archivo cargado: " + file.name + ". Haz click en 'Añadir a Escena'.");
         }
 
-        function renderEntity(conf) {
-            const scene = document.querySelector('a-scene');
-            const el = document.createElement('a-entity');
-            el.setAttribute('id', conf.id);
-            el.setAttribute('class', 'interactive');
-            el.setAttribute('position', `${conf.pos.x} ${conf.pos.y} ${conf.pos.z}`);
-            
-            if(conf.type === 'image' || conf.type === 'video') {
-                if(conf.projection === 'plane') {
-                    el.setAttribute('geometry', 'primitive: plane; width: 4; height: 2.25');
-                } else if(conf.projection === 'sphere') {
-                    el.setAttribute('geometry', 'primitive: sphere; radius: 10; phiLength: 360');
-                    el.setAttribute('scale', '-1 1 1');
-                }
+        // 2. AÑADIR A ESCENA
+        function addFromUrl() {
+            const urlInput = document.getElementById('url-input').value;
+            const proj = document.getElementById('proj-type').value;
+            const id = "layer_" + Date.now();
+
+            let finalUrl = lastFileBlob || urlInput;
+            let type = lastFileType || (urlInput.includes('mp4') ? 'video' : 'image');
+
+            if(!finalUrl) return alert("Pon una URL o sube un archivo");
+
+            const entity = document.createElement('a-entity');
+            entity.setAttribute('id', id);
+            entity.setAttribute('position', '0 1.6 -3');
+
+            if (type === 'video') {
+                const vid = document.createElement('video');
+                vid.src = finalUrl;
+                vid.autoplay = true;
+                vid.loop = true;
+                vid.muted = true; // Importante para que auto-reproduzca
+                vid.play();
                 
-                if(conf.type === 'video') {
-                    const video = document.createElement('video');
-                    video.src = conf.url;
-                    video.setAttribute('autoplay', 'true');
-                    video.setAttribute('loop', 'true');
-                    video.setAttribute('crossorigin', 'anonymous');
-                    video.play();
-                    el.setAttribute('material', {src: video, shader: 'flat'});
+                if(proj === 'sphere') {
+                    entity.setAttribute('geometry', 'primitive: sphere; radius: 5; segmentsWidth: 64; segmentsHeight: 32');
+                    entity.setAttribute('scale', '-1 1 1');
                 } else {
-                    el.setAttribute('material', {src: conf.url, shader: 'flat', transparent: true});
+                    entity.setAttribute('geometry', 'primitive: plane; width: 4; height: 2.25');
                 }
-            } else if (conf.type === 'model') {
-                el.setAttribute('gltf-model', conf.url);
+                entity.setAttribute('material', {shader: 'flat', src: vid});
+            } 
+            else if (type === 'model') {
+                entity.setAttribute('gltf-model', finalUrl);
+            }
+            else {
+                if(proj === 'sphere') {
+                    entity.setAttribute('geometry', 'primitive: sphere; radius: 5');
+                    entity.setAttribute('scale', '-1 1 1');
+                } else {
+                    entity.setAttribute('geometry', 'primitive: plane; width: 4; height: 2.25');
+                }
+                entity.setAttribute('material', {shader: 'flat', src: finalUrl, transparent: true});
             }
 
-            scene.appendChild(el);
+            document.querySelector('a-scene').appendChild(entity);
+            
+            elements.push({id, type});
+            activeId = id;
+            updateUI();
+            
+            // Limpiar temporales
+            lastFileBlob = null;
+            lastFileType = null;
         }
 
-        // --- TRANSFORM REAL-TIME ---
-        function updateTransform() {
-            if(!selectedId) return;
-            const el = document.getElementById(selectedId);
-            const conf = universes.find(u => u.id === selectedId);
-
-            const x = document.getElementById('p-x').value;
+        // 3. ACTUALIZAR INTERFAZ Y TRANSFORM
+        function liveUpdate() {
+            if(!activeId) return;
+            const el = document.getElementById(activeId);
             const y = document.getElementById('p-y').value;
             const z = document.getElementById('p-z').value;
             const s = document.getElementById('p-s').value;
-            const ry = document.getElementById('p-ry').value;
 
-            document.getElementById('v-x').innerText = x;
             document.getElementById('v-y').innerText = y;
             document.getElementById('v-z').innerText = z;
             document.getElementById('v-s').innerText = s;
-            document.getElementById('v-ry').innerText = ry;
 
-            el.setAttribute('position', `${x} ${y} ${z}`);
+            el.setAttribute('position', `0 ${y} ${z}`);
             el.setAttribute('scale', `${s} ${s} ${s}`);
-            el.setAttribute('rotation', `0 ${ry} 0`);
-
-            conf.pos = {x, y, z};
-            conf.scale = s;
-            conf.rot.y = ry;
         }
 
-        function updateShaders() {
-            if(!selectedId) return;
-            const el = document.getElementById(selectedId);
-            const br = document.getElementById('s-br').value;
-            const sa = document.getElementById('s-sa').value;
-            
-            document.getElementById('v-br').innerText = br;
-            document.getElementById('v-sa').innerText = sa;
-
-            // En A-Frame básico usamos color para brillo, para efectos complejos se requiere un shader custom
-            el.setAttribute('material', 'color', `rgb(${br*255},${br*255},${br*255})`);
-        }
-
-        // --- GESTIÓN DE CAPAS ---
-        function updateLayerUI() {
+        function updateUI() {
             const list = document.getElementById('layer-list');
-            list.innerHTML = '';
-            universes.forEach(u => {
-                const item = document.createElement('div');
-                item.className = `layer-item ${u.id === selectedId ? 'active' : ''}`;
-                item.innerHTML = `<span>${getIcon(u.type)} ${u.id}</span> <small>${u.projection}</small>`;
-                item.onclick = () => selectLayer(u.id);
-                list.appendChild(item);
+            list.innerHTML = "";
+            elements.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "layer-item" + (item.id === activeId ? " active" : "");
+                div.innerText = item.id;
+                div.onclick = () => { activeId = item.id; updateUI(); };
+                list.appendChild(div);
             });
         }
 
-        function selectLayer(id) {
-            selectedId = id;
-            const conf = universes.find(u => u.id === id);
-            
-            // Sincronizar Sliders
-            document.getElementById('p-x').value = conf.pos.x;
-            document.getElementById('p-y').value = conf.pos.y;
-            document.getElementById('p-z').value = conf.pos.z;
-            document.getElementById('p-s').value = conf.scale;
-            document.getElementById('p-ry').value = conf.rot.y;
-            
-            updateLayerUI();
+        function deleteActive() {
+            if(!activeId) return;
+            document.getElementById(activeId).remove();
+            elements = elements.filter(e => e.id !== activeId);
+            activeId = null;
+            updateUI();
         }
-
-        function deleteSelected() {
-            if(!selectedId) return;
-            document.getElementById(selectedId).remove();
-            universes = universes.filter(u => u.id !== selectedId);
-            selectedId = null;
-            updateLayerUI();
-        }
-
-        // --- UTILIDADES ---
-        function detectType(url) {
-            if(url.includes('youtube.com')) return 'video';
-            if(url.match(/\.(mp4|webm)$/)) return 'video';
-            if(url.match(/\.(glb|gltf)$/)) return 'model';
-            return 'image';
-        }
-
-        function getIcon(type) {
-            if(type === 'video') return '🎬';
-            if(type === 'model') return '🧊';
-            return '🖼️';
-        }
-
-        function toggleGrid() {
-            const grid = document.getElementById('hologrid');
-            grid.setAttribute('visible', document.getElementById('grid-toggle').checked);
-        }
-
-        function showNotif(msg) {
-            const n = document.createElement('div');
-            n.className = 'notification';
-            n.innerText = msg;
-            document.body.appendChild(n);
-            setTimeout(() => n.remove(), 2000);
-        }
-
-        function handleFile(event) {
-            const file = event.target.files[0];
-            const url = URL.createObjectURL(file);
-            document.getElementById('url-input').value = url;
-            showNotif("📂 Archivo listo para crear");
-        }
-
-        window.onload = () => showNotif("💎 MR Studio V24 Fusion Listo");
     </script>
 </body>
 </html>
