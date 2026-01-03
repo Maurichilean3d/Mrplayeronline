@@ -1,268 +1,353 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MR Studio Diamond V24 - FIXED LOCAL</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <style>
-        :root {
-            --ui-primary: #ffaa00;
-            --ui-bg: rgba(15, 15, 20, 0.95);
-            --ui-border: rgba(255, 170, 0, 0.4);
-        }
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MR Studio Diamond v25.x | Fusion Pro</title>
 
-        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; background: #000; }
+  <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
 
-        /* Contenedor Principal con SCROLL */
-        #ui-container {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            bottom: 10px;
-            width: 320px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 15px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.3);
-            pointer-events: auto;
-            scrollbar-width: thin;
-            scrollbar-color: var(--ui-primary) transparent;
-        }
+  <style>
+    :root {
+      --main-color: #ffaa00;
+      --bg-glass: rgba(20, 20, 25, 0.9);
+      --border-glass: rgba(255, 170, 0, 0.3);
+      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
+    }
 
-        .panel {
-            background: var(--ui-bg);
-            border: 1px solid var(--ui-border);
-            border-radius: 12px;
-            padding: 15px;
-            color: white;
-            backdrop-filter: blur(10px);
-        }
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { margin: 0; overflow: hidden; background: #000; color: #eee; }
 
-        .panel-title {
-            font-size: 13px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: var(--ui-primary);
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--ui-border);
-            padding-bottom: 5px;
-        }
+    /* WebGL canvas */
+    #c { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+    #css3d { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+    #css3d.interactive { pointer-events: auto; }
 
-        .btn {
-            background: rgba(255, 170, 0, 0.2);
-            border: 1px solid var(--ui-primary);
-            padding: 10px;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
+    /* Panel con Scroll */
+    .ui-panel {
+      position: fixed; left: 20px; top: 20px; width: 360px; max-height: 95vh;
+      background: var(--bg-glass);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      padding: 20px; overflow-y: auto; z-index: 100;
+      box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
+    }
+    .ui-panel::-webkit-scrollbar { width: 4px; }
+    .ui-panel::-webkit-scrollbar-thumb { background: var(--main-color); border-radius: 10px; }
 
-        .btn:hover { background: var(--ui-primary); color: black; }
+    h2 {
+      margin: 0 0 15px 0; font-size: 16px; color: var(--main-color); font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid var(--border-glass);
+      padding-bottom: 10px; display: flex; justify-content: space-between;
+    }
 
-        input[type="text"], select {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            background: #111;
-            border: 1px solid #444;
-            color: white;
-            border-radius: 4px;
-        }
+    .sec-head { font-size: 11px; font-weight: 900; color: #aaa; margin: 15px 0 8px 0; text-transform: uppercase; }
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; font-weight: 600; }
 
-        .layer-list {
-            max-height: 150px;
-            overflow-y: auto;
-            border: 1px solid #333;
-            background: #050505;
-        }
+    input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); appearance: none; }
+    .val { width: 50px; text-align: right; font-size: 10px; color: var(--main-color); font-family: monospace; }
 
-        .layer-item {
-            padding: 8px;
-            font-size: 12px;
-            border-bottom: 1px solid #222;
-            cursor: pointer;
-        }
+    select, input[type=url], input[type=text], input[type=number] {
+      width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-glass);
+      color: #fff; padding: 8px; border-radius: 8px; outline: none;
+    }
 
-        .layer-item.active { background: var(--ui-primary); color: black; }
+    button {
+      flex: 1; padding: 10px; border-radius: 8px; border: none; font-weight: 900;
+      cursor: pointer; color: #000; background: var(--main-color); font-size: 11px;
+      text-transform: uppercase; transition: 0.2s;
+    }
+    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); }
+    button.danger { background: #ff4444; color: white; }
 
-        .slider-group { margin: 10px 0; }
-        .slider-label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
-        input[type="range"] { width: 100%; accent-color: var(--ui-primary); }
+    /* Capas */
+    .layer-list { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 5px; border: 1px solid var(--border-glass); }
+    .layer-item {
+      padding: 8px; font-size: 11px; display: flex; align-items: center; gap: 8px;
+      margin-bottom: 4px; border-radius: 6px; background: rgba(255,255,255,0.05); cursor: pointer;
+    }
+    .layer-item.active { border-left: 4px solid var(--main-color); background: rgba(255,170,0,0.15); }
 
-        .hidden { display: none; }
-    </style>
+    #vrBtn {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+      padding: 15px 40px; background: var(--main-color); border-radius: 30px;
+      font-weight: 900; z-index: 1000; border: 2px solid #fff; box-shadow: var(--text-glow);
+    }
+    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main-color); font-weight: 900; }
+  </style>
 </head>
 <body>
 
-    <div id="ui-container">
-        <div class="panel">
-            <div class="panel-title">📥 Cargar Media</div>
-            <label style="font-size: 11px; color: #888;">URL Directa:</label>
-            <input type="text" id="url-input" placeholder="https://...">
-            
-            <button class="btn" onclick="document.getElementById('file-input').click()">📁 Seleccionar Archivo PC</button>
-            <input type="file" id="file-input" class="hidden" onchange="processFile(event)">
-            
-            <label style="font-size: 11px; color: #888;">Proyección:</label>
-            <select id="proj-type">
-                <option value="plane">Plano (Video/Foto)</option>
-                <option value="sphere">360° (Equirectangular)</option>
-            </select>
-            <button class="btn" style="background: var(--ui-primary); color: black;" onclick="addFromUrl()">Añadir a Escena</button>
-        </div>
+<canvas id="c"></canvas>
+<div id="css3d"></div>
+<div class="loader" id="loader">CARGANDO...</div>
 
-        <div class="panel">
-            <div class="panel-title">📦 Capas (Layers)</div>
-            <div id="layer-list" class="layer-list"></div>
-            <button class="btn" style="margin-top:10px; border-color: red; color: red;" onclick="deleteActive()">Eliminar Seleccionado</button>
-        </div>
+<div class="ui-panel" id="ui">
+  <h2><span>DIAMOND v24 FUSION</span></h2>
 
-        <div class="panel">
-            <div class="panel-title">🔧 Transformar</div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Altura (Y)</span><span id="v-y">1.6</span></div>
-                <input type="range" id="p-y" min="0" max="5" step="0.1" value="1.6" oninput="liveUpdate()">
-            </div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Distancia (Z)</span><span id="v-z">-3</span></div>
-                <input type="range" id="p-z" min="-10" max="0" step="0.1" value="-3" oninput="liveUpdate()">
-            </div>
-            <div class="slider-group">
-                <div class="slider-label"><span>Escala</span><span id="v-s">1</span></div>
-                <input type="range" id="p-s" min="0.1" max="5" step="0.1" value="1" oninput="liveUpdate()">
-            </div>
-        </div>
+  <div class="sec-head">📥 Importar</div>
+  <input type="text" id="webUrl" placeholder="URL .mp4, .jpg, .glb o YouTube">
+  <button onclick="loadFromWeb()" style="width:100%; margin-top:8px;">Añadir URL</button>
+  
+  <button onclick="document.getElementById('fileInput').click()" class="secondary" style="width:100%; margin-top:8px;">📂 Abrir archivo local</button>
+  <input type="file" id="fileInput" multiple style="display:none;" onchange="handleLocalFiles(event)">
+
+  <div class="sec-head">Layers</div>
+  <div id="layerList" class="layer-list"></div>
+
+  <div id="editorUI" style="display:none;">
+    <div class="sec-head">🧩 Transform</div>
+    <div class="row"><label>Pos Y</label><input type="range" id="tPosY" min="0" max="10" step="0.1" value="1.6"><span class="val" id="v_tPosY">1.6</span></div>
+    <div class="row"><label>Pos Z</label><input type="range" id="tPosZ" min="-20" max="0" step="0.1" value="-3"><span class="val" id="v_tPosZ">-3</span></div>
+    <div class="row"><label>Scale</label><input type="range" id="tScale" min="0.1" max="10" step="0.1" value="1"><span class="val" id="v_tScale">1</span></div>
+    <div class="row"><label>Rot Y</label><input type="range" id="tRotY" min="0" max="360" step="1" value="0"><span class="val" id="v_tRotY">0</span></div>
+
+    <div class="sec-head">🎨 Shaders</div>
+    <div class="row"><label>Brightness</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
+    <div class="row"><label>Contrast</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
+    <div class="row"><label>Opacity</label><input type="range" id="opacity" min="0" max="1" step="0.05" value="1"><span class="val" id="v_opacity">1</span></div>
+
+    <div class="sec-head">🧪 Chroma Key</div>
+    <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar Chroma</label></div>
+    <div id="chromaPanel" style="display:none;">
+      <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.01" value="0.4"></div>
+      <div class="row"><label>Color G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
     </div>
 
-    <a-scene renderer="colorManagement: true;" webxr="overlayElement: #ui-container;">
-        <a-entity id="grid" geometry="primitive: plane; width: 20; height: 20" 
-                  rotation="-90 0 0" 
-                  material="src: https://cdn.aframe.io/a-grid/grid.png; repeat: 20 20; transparent: true; opacity: 0.2">
-        </a-entity>
+    <div class="row" style="margin-top:15px;">
+      <button onclick="centerActive()" class="secondary">🎯 Centrar</button>
+      <button onclick="deleteActive()" class="danger">🗑 Eliminar</button>
+    </div>
+  </div>
 
-        <a-camera position="0 1.6 0"></a-camera>
-        <a-sky color="#0a0a0c"></a-sky>
-    </a-scene>
+  <div class="sec-head">Config</div>
+  <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
+  <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth</label></div>
+</div>
 
-    <script>
-        let elements = [];
-        let activeId = null;
-        let lastFileBlob = null;
-        let lastFileType = null;
+<button id="vrBtn">INICIAR MR</button>
 
-        // 1. PROCESAR ARCHIVO LOCAL (CORREGIDO)
-        function processFile(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
 
-            // Creamos una URL temporal que el navegador SÍ puede leer
-            lastFileBlob = URL.createObjectURL(file);
-            lastFileType = file.type.split('/')[0]; // "image" o "video" o "application"
-            
-            // Si es un modelo 3D por extensión
-            if(file.name.endsWith('.glb') || file.name.endsWith('.gltf')) lastFileType = 'model';
+<script type="module">
+  import * as THREE from 'three';
+  import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  import { TransformControls } from 'three/addons/controls/TransformControls.js';
+  import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+  import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
-            document.getElementById('url-input').value = file.name;
-            alert("Archivo cargado: " + file.name + ". Haz click en 'Añadir a Escena'.");
+  let scene, camera, renderer, orbit, transformCtrl, cssRenderer;
+  let objects = [], activeId = null;
+  const loader = new GLTFLoader();
+
+  // --- SHADER CORE ---
+  const vShader = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+  const fShader = `
+    uniform sampler2D map;
+    uniform float uBrightness, uContrast, uOpacity;
+    uniform bool chromaOn;
+    uniform vec3 k1;
+    uniform float sim1;
+    varying vec2 vUv;
+    void main() {
+      vec4 tex = texture2D(map, vUv);
+      vec3 col = tex.rgb;
+      float alpha = tex.a * uOpacity;
+      if (chromaOn) {
+        float dist = distance(col, k1);
+        if (dist < sim1) discard;
+      }
+      col += uBrightness;
+      col = (col - 0.5) * uContrast + 0.5;
+      gl_FragColor = vec4(col, alpha);
+    }
+  `;
+
+  function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 1000);
+    camera.position.set(0, 1.6, 3);
+
+    renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
+
+    cssRenderer = new CSS3DRenderer();
+    cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('css3d').appendChild(cssRenderer.domElement);
+
+    orbit = new OrbitControls(camera, renderer.domElement);
+    transformCtrl = new TransformControls(camera, renderer.domElement);
+    transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+    scene.add(transformCtrl);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.5));
+    updateGrid();
+    bindUI();
+    renderer.setAnimationLoop(animate);
+  }
+
+  // --- CARGA DE ARCHIVOS ---
+  async function handleLocalFiles(e) {
+    const files = e.target.files;
+    for (let f of files) {
+      const url = URL.createObjectURL(f);
+      const name = f.name.toLowerCase();
+      if (name.endsWith('.glb') || name.endsWith('.gltf')) addModel(url, f.name);
+      else if (f.type.includes('video')) addMedia(url, 'video', f.name);
+      else addMedia(url, 'image', f.name);
+    }
+  }
+
+  async function addMedia(url, kind, name) {
+    let tex;
+    const video = kind === 'video' ? document.createElement('video') : null;
+    if (video) {
+      video.src = url; video.loop = true; video.muted = true; video.play();
+      tex = new THREE.VideoTexture(video);
+    } else {
+      tex = new THREE.TextureLoader().load(url);
+    }
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: { 
+        map: { value: tex }, uBrightness: { value: 0 }, uContrast: { value: 1 }, 
+        uOpacity: { value: 1 }, chromaOn: { value: false }, k1: { value: new THREE.Color(0,1,0) }, sim1: { value: 0.4 } 
+      },
+      vertexShader: vShader, fragmentShader: fShader, transparent: true, side: THREE.DoubleSide
+    });
+
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.9), mat);
+    const root = new THREE.Group();
+    root.position.set(0, 1.6, -2);
+    root.add(mesh);
+    scene.add(root);
+
+    const layer = { id: Math.random().toString(36).substr(2, 9), name, root, mesh, mat, video, kind };
+    objects.push(layer);
+    updateLayerList();
+    selectLayer(layer.id);
+  }
+
+  async function addModel(url, name) {
+    loader.load(url, (gltf) => {
+      const root = new THREE.Group();
+      root.position.set(0, 1, -2);
+      root.add(gltf.scene);
+      scene.add(root);
+      const layer = { id: Math.random().toString(36).substr(2, 9), name, root, kind: 'model' };
+      objects.push(layer);
+      updateLayerList();
+      selectLayer(layer.id);
+    });
+  }
+
+  // --- LOGICA UI ---
+  function selectLayer(id) {
+    activeId = id;
+    const o = objects.find(x => x.id === id);
+    transformCtrl.attach(o.root);
+    document.getElementById('editorUI').style.display = 'block';
+    updateLayerList();
+  }
+
+  function updateLayerList() {
+    const list = document.getElementById('layerList');
+    list.innerHTML = '';
+    objects.forEach(o => {
+      const el = document.createElement('div');
+      el.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
+      el.innerHTML = `<span>${o.kind === 'video' ? '🎬' : '🖼️'} ${o.name}</span>`;
+      el.onclick = () => selectLayer(o.id);
+      list.appendChild(el);
+    });
+  }
+
+  function bindUI() {
+    // Transform Sliders
+    ['tPosY', 'tPosZ', 'tScale', 'tRotY'].forEach(id => {
+      document.getElementById(id).oninput = (e) => {
+        const o = objects.find(x => x.id === activeId);
+        const v = parseFloat(e.target.value);
+        document.getElementById('v_'+id).innerText = v;
+        if (id === 'tPosY') o.root.position.y = v;
+        if (id === 'tPosZ') o.root.position.z = v;
+        if (id === 'tScale') o.root.scale.setScalar(v);
+        if (id === 'tRotY') o.root.rotation.y = v * Math.PI / 180;
+      };
+    });
+
+    // Shader Sliders
+    ['brightness', 'contrast', 'opacity'].forEach(id => {
+      document.getElementById(id).oninput = (e) => {
+        const o = objects.find(x => x.id === activeId);
+        if (o.mat) {
+          const v = parseFloat(e.target.value);
+          o.mat.uniforms['u' + id.charAt(0).toUpperCase() + id.slice(1)].value = v;
+          document.getElementById('v_'+id).innerText = v;
         }
+      };
+    });
 
-        // 2. AÑADIR A ESCENA
-        function addFromUrl() {
-            const urlInput = document.getElementById('url-input').value;
-            const proj = document.getElementById('proj-type').value;
-            const id = "layer_" + Date.now();
-
-            let finalUrl = lastFileBlob || urlInput;
-            let type = lastFileType || (urlInput.includes('mp4') ? 'video' : 'image');
-
-            if(!finalUrl) return alert("Pon una URL o sube un archivo");
-
-            const entity = document.createElement('a-entity');
-            entity.setAttribute('id', id);
-            entity.setAttribute('position', '0 1.6 -3');
-
-            if (type === 'video') {
-                const vid = document.createElement('video');
-                vid.src = finalUrl;
-                vid.autoplay = true;
-                vid.loop = true;
-                vid.muted = true; // Importante para que auto-reproduzca
-                vid.play();
-                
-                if(proj === 'sphere') {
-                    entity.setAttribute('geometry', 'primitive: sphere; radius: 5; segmentsWidth: 64; segmentsHeight: 32');
-                    entity.setAttribute('scale', '-1 1 1');
-                } else {
-                    entity.setAttribute('geometry', 'primitive: plane; width: 4; height: 2.25');
-                }
-                entity.setAttribute('material', {shader: 'flat', src: vid});
-            } 
-            else if (type === 'model') {
-                entity.setAttribute('gltf-model', finalUrl);
-            }
-            else {
-                if(proj === 'sphere') {
-                    entity.setAttribute('geometry', 'primitive: sphere; radius: 5');
-                    entity.setAttribute('scale', '-1 1 1');
-                } else {
-                    entity.setAttribute('geometry', 'primitive: plane; width: 4; height: 2.25');
-                }
-                entity.setAttribute('material', {shader: 'flat', src: finalUrl, transparent: true});
-            }
-
-            document.querySelector('a-scene').appendChild(entity);
-            
-            elements.push({id, type});
-            activeId = id;
-            updateUI();
-            
-            // Limpiar temporales
-            lastFileBlob = null;
-            lastFileType = null;
+    document.getElementById('chromaToggle').onchange = (e) => {
+        const o = objects.find(x => x.id === activeId);
+        if(o.mat) {
+            o.mat.uniforms.chromaOn.value = e.target.checked;
+            document.getElementById('chromaPanel').style.display = e.target.checked ? 'block' : 'none';
         }
+    };
+  }
 
-        // 3. ACTUALIZAR INTERFAZ Y TRANSFORM
-        function liveUpdate() {
-            if(!activeId) return;
-            const el = document.getElementById(activeId);
-            const y = document.getElementById('p-y').value;
-            const z = document.getElementById('p-z').value;
-            const s = document.getElementById('p-s').value;
+  function updateGrid() {
+    const old = scene.getObjectByName('grid');
+    if (old) scene.remove(old);
+    if (document.getElementById('showGrid').checked) {
+      const grid = new THREE.GridHelper(20, 20, 0xffaa00, 0x333333);
+      grid.name = 'grid';
+      scene.add(grid);
+    }
+  }
 
-            document.getElementById('v-y').innerText = y;
-            document.getElementById('v-z').innerText = z;
-            document.getElementById('v-s').innerText = s;
+  window.deleteActive = () => {
+    const idx = objects.findIndex(x => x.id === activeId);
+    scene.remove(objects[idx].root);
+    objects.splice(idx, 1);
+    transformCtrl.detach();
+    document.getElementById('editorUI').style.display = 'none';
+    updateLayerList();
+  };
 
-            el.setAttribute('position', `0 ${y} ${z}`);
-            el.setAttribute('scale', `${s} ${s} ${s}`);
-        }
+  window.centerActive = () => {
+    const o = objects.find(x => x.id === activeId);
+    o.root.position.set(0, 1.6, -2);
+  };
 
-        function updateUI() {
-            const list = document.getElementById('layer-list');
-            list.innerHTML = "";
-            elements.forEach(item => {
-                const div = document.createElement('div');
-                div.className = "layer-item" + (item.id === activeId ? " active" : "");
-                div.innerText = item.id;
-                div.onclick = () => { activeId = item.id; updateUI(); };
-                list.appendChild(div);
-            });
-        }
+  window.loadFromWeb = () => {
+    const url = document.getElementById('webUrl').value;
+    if (url.includes('mp4')) addMedia(url, 'video', 'Web Video');
+    else addMedia(url, 'image', 'Web Image');
+  };
 
-        function deleteActive() {
-            if(!activeId) return;
-            document.getElementById(activeId).remove();
-            elements = elements.filter(e => e.id !== activeId);
-            activeId = null;
-            updateUI();
-        }
-    </script>
+  window.handleLocalFiles = handleLocalFiles;
+  window.updateGrid = updateGrid;
+
+  function animate() {
+    orbit.update();
+    renderer.render(scene, camera);
+    cssRenderer.render(scene, camera);
+  }
+
+  init();
+</script>
+
 </body>
 </html>
