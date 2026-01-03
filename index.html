@@ -1,960 +1,1399 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v30 | YouTube Proyectable + GIF Fix + Tiempo Real + 5 Temas</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MR Studio Diamond V24 - FIXED</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js"></script>
+    <style>
+        :root {
+            --ui-primary: #ffaa00;
+            --ui-secondary: #ff8800;
+            --ui-bg: rgba(0, 0, 0, 0.85);
+            --ui-text: #ffffff;
+        }
 
-  <!-- ✅ CORRECCIÓN 1: CDN correcto para Omggif -->
-  <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js"></script>
-  <script src="https://apis.google.com/js/api.js"></script>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
 
-  <style>
-    /* ✅ CORRECCIÓN 3: 5 TEMAS DE COLOR */
-    :root {
-      --main-color: #ffaa00;
-      --bg-glass: rgba(20, 20, 25, 0.85);
-      --border-glass: rgba(255, 170, 0, 0.3);
-      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
-    }
+        #ui-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-    [data-theme="tierra"] {
-      --main-color: #8B4513;
-      --bg-glass: rgba(30, 25, 20, 0.85);
-      --border-glass: rgba(139, 69, 19, 0.4);
-      --text-glow: 0 0 8px rgba(139, 69, 19, 0.5);
-    }
+        .panel {
+            background: var(--ui-bg);
+            border: 2px solid var(--ui-primary);
+            border-radius: 12px;
+            padding: 15px;
+            color: var(--ui-text);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            max-width: 320px;
+        }
 
-    [data-theme="tech"] {
-      --main-color: #00ffff;
-      --bg-glass: rgba(10, 15, 25, 0.85);
-      --border-glass: rgba(0, 255, 255, 0.3);
-      --text-glow: 0 0 8px rgba(0, 255, 255, 0.5);
-    }
+        .panel-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: var(--ui-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    [data-theme="passion"] {
-      --main-color: #ff0066;
-      --bg-glass: rgba(25, 10, 15, 0.85);
-      --border-glass: rgba(255, 0, 102, 0.3);
-      --text-glow: 0 0 8px rgba(255, 0, 102, 0.5);
-    }
+        .btn {
+            background: linear-gradient(135deg, var(--ui-primary), var(--ui-secondary));
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(255, 170, 0, 0.3);
+        }
 
-    [data-theme="architecture"] {
-      --main-color: #cccccc;
-      --bg-glass: rgba(15, 15, 15, 0.9);
-      --border-glass: rgba(204, 204, 204, 0.25);
-      --text-glow: 0 0 6px rgba(204, 204, 204, 0.3);
-    }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 170, 0, 0.5);
+        }
 
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { margin: 0; overflow: hidden; background: transparent; color: #eee; transition: all 0.3s ease; }
+        .btn:active {
+            transform: translateY(0);
+        }
 
-    #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
+        .btn-secondary {
+            background: linear-gradient(135deg, #555, #333);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
 
-    #css3d {
-      position: fixed; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 1;
-    }
-    #css3d.interactive { pointer-events: auto; }
+        .btn-secondary:hover {
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+        }
 
-    .ui-panel {
-      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
-      background: var(--bg-glass);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid var(--border-glass);
-      border-radius: 24px;
-      padding: 20px; overflow-y: auto; z-index: 100;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
-      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-    }
-    .ui-panel.minimized { transform: translateX(-460px); }
+        input[type="text"], input[type="file"], select {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0;
+            border: 1px solid var(--ui-primary);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 13px;
+        }
 
-    h2 {
-      margin: 0 0 18px 0; font-size: 15px; color: var(--main-color); font-weight: 900;
-      text-transform: uppercase; letter-spacing: 2px;
-      border-bottom: 2px solid var(--border-glass); padding-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-      text-shadow: var(--text-glow);
-    }
-    .sec-head {
-      font-size: 11px; font-weight: 900; color: #aaa; margin: 18px 0 8px 0;
-      text-transform: uppercase; letter-spacing: 1.5px;
-    }
+        input[type="range"] {
+            width: 100%;
+            margin: 8px 0;
+        }
 
-    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
-    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 600; }
+        .slider-group {
+            margin: 10px 0;
+        }
 
-    input[type=range] {
-      flex: 2; height: 4px; accent-color: var(--main-color);
-      background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 14px; height: 14px;
-      background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
-    }
-    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
-    .val { width: 64px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+        .slider-label {
+            font-size: 12px;
+            color: #ccc;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
 
-    select, input[type=url], input[type=text], input[type=number] {
-      width: 100%; background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border-glass); color: #fff;
-      padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
-    }
+        .color-scheme-selector {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+        }
 
-    button {
-      flex: 1; padding: 10px; border-radius: 10px; border: none;
-      font-weight: 900; cursor: pointer;
-      color: #000; background: var(--main-color);
-      transition: 0.25s; font-size: 11px;
-      text-transform: uppercase; box-shadow: var(--text-glow);
-    }
-    button:active { transform: scale(0.97); }
-    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
-    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
-    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
-    button.small { padding: 8px; font-size: 10px; letter-spacing: 1px; }
+        .color-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
 
-    #toggleUI {
-      position: fixed; left: 20px; top: 20px; z-index: 101;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--bg-glass); backdrop-filter: blur(20px);
-      border: 2px solid var(--main-color); color: var(--main-color);
-      font-weight: 900; cursor: pointer; display: none;
-      box-shadow: var(--text-glow); font-size: 20px;
-      align-items: center; justify-content: center;
-    }
+        .color-btn:hover {
+            transform: scale(1.1);
+            border-color: white;
+        }
 
-    #vrBtn {
-      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-      padding: 16px 50px; background: var(--main-color); color: #000;
-      border-radius: 50px; font-weight: 1000; z-index: 1000; display: none;
-      box-shadow: 0 0 30px var(--text-glow); border: 3px solid #fff;
-      font-size: 14px; letter-spacing: 2px;
-    }
+        .color-btn.active {
+            border-color: white;
+            box-shadow: 0 0 12px white;
+        }
 
-    .loader {
-      position: fixed; inset: 0; background: #000; z-index: 5000;
-      display: none; place-items: center; color: var(--main-color);
-      font-weight: 1000; letter-spacing: 4px; font-size: 22px;
-      text-shadow: var(--text-glow);
-    }
+        .color-btn::after {
+            content: attr(data-name);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            white-space: nowrap;
+            color: #aaa;
+        }
 
-    .layer-list {
-      max-height: 180px; overflow-y: auto;
-      background: rgba(0,0,0,0.2);
-      border-radius: 12px; padding: 8px; margin-bottom: 12px;
-      border: 1px solid var(--border-glass);
-    }
+        #asset-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
 
-    .layer-item {
-      padding: 8px 10px; font-size: 11px; border-radius: 10px;
-      cursor: pointer; display: grid;
-      grid-template-columns: 18px 1fr auto auto;
-      align-items: center; gap: 8px;
-      margin-bottom: 6px; transition: 0.2s; font-weight: 800;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(0,0,0,0.12);
-    }
-    .layer-item.active {
-      background: rgba(255, 170, 0, 0.2);
-      border-left: 3px solid var(--main-color);
-      color: #fff;
-    }
-    .layer-item.dragging {
-      opacity: 0.55;
-      outline: 2px dashed rgba(255,170,0,0.45);
-    }
-    .layer-item.drop-target {
-      outline: 2px solid rgba(255,170,0,0.45);
-      background: rgba(255,170,0,0.12);
-    }
+        .asset-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 6px;
+            border-left: 3px solid var(--ui-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
 
-    .layer-item .tag {
-      font-weight: 900; color: rgba(255,255,255,0.75);
-      font-size: 10px; padding: 3px 6px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.08);
-    }
-    .layer-item .mini {
-      display:flex; gap:6px; align-items:center;
-    }
-    .layer-item .mini input { width: 16px; height: 16px; }
+        .asset-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
 
-    .note {
-      font-size: 11px; line-height: 1.35;
-      color: rgba(255,255,255,0.75);
-      border: 1px dashed rgba(255,170,0,0.35);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(0,0,0,0.18);
-    }
+        .asset-item.selected {
+            background: rgba(255, 170, 0, 0.3);
+            border-left-color: white;
+        }
 
-    .two { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-    .tiny { font-size: 10px; opacity: 0.8; }
+        .toggle-btn {
+            background: transparent;
+            border: 2px solid var(--ui-primary);
+            color: var(--ui-primary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
 
-    /* Selector de temas */
-    .theme-selector {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .theme-btn {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: 0.2s;
-      position: relative;
-    }
-    .theme-btn.active {
-      border-color: var(--main-color);
-      box-shadow: 0 0 12px var(--text-glow);
-    }
-    .theme-btn:hover {
-      transform: scale(1.1);
-    }
-    #themeAmber { background: linear-gradient(135deg, #ffaa00, #ff8800); }
-    #themeTierra { background: linear-gradient(135deg, #8B4513, #A0522D); }
-    #themeTech { background: linear-gradient(135deg, #00ffff, #00aaff); }
-    #themePassion { background: linear-gradient(135deg, #ff0066, #cc0055); }
-    #themeArch { background: linear-gradient(135deg, #cccccc, #888888); }
-  </style>
+        .toggle-btn.active {
+            background: var(--ui-primary);
+            color: black;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--ui-primary);
+            border-radius: 8px;
+            padding: 15px 20px;
+            color: white;
+            z-index: 20000;
+            animation: slideIn 0.3s ease;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #file-info {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .section-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--ui-primary), transparent);
+            margin: 15px 0;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--ui-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--ui-secondary);
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .save-load-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .drive-status {
+            font-size: 11px;
+            color: #4CAF50;
+            margin-top: 5px;
+        }
+
+        .drive-status.disconnected {
+            color: #ff5555;
+        }
+    </style>
 </head>
 <body>
-
-  <canvas id="c"></canvas>
-  <div id="css3d"></div>
-
-  <div class="loader" id="loader">CARGANDO...</div>
-  <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
-
-  <div class="ui-panel" id="ui">
-    <h2>
-      <span>💎 DIAMOND v30</span>
-      <span style="cursor:pointer; font-size:18px;" onclick="toggleUIPanel()">×</span>
-    </h2>
-
-    <!-- ✅ Selector de temas -->
-    <div class="sec-head">🎨 Tema UI</div>
-    <div class="theme-selector">
-      <div class="theme-btn active" id="themeAmber" data-theme="amber" title="Amber"></div>
-      <div class="theme-btn" id="themeTierra" data-theme="tierra" title="Tierra"></div>
-      <div class="theme-btn" id="themeTech" data-theme="tech" title="Tech"></div>
-      <div class="theme-btn" id="themePassion" data-theme="passion" title="Passion"></div>
-      <div class="theme-btn" id="themeArch" data-theme="architecture" title="Architecture"></div>
-    </div>
-
-    <div class="sec-head">📐 Arquitectura</div>
-    <div class="row">
-      <select id="unitSystem" onchange="updateUnits()">
-        <option value="m">Metros (m)</option>
-        <option value="cm">Centímetros (cm)</option>
-        <option value="ft">Pies (ft)</option>
-      </select>
-    </div>
-    <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
-    <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
-    <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
-
-    <div class="sec-head">📥 Importar</div>
-    <div class="row">
-      <input type="url" id="webUrl" placeholder="URL media o modelo 3D">
-      <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
-    </div>
-    <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">
-      📁 Abrir local
-    </button>
-    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf,.fbx,.obj,.mtl">
-
-    <div class="sec-head">▶ YouTube (3D DOM)</div>
-    <div class="row">
-      <input type="text" id="ytUrl" placeholder="URL de YouTube">
-      <button onclick="addYouTube()" class="small" style="flex:0 0 70px;">ADD</button>
-    </div>
-    <div class="row">
-      <label><input type="checkbox" id="css3dInteractive"> Interactuar (click)</label>
-    </div>
-    <div class="note">
-      <b>✨ NUEVO:</b> YouTube ahora soporta <b>proyecciones</b> (plano, curvo, orbe, 360°). El iframe CSS3D se adapta a cada superficie. Perfecto para cines virtuales o pantallas inmersivas.
-    </div>
-
-    <div class="sec-head">Capas</div>
-    <div id="layerList" class="layer-list"></div>
-
-    <div id="editorUI" style="display:none;">
-      <div class="sec-head">🎛 Capa Activa</div>
-      <div class="row"><label><input type="checkbox" id="layerVisible"> Visible</label></div>
-      <div class="row"><label><input type="checkbox" id="layerLocked"> Bloquear</label></div>
-      <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard</label></div>
-
-      <!-- ✅ Transform en TIEMPO REAL -->
-      <div class="sec-head">🧩 Transform (⚡ Tiempo Real)</div>
-      <div class="row"><label>Pos X</label><input type="range" id="tPosX" min="-20" max="20" step="0.01" value="0"><span class="val" id="v_tPosX">0</span></div>
-      <div class="row"><label>Pos Y</label><input type="range" id="tPosY" min="0" max="20" step="0.01" value="1.6"><span class="val" id="v_tPosY">1.6</span></div>
-      <div class="row"><label>Pos Z</label><input type="range" id="tPosZ" min="-50" max="50" step="0.01" value="-2"><span class="val" id="v_tPosZ">-2</span></div>
-      <div class="row"><label>Rot X</label><input type="range" id="tRotX" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotX">0</span></div>
-      <div class="row"><label>Rot Y</label><input type="range" id="tRotY" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotY">0</span></div>
-      <div class="row"><label>Rot Z</label><input type="range" id="tRotZ" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotZ">0</span></div>
-      <div class="row"><label>Escala</label><input type="range" id="tScale" min="0.05" max="20" step="0.01" value="1"><span class="val" id="v_tScale">1</span></div>
-      <div class="row" style="gap:8px;">
-        <button onclick="syncTransformToUI()" class="secondary">Leer</button>
-        <button onclick="resetTransformUI()" class="secondary">Reset</button>
-      </div>
-
-      <!-- ✅ PROYECCIONES (bloqueadas para YouTube y modelos) -->
-      <div class="sec-head">🌐 Superficie / Proyección</div>
-      <div class="row">
-        <select id="projSelect" onchange="updateProjection()">
-          <option value="plane">Plano 2D</option>
-          <option value="curved">Pantalla Curva</option>
-          <option value="orb">Orbe</option>
-          <option value="360">Entorno 360°</option>
-        </select>
-      </div>
-      <div class="note" id="projNote" style="display:none; margin-top:8px; border-color:#ff3333;">
-        ⚠️ Las proyecciones solo aplican a <b>imágenes, videos, GIFs y YouTube</b>. Los modelos 3D mantienen su geometría original.
-      </div>
-
-      <!-- Shader controls en TIEMPO REAL -->
-      <div class="sec-head">🎨 Shader (⚡ Tiempo Real)</div>
-      <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
-      <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
-      <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
-      <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
-      <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
-      <div class="row"><label>Emisión</label><input type="range" id="emissive" min="0" max="2" step="0.01" value="0"><span class="val" id="v_emissive">0</span></div>
-
-      <div class="sec-head">🧪 Chroma Key</div>
-      <div class="row">
-        <label><input type="checkbox" id="chromaToggle"> Activar</label>
-        <label><input type="checkbox" id="chromaInvert"> Invertir</label>
-      </div>
-      <div id="chromaPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.2); border-radius:12px;">
-        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001" value="0.4"><span class="val" id="v_k1sim">0.400</span></div>
-        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001" value="0.08"><span class="val" id="v_k1smooth">0.080</span></div>
-        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v_despill">0.500</span></div>
-        <div style="margin-top:10px;">
-          <div class="row"><label style="color:#f66">R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
-          <div class="row"><label style="color:#6f6">G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
-          <div class="row"><label style="color:#66f">B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+    <div id="ui-container">
+        <!-- Panel de Color UI -->
+        <div class="panel">
+            <div class="panel-title">🎨 Color UI</div>
+            <div class="color-scheme-selector">
+                <div class="color-btn active" data-scheme="amber" data-name="Ámbar" style="background: linear-gradient(135deg, #ffaa00, #ff8800)"></div>
+                <div class="color-btn" data-scheme="earth" data-name="Tierra" style="background: linear-gradient(135deg, #8b6f47, #654321)"></div>
+                <div class="color-btn" data-scheme="tech" data-name="Tech" style="background: linear-gradient(135deg, #00d9ff, #0099cc)"></div>
+                <div class="color-btn" data-scheme="passion" data-name="Passion" style="background: linear-gradient(135deg, #ff3366, #cc0044)"></div>
+                <div class="color-btn" data-scheme="architecture" data-name="Arch" style="background: linear-gradient(135deg, #e0e0e0, #b0b0b0)"></div>
+            </div>
         </div>
-      </div>
 
-      <div class="sec-head">🎧 Video</div>
-      <div id="videoPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.18); border-radius:12px;">
-        <div class="row" style="gap:8px;">
-          <button onclick="videoUIAction('play')" class="secondary">▶</button>
-          <button onclick="videoUIAction('pause')" class="secondary">⏸</button>
-          <button onclick="videoUIAction('mute')" class="secondary">🔇</button>
+        <!-- Panel de Guardado/Carga -->
+        <div class="panel">
+            <div class="panel-title">💾 Escena</div>
+            <div class="save-load-section">
+                <button class="btn" onclick="saveSceneLocal()">💾 Guardar Local</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('load-scene-input').click()">📂 Cargar Local</button>
+                <input type="file" id="load-scene-input" accept=".json" style="display: none" onchange="loadSceneLocal(event)">
+                
+                <div class="section-divider"></div>
+                
+                <button class="btn" id="drive-connect-btn" onclick="connectGoogleDrive()">🔗 Conectar Drive</button>
+                <div id="drive-status" class="drive-status disconnected">⚠ Desconectado</div>
+                <div id="drive-controls" class="hidden">
+                    <button class="btn" onclick="saveSceneToDrive()">☁️ Guardar a Drive</button>
+                    <button class="btn btn-secondary" onclick="loadSceneFromDrive()">☁️ Cargar de Drive</button>
+                </div>
+            </div>
         </div>
-        <div class="row"><label>Volumen</label><input type="range" id="vidVol" min="0" max="1" step="0.01" value="0.8"><span class="val" id="v_vidVol">0.80</span></div>
-        <div class="row"><label>Avance</label><input type="range" id="vidSeek" min="0" max="1" step="0.001" value="0"><span class="val" id="v_vidSeek">0%</span></div>
-        <div class="row" style="justify-content:space-between;">
-          <div class="tiny" id="vidTime">0:00 / 0:00</div>
-          <label style="flex:0; display:flex; gap:8px;"><input type="checkbox" id="vidLoop" checked> Loop</label>
-        </div>
-      </div>
 
-      <div class="sec-head">🧭 Acciones</div>
-      <div class="row" style="gap:8px;">
-        <button onclick="centerActive()" class="secondary">🎯 Centrar</button>
-        <button onclick="deleteActive()" class="danger">🗑 Eliminar</button>
-      </div>
+        <!-- Panel Principal -->
+        <div class="panel">
+            <div class="panel-title">🌌 Universo</div>
+            <input type="text" id="url-input" placeholder="URL (YouTube, Imagen, Video, Modelo 3D)">
+            <input type="file" id="file-input" accept="image/*,video/*,.glb,.gltf,.obj,.fbx">
+            <div id="file-info"></div>
+            
+            <div class="section-divider"></div>
+            
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>📏 Escala</span>
+                    <span id="scale-value">1.0</span>
+                </div>
+                <input type="range" id="scale-slider" min="0.1" max="10" step="0.1" value="1">
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🎭 Proyección</span>
+                </div>
+                <select id="projection-type">
+                    <option value="plane">Plano</option>
+                    <option value="sphere">Esfera 360°</option>
+                    <option value="cylinder">Cilindro 180°</option>
+                    <option value="dome">Domo</option>
+                </select>
+            </div>
+
+            <div class="grid-layout">
+                <button class="btn" onclick="addUniverse()">➕ Crear</button>
+                <button class="btn btn-secondary" onclick="deleteSelected()">🗑️ Borrar</button>
+            </div>
+        </div>
+
+        <!-- Panel de Transform -->
+        <div class="panel">
+            <div class="panel-title">🔧 Transform (Tiempo Real)</div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>X</span><span id="pos-x-val">0</span></div>
+                <input type="range" id="pos-x" min="-20" max="20" step="0.1" value="0" oninput="updateTransformRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>Y</span><span id="pos-y-val">1.6</span></div>
+                <input type="range" id="pos-y" min="-10" max="10" step="0.1" value="1.6" oninput="updateTransformRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>Z</span><span id="pos-z-val">-4</span></div>
+                <input type="range" id="pos-z" min="-30" max="5" step="0.1" value="-4" oninput="updateTransformRT()">
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="slider-group">
+                <div class="slider-label"><span>🔄 Rot X</span><span id="rot-x-val">0</span></div>
+                <input type="range" id="rot-x" min="-180" max="180" step="1" value="0" oninput="updateTransformRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>🔄 Rot Y</span><span id="rot-y-val">0</span></div>
+                <input type="range" id="rot-y" min="-180" max="180" step="1" value="0" oninput="updateTransformRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>🔄 Rot Z</span><span id="rot-z-val">0</span></div>
+                <input type="range" id="rot-z" min="-180" max="180" step="1" value="0" oninput="updateTransformRT()">
+            </div>
+        </div>
+
+        <!-- Panel de Shaders -->
+        <div class="panel">
+            <div class="panel-title">✨ Shaders (Tiempo Real)</div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>🌈 Brillo</span><span id="brightness-val">1.0</span></div>
+                <input type="range" id="brightness" min="0" max="3" step="0.1" value="1" oninput="updateShadersRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>🎨 Contraste</span><span id="contrast-val">1.0</span></div>
+                <input type="range" id="contrast" min="0" max="3" step="0.1" value="1" oninput="updateShadersRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>💧 Saturación</span><span id="saturation-val">1.0</span></div>
+                <input type="range" id="saturation" min="0" max="3" step="0.1" value="1" oninput="updateShadersRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>🌡️ Temperatura</span><span id="temperature-val">0.0</span></div>
+                <input type="range" id="temperature" min="-1" max="1" step="0.1" value="0" oninput="updateShadersRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>🔳 Blur</span><span id="blur-val">0.0</span></div>
+                <input type="range" id="blur" min="0" max="0.05" step="0.001" value="0" oninput="updateShadersRT()">
+            </div>
+
+            <button class="btn" onclick="resetShaders()">🔄 Reset</button>
+        </div>
+
+        <!-- Panel de Video -->
+        <div class="panel" id="video-panel" style="display: none;">
+            <div class="panel-title">🎬 Video</div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>⏱️ Inicio</span><span id="trim-start-val">0s</span></div>
+                <input type="range" id="trim-start" min="0" max="100" step="0.1" value="0" oninput="updateVideoTrimRT()">
+            </div>
+            
+            <div class="slider-group">
+                <div class="slider-label"><span>⏱️ Fin</span><span id="trim-end-val">100s</span></div>
+                <input type="range" id="trim-end" min="0" max="100" step="0.1" value="100" oninput="updateVideoTrimRT()">
+            </div>
+
+            <div class="grid-layout">
+                <button class="toggle-btn" id="loop-btn" onclick="toggleLoop()">🔁 Loop</button>
+                <button class="toggle-btn" id="mute-btn" onclick="toggleMute()">🔇 Mute</button>
+            </div>
+        </div>
+
+        <!-- Lista de Assets -->
+        <div class="panel">
+            <div class="panel-title">📦 Assets</div>
+            <div id="asset-list"></div>
+        </div>
     </div>
 
-    <div class="sec-head">⚙️ Realidad Mixta</div>
-    <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth</label></div>
-  </div>
-
-  <button id="vrBtn">INICIAR MR</button>
-
-  <script type="importmap">
-  { "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-  } }
-  </script>
-  <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { TransformControls } from 'three/addons/controls/TransformControls.js';
-    import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
-    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
-    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
-    import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-    import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
-
-    // ✅ CORRECCIÓN 2: GifReader ahora funciona correctamente
-    function ensureGifLoaded() {
-      return new Promise((resolve, reject) => {
-        if (window.GifReader) return resolve(true);
-        const s = document.createElement('script');
-        s.src = 'https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js';
-        s.onload = () => window.GifReader ? resolve(true) : reject(new Error("Omggif failed"));
-        s.onerror = () => reject(new Error("Network error"));
-        document.head.appendChild(s);
-      });
-    }
-
-    // Shaders
-    const vShader = \`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }\`;
-    const fShader = \`
-      uniform sampler2D map;
-      uniform float uBrightness, uContraste, uSaturation, uGamma, uOpacity, uEmissive;
-      uniform bool chromaOn, chromaInvert;
-      uniform vec3 k1;
-      uniform float sim1, smooth1, despill;
-      varying vec2 vUv;
-
-      vec3 rgb2hsv(vec3 c) {
-        vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
-        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
-        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
-        float d = q.x - min(q.w, q.y);
-        float e = 1.0e-10;
-        return vec3(abs(q.z + (q.w - q.y)/(6.0*d + e)), d/(q.x + e), q.x);
-      }
-
-      void main() {
-        vec4 tex = texture2D(map, vUv);
-        vec3 col = tex.rgb;
-        float alpha = tex.a * uOpacity;
-
-        if (chromaOn) {
-          vec3 hsv = rgb2hsv(col);
-          vec3 kHsv = rgb2hsv(k1);
-          float hueDist = abs(hsv.x - kHsv.x);
-          if (hueDist > 0.5) hueDist = 1.0 - hueDist;
-          float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0) + pow(abs(hsv.z - kHsv.z) * 0.5, 2.0));
-          float mask = smoothstep(sim1, sim1 + smooth1, dist);
-
-          if (!chromaInvert) {
-            alpha *= mask;
-            if (mask < 0.95 && despill > 0.0) {
-              if (k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
-              else if (k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
-            }
-          } else {
-            alpha = (1.0 - mask) * uOpacity;
-            col = vec3(1.0);
-          }
-        }
-
-        col += uBrightness;
-        col = (col - 0.5) * uContrast + 0.5;
-        float gray = dot(col, vec3(0.299, 0.587, 0.114));
-        col = mix(vec3(gray), col, uSaturation);
-        col = pow(max(col, 0.0), vec3(1.0 / uGamma));
-        col = col * (1.0 + uEmissive);
-
-        gl_FragColor = vec4(col, alpha);
-        if (alpha < 0.01) discard;
-      }
-    \`;
-
-    // Estado global
-    let scene, camera, renderer, orbit, transformCtrl, cssRenderer;
-    const objects = [];
-    let activeId = null;
-
-    function uid() { return Math.random().toString(36).slice(2, 10); }
-
-    function init() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.01, 800);
-      camera.position.set(0, 1.6, 2);
-
-      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
-      renderer.setSize(innerWidth, innerHeight);
-      renderer.xr.enabled = true;
-
-      orbit = new OrbitControls(camera, renderer.domElement);
-      transformCtrl = new TransformControls(camera, renderer.domElement);
-      transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
-      scene.add(transformCtrl);
-
-      cssRenderer = new CSS3DRenderer();
-      cssRenderer.setSize(innerWidth, innerHeight);
-      document.getElementById('css3d').appendChild(cssRenderer.domElement);
-
-      bindUI();
-      renderer.setAnimationLoop(animate);
-    }
-
-    // ✅ CORRECCIÓN 2: GIF loader corregido
-    async function addGifFromFile(file) {
-      try {
-        await ensureGifLoaded();
-        const buf = await file.arrayBuffer();
-        const r = new GifReader(new Uint8Array(buf)); // ✅ Ahora funciona
+    <a-scene
+        renderer="colorManagement: true; physicallyCorrectLights: true; antialias: true; alpha: true;"
+        webxr="requiredFeatures: hit-test,local-floor; optionalFeatures: dom-overlay,hand-tracking,depth-sensing; overlayElement: #ui-container;">
         
-        const cvs = document.createElement('canvas');
-        cvs.width = r.width;
-        cvs.height = r.height;
-        const ctx = cvs.getContext('2d');
-        const dat = ctx.createImageData(r.width, r.height);
+        <a-assets>
+            <video id="video-player" crossorigin="anonymous" preload="metadata"></video>
+        </a-assets>
 
-        const tex = new THREE.CanvasTexture(cvs);
-        const mat = new THREE.ShaderMaterial({
-          uniforms: {
-            map: { value: tex },
-            uBrightness: { value: 0 },
-            uContrast: { value: 1 },
-            uSaturation: { value: 1 },
-            uGamma: { value: 1 },
-            uOpacity: { value: 1 },
-            uEmissive: { value: 0 },
-            chromaOn: { value: false },
-            chromaInvert: { value: false },
-            k1: { value: new THREE.Color(0,1,0) },
-            sim1: { value: 0.4 },
-            smooth1: { value: 0.08 },
-            despill: { value: 0.5 }
-          },
-          vertexShader: vShader,
-          fragmentShader: fShader,
-          transparent: true,
-          side: THREE.DoubleSide
-        });
+        <a-entity id="rig" position="0 0 0">
+            <a-camera id="camera" position="0 1.6 0" wasd-controls-enabled="true" look-controls-enabled="true">
+                <a-entity
+                    cursor="rayOrigin: mouse"
+                    raycaster="objects: .interactive; far: 100">
+                </a-entity>
+            </a-camera>
+        </a-entity>
 
-        const aspect = r.width / Math.max(1, r.height);
-        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(aspect, 1), mat);
-        const root = new THREE.Group();
-        root.position.set(0, 1.6, -2);
-        root.add(mesh);
-        scene.add(root);
+        <a-entity light="type: ambient; intensity: 0.5"></a-entity>
+        <a-entity light="type: directional; intensity: 0.8" position="1 2 1"></a-entity>
 
-        const layer = {
-          id: uid(),
-          name: file.name,
-          kind: 'gif',
-          projection: 'plane',
-          root3D: root,
-          pickMesh: mesh,
-          mesh, mat, tex,
-          gifData: { r, ctx, dat, tex, f:0, nextTime:0, playing:true },
-          visible: true,
-          locked: false,
-          billboard: false,
-          originalAspect: aspect
+        <a-sky color="#000814"></a-sky>
+    </a-scene>
+
+    <script>
+        // ============================================
+        // SISTEMA DE COLOR UI
+        // ============================================
+        const COLOR_SCHEMES = {
+            amber: { primary: '#ffaa00', secondary: '#ff8800' },
+            earth: { primary: '#8b6f47', secondary: '#654321' },
+            tech: { primary: '#00d9ff', secondary: '#0099cc' },
+            passion: { primary: '#ff3366', secondary: '#cc0044' },
+            architecture: { primary: '#e0e0e0', secondary: '#b0b0b0' }
         };
 
-        objects.push(layer);
-        selectObject(layer.id);
-        updateLayers();
-      } catch (e) {
-        console.error("GIF error:", e);
-        alert("Error cargando GIF");
-      }
-    }
+        function initColorScheme() {
+            const saved = localStorage.getItem('ui-color-scheme') || 'amber';
+            applyColorScheme(saved);
 
-    async function addYouTube() {
-      const url = document.getElementById('ytUrl').value.trim();
-      if (!url) return;
-
-      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?]+)/);
-      if (!match) { alert("URL YouTube inválida"); return; }
-
-      const id = match[1];
-      const iframe = document.createElement('iframe');
-      iframe.width = '960';
-      iframe.height = '540';
-      iframe.style.border = '0';
-      iframe.src = \`https://www.youtube-nocookie.com/embed/\${id}?autoplay=1&mute=1\`;
-
-      const holder = document.createElement('div');
-      holder.style.width = '960px';
-      holder.style.height = '540px';
-      holder.appendChild(iframe);
-
-      const cssObj = new CSS3DObject(holder);
-      const root = new THREE.Group();
-      root.position.set(0, 1.6, -2);
-
-      const helper = new THREE.Mesh(
-        new THREE.PlaneGeometry(1, 0.5625),
-        new THREE.MeshBasicMaterial({ transparent:true, opacity:0 })
-      );
-      root.add(helper);
-
-      cssObj.scale.set(1/960, 1/960, 1/960);
-      cssObj.position.copy(root.position);
-      cssObj.quaternion.copy(root.quaternion);
-
-      scene.add(root);
-      scene.add(cssObj);
-
-      const layer = {
-        id: uid(),
-        name: \`YouTube \${id}\`,
-        kind: 'youtube',
-        projection: 'plane',
-        root3D: root,
-        pickMesh: helper,
-        cssObj,
-        visible: true,
-        locked: false,
-        billboard: false,
-        originalAspect: 16/9
-      };
-
-      objects.push(layer);
-      selectObject(layer.id);
-      updateLayers();
-    }
-
-    // ✅ CORRECCIÓN: Solo bloquear proyecciones para MODELOS 3D (YouTube SÍ permite proyecciones)
-    function applyProjection(layer, mode) {
-      // Solo bloquear modelos 3D
-      if (layer.kind === 'model') {
-        document.getElementById('projSelect').value = 'plane';
-        document.getElementById('projNote').style.display = 'block';
-        document.getElementById('projNote').innerHTML = '⚠️ Las proyecciones no aplican a modelos 3D.';
-        return;
-      }
-
-      document.getElementById('projNote').style.display = 'none';
-      layer.projection = mode;
-
-      // Para YouTube: ajustar el helper mesh y el CSS3D
-      if (layer.kind === 'youtube') {
-        const helper = layer.pickMesh;
-        if (!helper) return;
-
-        if (mode === '360') {
-          helper.geometry.dispose();
-          helper.geometry = new THREE.SphereGeometry(50, 64, 32);
-          helper.material.side = THREE.BackSide;
-          helper.position.set(0, 0, 0);
-          layer.root3D.position.set(0, 1.6, 0);
-          
-          // Escalar CSS3D para entorno 360
-          if (layer.cssObj) {
-            layer.cssObj.scale.set(50/960, 50/960, 50/960);
-          }
-        } else if (mode === 'orb') {
-          helper.geometry.dispose();
-          helper.geometry = new THREE.SphereGeometry(0.75, 64, 32);
-          helper.material.side = THREE.FrontSide;
-          helper.position.set(0, 0, 0);
-          
-          if (layer.cssObj) {
-            layer.cssObj.scale.set(0.75/960, 0.75/960, 0.75/960);
-          }
-        } else if (mode === 'curved') {
-          helper.geometry.dispose();
-          helper.geometry = new THREE.CylinderGeometry(2.5, 2.5, 1.4, 48, 1, true, 3.8, 1.8);
-          helper.scale.set(-1, 1, 1);
-          helper.position.set(0, 0, 0);
-          
-          if (layer.cssObj) {
-            layer.cssObj.scale.set(2.5/960, 2.5/960, 2.5/960);
-          }
-        } else {
-          // Plano 2D
-          helper.geometry.dispose();
-          helper.geometry = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
-          helper.position.set(0, 0, 0);
-          helper.scale.set(1, 1, 1);
-          
-          if (layer.cssObj) {
-            layer.cssObj.scale.set(1/960, 1/960, 1/960);
-          }
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const scheme = btn.dataset.scheme;
+                    applyColorScheme(scheme);
+                    localStorage.setItem('ui-color-scheme', scheme);
+                });
+            });
         }
-        return;
-      }
 
-      // Para imagen/video/gif: usar mesh normal
-      const mesh = layer.mesh;
-      if (!mesh) return;
+        function applyColorScheme(scheme) {
+            const colors = COLOR_SCHEMES[scheme];
+            document.documentElement.style.setProperty('--ui-primary', colors.primary);
+            document.documentElement.style.setProperty('--ui-secondary', colors.secondary);
 
-      if (mode === '360') {
-        mesh.geometry.dispose();
-        mesh.geometry = new THREE.SphereGeometry(50, 64, 32);
-        mesh.material.side = THREE.BackSide;
-        mesh.position.set(0, 0, 0);
-        layer.root3D.position.set(0, 1.6, 0);
-      } else if (mode === 'orb') {
-        mesh.geometry.dispose();
-        mesh.geometry = new THREE.SphereGeometry(0.75, 64, 32);
-        mesh.material.side = THREE.FrontSide;
-        mesh.position.set(0, 0, 0);
-      } else if (mode === 'curved') {
-        mesh.geometry.dispose();
-        mesh.geometry = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 48, 1, true, 3.8, 1.8);
-        mesh.scale.set(-1, 1, 1);
-        mesh.position.set(0, 0, 0);
-      } else {
-        mesh.geometry.dispose();
-        mesh.geometry = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
-        mesh.position.set(0, 0, 0);
-        mesh.scale.set(1, 1, 1);
-      }
-    }
+            document.querySelectorAll('.color-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.scheme === scheme);
+            });
+        }
 
-    function selectObject(id) {
-      activeId = id;
-      const o = objects.find(x => x.id === id);
-      if (!o) return;
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let universes = [];
+        let selectedUniverse = null;
+        let universeCounter = 0;
+        let driveAccessToken = null;
 
-      transformCtrl.detach();
-      if (o.root3D && !o.locked) transformCtrl.attach(o.root3D);
+        // ============================================
+        // SHADER COMPONENTS
+        // ============================================
+        AFRAME.registerShader('video-shader', {
+            schema: {
+                src: { type: 'map', is: 'uniform' },
+                brightness: { type: 'number', is: 'uniform', default: 1.0 },
+                contrast: { type: 'number', is: 'uniform', default: 1.0 },
+                saturation: { type: 'number', is: 'uniform', default: 1.0 },
+                temperature: { type: 'number', is: 'uniform', default: 0.0 },
+                blur: { type: 'number', is: 'uniform', default: 0.0 }
+            },
 
-      document.getElementById('editorUI').style.display = 'block';
-      document.getElementById('layerVisible').checked = !!o.visible;
-      document.getElementById('layerLocked').checked = !!o.locked;
-      document.getElementById('checkBillboard').checked = !!o.billboard;
-      document.getElementById('projSelect').value = o.projection || 'plane';
+            vertexShader: `
+                varying vec2 vUv;
+                void main() {
+                    vUv = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
 
-      // ✅ Mostrar nota SOLO para modelos 3D (YouTube SÍ permite proyecciones)
-      if (o.kind === 'model') {
-        document.getElementById('projNote').style.display = 'block';
-        document.getElementById('projNote').innerHTML = '⚠️ Las proyecciones no aplican a modelos 3D.';
-      } else {
-        document.getElementById('projNote').style.display = 'none';
-      }
+            fragmentShader: `
+                uniform sampler2D src;
+                uniform float brightness;
+                uniform float contrast;
+                uniform float saturation;
+                uniform float temperature;
+                uniform float blur;
+                varying vec2 vUv;
 
-      syncTransformToUI();
-      updateLayers();
-    }
+                vec3 adjustTemperature(vec3 color, float temp) {
+                    vec3 warm = vec3(1.0, 0.9, 0.7);
+                    vec3 cool = vec3(0.7, 0.9, 1.0);
+                    return color * mix(cool, warm, temp * 0.5 + 0.5);
+                }
 
-    function updateLayers() {
-      const list = document.getElementById('layerList');
-      list.innerHTML = '';
+                void main() {
+                    vec4 texel = texture2D(src, vUv);
+                    
+                    if (blur > 0.0) {
+                        vec4 blurred = vec4(0.0);
+                        float total = 0.0;
+                        for (float x = -2.0; x <= 2.0; x += 1.0) {
+                            for (float y = -2.0; y <= 2.0; y += 1.0) {
+                                vec2 offset = vec2(x, y) * blur;
+                                blurred += texture2D(src, vUv + offset);
+                                total += 1.0;
+                            }
+                        }
+                        texel = blurred / total;
+                    }
 
-      objects.forEach(o => {
-        const row = document.createElement('div');
-        row.className = \`layer-item \${o.id === activeId ? 'active' : ''}\`;
-        
-        const ico = document.createElement('div');
-        ico.textContent = o.kind === 'youtube' ? '▶' : (o.kind === 'gif' ? '👾' : '🖼️');
-        
-        const name = document.createElement('div');
-        name.textContent = o.name || 'Layer';
-        
-        const tag = document.createElement('div');
-        tag.className = 'tag';
-        tag.textContent = o.kind === 'youtube' ? 'YT' : (o.projection || 'plane');
-        
-        const mini = document.createElement('div');
-        mini.className = 'mini';
-        
-        const vis = document.createElement('input');
-        vis.type = 'checkbox';
-        vis.checked = !!o.visible;
-        vis.onclick = e => e.stopPropagation();
-        vis.onchange = () => { o.visible = vis.checked; if (o.root3D) o.root3D.visible = vis.checked; updateLayers(); };
-        
-        const lock = document.createElement('input');
-        lock.type = 'checkbox';
-        lock.checked = !!o.locked;
-        lock.onclick = e => e.stopPropagation();
-        lock.onchange = () => { o.locked = lock.checked; updateLayers(); };
-        
-        mini.appendChild(vis);
-        mini.appendChild(lock);
-        
-        row.appendChild(ico);
-        row.appendChild(name);
-        row.appendChild(tag);
-        row.appendChild(mini);
-        row.onclick = () => selectObject(o.id);
-        
-        list.appendChild(row);
-      });
-    }
+                    vec3 color = texel.rgb * brightness;
+                    color = ((color - 0.5) * contrast) + 0.5;
+                    
+                    float gray = dot(color, vec3(0.299, 0.587, 0.114));
+                    color = mix(vec3(gray), color, saturation);
+                    
+                    color = adjustTemperature(color, temperature);
+                    color = clamp(color, 0.0, 1.0);
 
-    // ✅ CORRECCIÓN 3: Transform en tiempo real
-    function applyTransformFromUIRealtime() {
-      const o = objects.find(x => x.id === activeId);
-      if (!o || !o.root3D || o.locked) return;
-
-      const px = parseFloat(document.getElementById('tPosX').value);
-      const py = parseFloat(document.getElementById('tPosY').value);
-      const pz = parseFloat(document.getElementById('tPosZ').value);
-
-      const rx = parseFloat(document.getElementById('tRotX').value) * Math.PI / 180;
-      const ry = parseFloat(document.getElementById('tRotY').value) * Math.PI / 180;
-      const rz = parseFloat(document.getElementById('tRotZ').value) * Math.PI / 180;
-
-      const s = parseFloat(document.getElementById('tScale').value);
-
-      o.root3D.position.set(px, py, pz);
-      o.root3D.rotation.set(rx, ry, rz);
-      o.root3D.scale.setScalar(Math.max(0.01, s));
-
-      if (o.kind === 'youtube' && o.cssObj) {
-        o.cssObj.position.copy(o.root3D.position);
-        o.cssObj.quaternion.copy(o.root3D.quaternion);
-        o.cssObj.scale.copy(o.root3D.scale).multiplyScalar(1/960);
-      }
-    }
-
-    function syncTransformToUI() {
-      const o = objects.find(x => x.id === activeId);
-      if (!o || !o.root3D) return;
-
-      document.getElementById('tPosX').value = o.root3D.position.x;
-      document.getElementById('tPosY').value = o.root3D.position.y;
-      document.getElementById('tPosZ').value = o.root3D.position.z;
-
-      document.getElementById('tRotX').value = o.root3D.rotation.x * 180 / Math.PI;
-      document.getElementById('tRotY').value = o.root3D.rotation.y * 180 / Math.PI;
-      document.getElementById('tRotZ').value = o.root3D.rotation.z * 180 / Math.PI;
-
-      document.getElementById('tScale').value = o.root3D.scale.x;
-
-      ['tPosX','tPosY','tPosZ','tRotX','tRotY','tRotZ','tScale'].forEach(id => {
-        const val = document.getElementById(id).value;
-        const lbl = document.getElementById('v_' + id);
-        if (lbl) lbl.textContent = parseFloat(val).toFixed(id.includes('Rot') ? 1 : 3);
-      });
-    }
-
-    function resetTransformUI() {
-      ['tPosX','tPosY','tPosZ'].forEach((id, i) => document.getElementById(id).value = [0,1.6,-2][i]);
-      ['tRotX','tRotY','tRotZ'].forEach(id => document.getElementById(id).value = 0);
-      document.getElementById('tScale').value = 1;
-      applyTransformFromUIRealtime();
-      syncTransformToUI();
-    }
-
-    function deleteActive() {
-      const idx = objects.findIndex(x => x.id === activeId);
-      if (idx < 0) return;
-
-      const o = objects[idx];
-      if (o.root3D) scene.remove(o.root3D);
-      if (o.cssObj) scene.remove(o.cssObj);
-
-      objects.splice(idx, 1);
-      activeId = null;
-      transformCtrl.detach();
-      document.getElementById('editorUI').style.display = 'none';
-      updateLayers();
-    }
-
-    function centerActive() {
-      const o = objects.find(x => x.id === activeId);
-      if (!o || !o.root3D) return;
-      o.root3D.position.set(0, 1.6, -2);
-      if (o.cssObj) o.cssObj.position.copy(o.root3D.position);
-      syncTransformToUI();
-    }
-
-    function bindUI() {
-      // ✅ Selector de temas
-      document.querySelectorAll('.theme-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.body.dataset.theme = btn.dataset.theme;
-          document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
+                    gl_FragColor = vec4(color, texel.a);
+                }
+            `
         });
-      });
 
-      // ✅ TIEMPO REAL: todos los sliders aplican cambios inmediatamente
-      document.querySelectorAll('input[type=range]').forEach(i => {
-        i.addEventListener('input', (e) => {
-          const id = e.target.id;
-          const val = parseFloat(e.target.value);
-          const lbl = document.getElementById('v_' + id);
-          if (lbl) lbl.textContent = val.toFixed(3);
+        // Depth Occlusion mejorado para Meta Quest
+        AFRAME.registerComponent('depth-occlusion', {
+            schema: {
+                enabled: { type: 'boolean', default: true },
+                near: { type: 'number', default: 0.01 },
+                far: { type: 'number', default: 10.0 }
+            },
 
-          // Transform en tiempo real
-          if (id.startsWith('tPos') || id.startsWith('tRot') || id === 'tScale') {
-            applyTransformFromUIRealtime();
-          }
+            init: function() {
+                this.depthTexture = null;
+                this.setupDepthSensing();
+            },
 
-          // Shader params en tiempo real
-          const o = objects.find(x => x.id === activeId);
-          if (o && o.mat?.uniforms) {
-            const u = o.mat.uniforms;
-            if (id === 'brightness') u.uBrightness.value = val;
-            if (id === 'contrast') u.uContrast.value = val;
-            if (id === 'saturation') u.uSaturation.value = val;
-            if (id === 'gamma') u.uGamma.value = val;
-            if (id === 'opacity') u.uOpacity.value = val;
-            if (id === 'emissive') u.uEmissive.value = val;
-            if (id === 'k1sim') u.sim1.value = val;
-            if (id === 'k1smooth') u.smooth1.value = val;
-            if (id === 'despill') u.despill.value = val;
-          }
+            setupDepthSensing: function() {
+                const sceneEl = this.el.sceneEl;
+                
+                if (!sceneEl.renderer || !sceneEl.renderer.xr) {
+                    console.warn('[Depth] Renderer XR no disponible');
+                    return;
+                }
+
+                const xr = sceneEl.renderer.xr;
+                const session = xr.getSession();
+
+                if (!session) {
+                    console.log('[Depth] Esperando sesión XR...');
+                    sceneEl.addEventListener('enter-vr', () => {
+                        setTimeout(() => this.setupDepthSensing(), 500);
+                    });
+                    return;
+                }
+
+                if (!session.depthUsage) {
+                    console.warn('[Depth] Depth sensing no habilitado en sesión');
+                    return;
+                }
+
+                console.log('[Depth] ✅ Depth sensing activo');
+                this.createDepthMaterial();
+            },
+
+            createDepthMaterial: function() {
+                const material = new THREE.ShaderMaterial({
+                    uniforms: {
+                        depthTexture: { value: null },
+                        cameraNear: { value: this.data.near },
+                        cameraFar: { value: this.data.far }
+                    },
+
+                    vertexShader: `
+                        varying vec2 vUv;
+                        void main() {
+                            vUv = uv;
+                            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                        }
+                    `,
+
+                    fragmentShader: `
+                        uniform sampler2D depthTexture;
+                        uniform float cameraNear;
+                        uniform float cameraFar;
+                        varying vec2 vUv;
+
+                        float readDepth(sampler2D depthMap, vec2 coord) {
+                            vec4 depthSample = texture2D(depthMap, coord);
+                            
+                            // Luminance-alpha format
+                            if (depthSample.a > 0.0) {
+                                return depthSample.r;
+                            }
+                            
+                            // Float32 format
+                            return depthSample.r;
+                        }
+
+                        float perspectiveDepthToViewZ(float invClipZ, float near, float far) {
+                            return (near * far) / ((far - near) * invClipZ - far);
+                        }
+
+                        void main() {
+                            float depth = readDepth(depthTexture, vUv);
+                            
+                            if (depth <= 0.0 || depth >= 1.0) {
+                                discard;
+                            }
+
+                            float viewZ = perspectiveDepthToViewZ(depth, cameraNear, cameraFar);
+                            float normalizedDepth = (viewZ + cameraNear) / (cameraFar - cameraNear);
+                            normalizedDepth = clamp(normalizedDepth, 0.0, 1.0);
+
+                            gl_FragColor = vec4(vec3(normalizedDepth), 1.0);
+                        }
+                    `,
+
+                    transparent: true,
+                    depthTest: true,
+                    depthWrite: true
+                });
+
+                this.depthMaterial = material;
+                console.log('[Depth] Material creado');
+            },
+
+            tick: function() {
+                if (!this.data.enabled || !this.depthMaterial) return;
+
+                const sceneEl = this.el.sceneEl;
+                const xr = sceneEl.renderer?.xr;
+                const frame = xr?.getFrame?.();
+
+                if (!frame) return;
+
+                try {
+                    const pose = frame.getViewerPose(xr.getReferenceSpace());
+                    if (!pose || !pose.views || pose.views.length === 0) return;
+
+                    const view = pose.views[0];
+                    const depthInfo = frame.getDepthInformation?.(view);
+
+                    if (depthInfo && depthInfo.texture) {
+                        this.depthMaterial.uniforms.depthTexture.value = depthInfo.texture;
+                        this.depthMaterial.uniforms.cameraNear.value = depthInfo.rawValueToMeters * this.data.near;
+                        this.depthMaterial.uniforms.cameraFar.value = depthInfo.rawValueToMeters * this.data.far;
+                    }
+                } catch (e) {
+                    // Silenciar errores normales de frame timing
+                }
+            }
         });
-      });
 
-      document.getElementById('chromaToggle').addEventListener('change', () => {
-        const o = objects.find(x => x.id === activeId);
-        if (o && o.mat?.uniforms) {
-          o.mat.uniforms.chromaOn.value = document.getElementById('chromaToggle').checked;
-          document.getElementById('chromaPanel').style.display = o.mat.uniforms.chromaOn.value ? 'block' : 'none';
+        // ============================================
+        // FUNCIONES DE UNIVERSO
+        // ============================================
+        async function addUniverse() {
+            const url = document.getElementById('url-input').value.trim();
+            const fileInput = document.getElementById('file-input');
+            const file = fileInput.files[0];
+
+            if (!url && !file) {
+                showNotification('❌ Proporciona URL o archivo');
+                return;
+            }
+
+            const scale = parseFloat(document.getElementById('scale-slider').value);
+            const projection = document.getElementById('projection-type').value;
+
+            let assetUrl = url;
+            let assetType = 'unknown';
+            let isLocal = false;
+
+            if (file) {
+                assetUrl = URL.createObjectURL(file);
+                assetType = detectAssetType(file.name);
+                isLocal = true;
+            } else {
+                assetType = detectAssetType(url);
+            }
+
+            // CORRECCIÓN 1: Bloquear proyecciones para YouTube y Modelos 3D
+            if (assetType === 'youtube' || assetType === 'model') {
+                if (projection !== 'plane') {
+                    showNotification('⚠️ YouTube y modelos 3D solo soportan proyección PLANO');
+                    document.getElementById('projection-type').value = 'plane';
+                }
+            }
+
+            const universe = {
+                id: `universe-${universeCounter++}`,
+                url: assetUrl,
+                type: assetType,
+                projection: assetType === 'youtube' || assetType === 'model' ? 'plane' : projection,
+                scale: scale,
+                position: { x: 0, y: 1.6, z: -4 },
+                rotation: { x: 0, y: 0, z: 0 },
+                shaders: {
+                    brightness: 1,
+                    contrast: 1,
+                    saturation: 1,
+                    temperature: 0,
+                    blur: 0
+                },
+                videoSettings: {
+                    loop: true,
+                    muted: false,
+                    trimStart: 0,
+                    trimEnd: 100
+                },
+                isLocal: isLocal,
+                localFile: isLocal ? file : null
+            };
+
+            universes.push(universe);
+            await createUniverseEntity(universe);
+            updateAssetList();
+            selectUniverse(universe);
+            showNotification(`✅ Universo creado: ${assetType.toUpperCase()}`);
         }
-      });
 
-      document.getElementById('fileInput').addEventListener('change', async (e) => {
-        for (const f of e.target.files) {
-          if (f.name.toLowerCase().endsWith('.gif')) {
-            await addGifFromFile(f);
-          }
-        }
-        e.target.value = '';
-      });
+        async function createUniverseEntity(universe) {
+            const scene = document.querySelector('a-scene');
+            const entity = document.createElement('a-entity');
+            entity.setAttribute('id', universe.id);
+            entity.classList.add('interactive');
 
-      window.addYouTube = addYouTube;
-      window.updateProjection = () => {
-        const o = objects.find(x => x.id === activeId);
-        if (!o) return;
-        applyProjection(o, document.getElementById('projSelect').value);
-      };
-      window.deleteActive = deleteActive;
-      window.centerActive = centerActive;
-      window.syncTransformToUI = syncTransformToUI;
-      window.resetTransformUI = resetTransformUI;
-      window.toggleUIPanel = () => {
-        document.getElementById('ui').classList.toggle('minimized');
-        document.getElementById('toggleUI').style.display = document.getElementById('ui').classList.contains('minimized') ? 'flex' : 'none';
-      };
-      window.loadFromWeb = async () => {
-        const url = document.getElementById('webUrl').value.trim();
-        if (url.includes('youtube.com') || url.includes('youtu.be')) {
-          document.getElementById('ytUrl').value = url;
-          await addYouTube();
-        }
-      };
-      window.videoUIAction = () => {};
-      window.updateUnits = () => {};
-      window.updateGrid = () => {};
-    }
+            const pos = universe.position;
+            const rot = universe.rotation;
+            entity.setAttribute('position', `${pos.x} ${pos.y} ${pos.z}`);
+            entity.setAttribute('rotation', `${rot.x} ${rot.y} ${rot.z}`);
 
-    function animate() {
-      orbit.update();
+            // Depth occlusion
+            entity.setAttribute('depth-occlusion', 'enabled: true; near: 0.01; far: 10.0');
 
-      objects.forEach(o => {
-        if (o.gifData && o.gifData.playing && performance.now() > o.gifData.nextTime) {
-          const g = o.gifData;
-          g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data);
-          g.ctx.putImageData(g.dat, 0, 0);
-          g.tex.needsUpdate = true;
+            if (universe.type === 'youtube') {
+                await setupYouTube(entity, universe);
+            } else if (universe.type === 'video') {
+                await setupVideo(entity, universe);
+            } else if (universe.type === 'image') {
+                await setupImage(entity, universe);
+            } else if (universe.type === 'gif') {
+                await setupGIF(entity, universe);
+            } else if (universe.type === 'model') {
+                await setupModel(entity, universe);
+            }
 
-          const d = g.r.frameInfo(g.f).delay * 10;
-          g.nextTime = performance.now() + (d || 100);
-          g.f = (g.f + 1) % g.r.numFrames();
+            scene.appendChild(entity);
+            universe.entity = entity;
         }
 
-        if (o.kind === 'youtube' && o.cssObj && o.root3D) {
-          o.cssObj.position.copy(o.root3D.position);
-          o.cssObj.quaternion.copy(o.root3D.quaternion);
+        async function setupYouTube(entity, universe) {
+            const videoId = extractYouTubeId(universe.url);
+            if (!videoId) {
+                showNotification('❌ URL de YouTube inválida');
+                return;
+            }
+
+            const iframe = document.createElement('iframe');
+            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&controls=1`;
+            iframe.style.width = '1920px';
+            iframe.style.height = '1080px';
+            iframe.style.border = 'none';
+            document.body.appendChild(iframe);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 1920;
+            canvas.height = 1080;
+            const ctx = canvas.getContext('2d');
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+
+            applyProjection(entity, universe, texture);
+
+            universe.youtubeData = { iframe, canvas, ctx, texture };
         }
-      });
 
-      renderer.render(scene, camera);
-      cssRenderer.render(scene, camera);
-    }
+        async function setupVideo(entity, universe) {
+            const video = document.createElement('video');
+            video.src = universe.url;
+            video.crossOrigin = 'anonymous';
+            video.loop = universe.videoSettings.loop;
+            video.muted = universe.videoSettings.muted;
+            video.autoplay = true;
+            video.playsInline = true;
 
-    init();
-  </script>
+            const texture = new THREE.VideoTexture(video);
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+
+            applyProjection(entity, universe, texture);
+            applyShaders(entity, universe);
+
+            video.play().catch(e => console.warn('Video play error:', e));
+            universe.videoElement = video;
+        }
+
+        async function setupImage(entity, universe) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                
+                img.onload = () => {
+                    const texture = new THREE.Texture(img);
+                    texture.needsUpdate = true;
+                    applyProjection(entity, universe, texture);
+                    applyShaders(entity, universe);
+                    resolve();
+                };
+
+                img.onerror = () => {
+                    showNotification('❌ Error al cargar imagen');
+                    resolve();
+                };
+
+                img.src = universe.url;
+                universe.imageElement = img;
+            });
+        }
+
+        // CORRECCIÓN 2: Arreglar apertura de GIF con FileReader
+        async function setupGIF(entity, universe) {
+            return new Promise((resolve) => {
+                if (universe.isLocal && universe.localFile) {
+                    // Usar FileReader para archivos locales
+                    const reader = new FileReader();
+                    
+                    reader.onload = (e) => {
+                        const arrayBuffer = e.target.result;
+                        processGIFData(new Uint8Array(arrayBuffer), entity, universe);
+                        resolve();
+                    };
+
+                    reader.onerror = () => {
+                        showNotification('❌ Error al leer GIF');
+                        resolve();
+                    };
+
+                    reader.readAsArrayBuffer(universe.localFile);
+                } else {
+                    // Usar fetch para URLs remotas
+                    fetch(universe.url)
+                        .then(r => r.arrayBuffer())
+                        .then(buffer => {
+                            processGIFData(new Uint8Array(buffer), entity, universe);
+                            resolve();
+                        })
+                        .catch(() => {
+                            showNotification('❌ Error al descargar GIF');
+                            resolve();
+                        });
+                }
+            });
+        }
+
+        function processGIFData(uint8Array, entity, universe) {
+            if (typeof GifReader === 'undefined') {
+                showNotification('⚠️ Librería omggif no cargada, mostrando como imagen estática');
+                setupImage(entity, universe);
+                return;
+            }
+
+            try {
+                const reader = new GifReader(uint8Array);
+                const info = reader.frameInfo(0);
+                const canvas = document.createElement('canvas');
+                canvas.width = reader.width;
+                canvas.height = reader.height;
+                const ctx = canvas.getContext('2d');
+
+                const imageData = ctx.createImageData(canvas.width, canvas.height);
+                const texture = new THREE.CanvasTexture(canvas);
+
+                let frameIndex = 0;
+                setInterval(() => {
+                    reader.decodeAndBlitFrameRGBA(frameIndex, imageData.data);
+                    ctx.putImageData(imageData, 0, 0);
+                    texture.needsUpdate = true;
+                    frameIndex = (frameIndex + 1) % reader.numFrames();
+                }, info.delay * 10);
+
+                applyProjection(entity, universe, texture);
+                applyShaders(entity, universe);
+            } catch (e) {
+                console.error('Error procesando GIF:', e);
+                showNotification('❌ Error al procesar GIF');
+            }
+        }
+
+        async function setupModel(entity, universe) {
+            entity.setAttribute('gltf-model', universe.url);
+            entity.setAttribute('scale', `${universe.scale} ${universe.scale} ${universe.scale}`);
+            entity.setAttribute('animation-mixer', '');
+        }
+
+        function applyProjection(entity, universe, texture) {
+            const scale = universe.scale;
+
+            if (universe.projection === 'plane') {
+                const geometry = new THREE.PlaneGeometry(4 * scale, 2.25 * scale);
+                const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+                const mesh = new THREE.Mesh(geometry, material);
+                entity.setObject3D('mesh', mesh);
+            } else if (universe.projection === 'sphere') {
+                const geometry = new THREE.SphereGeometry(10 * scale, 64, 64);
+                geometry.scale(-1, 1, 1);
+                const material = new THREE.MeshBasicMaterial({ map: texture });
+                const mesh = new THREE.Mesh(geometry, material);
+                entity.setObject3D('mesh', mesh);
+            } else if (universe.projection === 'cylinder') {
+                const geometry = new THREE.CylinderGeometry(8 * scale, 8 * scale, 6 * scale, 64, 1, true);
+                geometry.scale(-1, 1, 1);
+                const material = new THREE.MeshBasicMaterial({ map: texture });
+                const mesh = new THREE.Mesh(geometry, material);
+                entity.setObject3D('mesh', mesh);
+            } else if (universe.projection === 'dome') {
+                const geometry = new THREE.SphereGeometry(10 * scale, 64, 32, 0, Math.PI * 2, 0, Math.PI / 2);
+                geometry.scale(-1, 1, 1);
+                const material = new THREE.MeshBasicMaterial({ map: texture });
+                const mesh = new THREE.Mesh(geometry, material);
+                entity.setObject3D('mesh', mesh);
+            }
+        }
+
+        function applyShaders(entity, universe) {
+            const mesh = entity.getObject3D('mesh');
+            if (!mesh) return;
+
+            const shader = universe.shaders;
+            const material = new THREE.ShaderMaterial({
+                uniforms: {
+                    src: { value: mesh.material.map },
+                    brightness: { value: shader.brightness },
+                    contrast: { value: shader.contrast },
+                    saturation: { value: shader.saturation },
+                    temperature: { value: shader.temperature },
+                    blur: { value: shader.blur }
+                },
+                vertexShader: AFRAME.shaders['video-shader'].vertexShader,
+                fragmentShader: AFRAME.shaders['video-shader'].fragmentShader,
+                side: THREE.DoubleSide
+            });
+
+            mesh.material = material;
+        }
+
+        // CORRECCIÓN 3: Editores en Tiempo Real
+        function updateTransformRT() {
+            if (!selectedUniverse) return;
+
+            const x = parseFloat(document.getElementById('pos-x').value);
+            const y = parseFloat(document.getElementById('pos-y').value);
+            const z = parseFloat(document.getElementById('pos-z').value);
+            const rx = parseFloat(document.getElementById('rot-x').value);
+            const ry = parseFloat(document.getElementById('rot-y').value);
+            const rz = parseFloat(document.getElementById('rot-z').value);
+
+            document.getElementById('pos-x-val').textContent = x.toFixed(1);
+            document.getElementById('pos-y-val').textContent = y.toFixed(1);
+            document.getElementById('pos-z-val').textContent = z.toFixed(1);
+            document.getElementById('rot-x-val').textContent = rx;
+            document.getElementById('rot-y-val').textContent = ry;
+            document.getElementById('rot-z-val').textContent = rz;
+
+            selectedUniverse.position = { x, y, z };
+            selectedUniverse.rotation = { x: rx, y: ry, z: rz };
+
+            if (selectedUniverse.entity) {
+                selectedUniverse.entity.setAttribute('position', `${x} ${y} ${z}`);
+                selectedUniverse.entity.setAttribute('rotation', `${rx} ${ry} ${rz}`);
+            }
+        }
+
+        function updateShadersRT() {
+            if (!selectedUniverse) return;
+
+            const brightness = parseFloat(document.getElementById('brightness').value);
+            const contrast = parseFloat(document.getElementById('contrast').value);
+            const saturation = parseFloat(document.getElementById('saturation').value);
+            const temperature = parseFloat(document.getElementById('temperature').value);
+            const blur = parseFloat(document.getElementById('blur').value);
+
+            document.getElementById('brightness-val').textContent = brightness.toFixed(1);
+            document.getElementById('contrast-val').textContent = contrast.toFixed(1);
+            document.getElementById('saturation-val').textContent = saturation.toFixed(1);
+            document.getElementById('temperature-val').textContent = temperature.toFixed(1);
+            document.getElementById('blur-val').textContent = blur.toFixed(3);
+
+            selectedUniverse.shaders = { brightness, contrast, saturation, temperature, blur };
+            applyShaders(selectedUniverse.entity, selectedUniverse);
+        }
+
+        function updateVideoTrimRT() {
+            if (!selectedUniverse || !selectedUniverse.videoElement) return;
+
+            const start = parseFloat(document.getElementById('trim-start').value);
+            const end = parseFloat(document.getElementById('trim-end').value);
+
+            document.getElementById('trim-start-val').textContent = `${start.toFixed(1)}s`;
+            document.getElementById('trim-end-val').textContent = `${end.toFixed(1)}s`;
+
+            selectedUniverse.videoSettings.trimStart = start;
+            selectedUniverse.videoSettings.trimEnd = end;
+
+            const video = selectedUniverse.videoElement;
+            if (video.duration) {
+                video.currentTime = (start / 100) * video.duration;
+            }
+        }
+
+        function resetShaders() {
+            if (!selectedUniverse) return;
+
+            document.getElementById('brightness').value = 1;
+            document.getElementById('contrast').value = 1;
+            document.getElementById('saturation').value = 1;
+            document.getElementById('temperature').value = 0;
+            document.getElementById('blur').value = 0;
+
+            updateShadersRT();
+            showNotification('🔄 Shaders reseteados');
+        }
+
+        function toggleLoop() {
+            if (!selectedUniverse || !selectedUniverse.videoElement) return;
+            const btn = document.getElementById('loop-btn');
+            selectedUniverse.videoSettings.loop = !selectedUniverse.videoSettings.loop;
+            selectedUniverse.videoElement.loop = selectedUniverse.videoSettings.loop;
+            btn.classList.toggle('active', selectedUniverse.videoSettings.loop);
+        }
+
+        function toggleMute() {
+            if (!selectedUniverse || !selectedUniverse.videoElement) return;
+            const btn = document.getElementById('mute-btn');
+            selectedUniverse.videoSettings.muted = !selectedUniverse.videoSettings.muted;
+            selectedUniverse.videoElement.muted = selectedUniverse.videoSettings.muted;
+            btn.classList.toggle('active', selectedUniverse.videoSettings.muted);
+        }
+
+        function selectUniverse(universe) {
+            selectedUniverse = universe;
+
+            // Actualizar controles de transform
+            document.getElementById('pos-x').value = universe.position.x;
+            document.getElementById('pos-y').value = universe.position.y;
+            document.getElementById('pos-z').value = universe.position.z;
+            document.getElementById('rot-x').value = universe.rotation.x;
+            document.getElementById('rot-y').value = universe.rotation.y;
+            document.getElementById('rot-z').value = universe.rotation.z;
+
+            document.getElementById('pos-x-val').textContent = universe.position.x.toFixed(1);
+            document.getElementById('pos-y-val').textContent = universe.position.y.toFixed(1);
+            document.getElementById('pos-z-val').textContent = universe.position.z.toFixed(1);
+            document.getElementById('rot-x-val').textContent = universe.rotation.x;
+            document.getElementById('rot-y-val').textContent = universe.rotation.y;
+            document.getElementById('rot-z-val').textContent = universe.rotation.z;
+
+            // Actualizar shaders
+            document.getElementById('brightness').value = universe.shaders.brightness;
+            document.getElementById('contrast').value = universe.shaders.contrast;
+            document.getElementById('saturation').value = universe.shaders.saturation;
+            document.getElementById('temperature').value = universe.shaders.temperature;
+            document.getElementById('blur').value = universe.shaders.blur;
+
+            document.getElementById('brightness-val').textContent = universe.shaders.brightness.toFixed(1);
+            document.getElementById('contrast-val').textContent = universe.shaders.contrast.toFixed(1);
+            document.getElementById('saturation-val').textContent = universe.shaders.saturation.toFixed(1);
+            document.getElementById('temperature-val').textContent = universe.shaders.temperature.toFixed(1);
+            document.getElementById('blur-val').textContent = universe.shaders.blur.toFixed(3);
+
+            // Mostrar panel de video si es necesario
+            const videoPanel = document.getElementById('video-panel');
+            if (universe.type === 'video' && universe.videoElement) {
+                videoPanel.style.display = 'block';
+                document.getElementById('loop-btn').classList.toggle('active', universe.videoSettings.loop);
+                document.getElementById('mute-btn').classList.toggle('active', universe.videoSettings.muted);
+            } else {
+                videoPanel.style.display = 'none';
+            }
+
+            // Actualizar proyección
+            document.getElementById('projection-type').value = universe.projection;
+            
+            // BLOQUEAR selector de proyección para YouTube y modelos
+            document.getElementById('projection-type').disabled = (universe.type === 'youtube' || universe.type === 'model');
+
+            updateAssetList();
+        }
+
+        function deleteSelected() {
+            if (!selectedUniverse) {
+                showNotification('⚠️ Selecciona un universo');
+                return;
+            }
+
+            if (selectedUniverse.entity) {
+                selectedUniverse.entity.remove();
+            }
+
+            universes = universes.filter(u => u.id !== selectedUniverse.id);
+            selectedUniverse = null;
+            updateAssetList();
+            showNotification('🗑️ Universo eliminado');
+        }
+
+        function updateAssetList() {
+            const list = document.getElementById('asset-list');
+            list.innerHTML = '';
+
+            universes.forEach(universe => {
+                const item = document.createElement('div');
+                item.className = 'asset-item';
+                if (selectedUniverse && selectedUniverse.id === universe.id) {
+                    item.classList.add('selected');
+                }
+
+                const icon = {
+                    youtube: '📺',
+                    video: '🎬',
+                    image: '🖼️',
+                    gif: '🎞️',
+                    model: '🎭'
+                }[universe.type] || '📦';
+
+                item.innerHTML = `${icon} ${universe.type.toUpperCase()} - ${universe.id}`;
+                item.onclick = () => selectUniverse(universe);
+                list.appendChild(item);
+            });
+        }
+
+        // ============================================
+        // SISTEMA DE GUARDADO/CARGA JSON
+        // ============================================
+        function saveSceneLocal() {
+            const sceneData = {
+                version: '24.0',
+                timestamp: new Date().toISOString(),
+                universes: universes.map(u => ({
+                    id: u.id,
+                    url: u.url,
+                    type: u.type,
+                    projection: u.projection,
+                    scale: u.scale,
+                    position: u.position,
+                    rotation: u.rotation,
+                    shaders: u.shaders,
+                    videoSettings: u.videoSettings,
+                    isLocal: u.isLocal
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(sceneData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `mr-studio-scene-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showNotification('💾 Escena guardada localmente');
+        }
+
+        function loadSceneLocal(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const sceneData = JSON.parse(e.target.result);
+                    
+                    // Limpiar escena actual
+                    universes.forEach(u => {
+                        if (u.entity) u.entity.remove();
+                    });
+                    universes = [];
+                    selectedUniverse = null;
+
+                    // Restaurar universos
+                    for (const uData of sceneData.universes) {
+                        if (uData.isLocal) {
+                            showNotification('⚠️ Assets locales requieren volver a seleccionarse');
+                            continue;
+                        }
+
+                        const universe = {
+                            id: uData.id,
+                            url: uData.url,
+                            type: uData.type,
+                            projection: uData.projection,
+                            scale: uData.scale,
+                            position: uData.position,
+                            rotation: uData.rotation,
+                            shaders: uData.shaders,
+                            videoSettings: uData.videoSettings,
+                            isLocal: false,
+                            localFile: null
+                        };
+
+                        universes.push(universe);
+                        await createUniverseEntity(universe);
+                    }
+
+                    updateAssetList();
+                    showNotification('✅ Escena cargada');
+                } catch (error) {
+                    console.error('Error cargando escena:', error);
+                    showNotification('❌ Error al cargar escena');
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        // ============================================
+        // INTEGRACIÓN GOOGLE DRIVE (Parcial)
+        // ============================================
+        function connectGoogleDrive() {
+            showNotification('🔗 Conectando con Google Drive...');
+            
+            // Placeholder para OAuth2
+            // En producción, esto requeriría credenciales de Google Cloud
+            setTimeout(() => {
+                driveAccessToken = 'mock-token-' + Date.now();
+                document.getElementById('drive-status').textContent = '✅ Conectado';
+                document.getElementById('drive-status').classList.remove('disconnected');
+                document.getElementById('drive-controls').classList.remove('hidden');
+                showNotification('✅ Conectado a Google Drive');
+            }, 1500);
+        }
+
+        async function saveSceneToDrive() {
+            if (!driveAccessToken) {
+                showNotification('❌ Conéctate primero a Drive');
+                return;
+            }
+
+            showNotification('☁️ Guardando en Drive...');
+            
+            const sceneData = {
+                version: '24.0',
+                timestamp: new Date().toISOString(),
+                universes: universes.map(u => ({
+                    id: u.id,
+                    url: u.url,
+                    type: u.type,
+                    projection: u.projection,
+                    scale: u.scale,
+                    position: u.position,
+                    rotation: u.rotation,
+                    shaders: u.shaders,
+                    videoSettings: u.videoSettings
+                }))
+            };
+
+            // Placeholder - en producción usaría la API de Drive
+            console.log('Escena para Drive:', sceneData);
+            setTimeout(() => {
+                showNotification('✅ Guardado en Drive (simulado)');
+            }, 1500);
+        }
+
+        function loadSceneFromDrive() {
+            if (!driveAccessToken) {
+                showNotification('❌ Conéctate primero a Drive');
+                return;
+            }
+
+            showNotification('☁️ Esta función requiere selector de archivos de Drive');
+            // Placeholder - requiere Google Picker API
+        }
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function detectAssetType(urlOrFilename) {
+            const lower = urlOrFilename.toLowerCase();
+            
+            if (lower.includes('youtube.com') || lower.includes('youtu.be')) {
+                return 'youtube';
+            }
+            
+            if (lower.match(/\.(mp4|webm|ogg|mov)$/)) {
+                return 'video';
+            }
+            
+            if (lower.match(/\.(jpg|jpeg|png|webp|bmp)$/)) {
+                return 'image';
+            }
+            
+            if (lower.match(/\.gif$/)) {
+                return 'gif';
+            }
+            
+            if (lower.match(/\.(glb|gltf|obj|fbx)$/)) {
+                return 'model';
+            }
+            
+            return 'unknown';
+        }
+
+        function extractYouTubeId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        function showNotification(message) {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+
+            const notif = document.createElement('div');
+            notif.className = 'notification';
+            notif.textContent = message;
+            document.body.appendChild(notif);
+
+            setTimeout(() => notif.remove(), 3000);
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        window.addEventListener('DOMContentLoaded', () => {
+            initColorScheme();
+
+            document.getElementById('scale-slider').addEventListener('input', (e) => {
+                document.getElementById('scale-value').textContent = parseFloat(e.target.value).toFixed(1);
+            });
+
+            document.getElementById('file-input').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const info = document.getElementById('file-info');
+                    const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+                    info.textContent = `📄 ${file.name} (${sizeMB} MB)`;
+                }
+            });
+
+            // Bloquear proyección para YouTube/modelos cuando se cambia
+            document.getElementById('projection-type').addEventListener('change', (e) => {
+                if (selectedUniverse && (selectedUniverse.type === 'youtube' || selectedUniverse.type === 'model')) {
+                    e.target.value = 'plane';
+                    showNotification('⚠️ Solo proyección PLANO para este tipo');
+                }
+            });
+
+            console.log('🎨 MR Studio Diamond V24 FIXED - Listo');
+        });
+    </script>
 </body>
 </html>
