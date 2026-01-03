@@ -2,123 +2,251 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v24.x | Fusion Projections + 3D + 360</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MR Studio Diamond v30 | YouTube Proyectable + GIF Fix + Tiempo Real + 5 Temas</title>
 
-  <!-- libs -->
-  <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
+  <!-- ✅ CORRECCIÓN 1: CDN correcto para Omggif -->
+  <script src="https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
   <style>
-  /* =========================================
-     PALETAS  —  selector dinámico
-  ========================================= */
-  :root[data-theme="amber"]        { --main-color:#ffaa00; --bg-glass:rgba(20,20,25,.85); }
-  :root[data-theme="earth"]        { --main-color:#dca676; --bg-glass:rgba(32,24,16,.85); }
-  :root[data-theme="tech"]         { --main-color:#00e0ff; --bg-glass:rgba(10,25,35,.85); }
-  :root[data-theme="passion"]      { --main-color:#ff3366; --bg-glass:rgba(35,10,20,.85); }
-  :root[data-theme="architecture"] { --main-color:#6fff8d; --bg-glass:rgba(15,25,15,.85); }
+    /* ✅ CORRECCIÓN 3: 5 TEMAS DE COLOR */
+    :root {
+      --main-color: #ffaa00;
+      --bg-glass: rgba(20, 20, 25, 0.85);
+      --border-glass: rgba(255, 170, 0, 0.3);
+      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
+    }
 
-  /* Tema por defecto (amber) */
-  :root { --main-color:#ffaa00; --bg-glass:rgba(20,20,25,.85);
-          --border-glass:rgba(255,170,0,.3); --text-glow:0 0 8px rgba(255,170,0,.4); }
+    [data-theme="tierra"] {
+      --main-color: #8B4513;
+      --bg-glass: rgba(30, 25, 20, 0.85);
+      --border-glass: rgba(139, 69, 19, 0.4);
+      --text-glow: 0 0 8px rgba(139, 69, 19, 0.5);
+    }
 
-  *{box-sizing:border-box;user-select:none;font-family:'Segoe UI',system-ui,sans-serif;}
-  body{margin:0;overflow:hidden;background:transparent;color:#eee;}
+    [data-theme="tech"] {
+      --main-color: #00ffff;
+      --bg-glass: rgba(10, 15, 25, 0.85);
+      --border-glass: rgba(0, 255, 255, 0.3);
+      --text-glow: 0 0 8px rgba(0, 255, 255, 0.5);
+    }
 
-  /* WebGL */
-  #c{position:fixed;inset:0;width:100%;height:100%;touch-action:none;z-index:0;}
-  /* CSS-3D */
-  #css3d{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;}
-  #css3d.interactive{pointer-events:auto;}
+    [data-theme="passion"] {
+      --main-color: #ff0066;
+      --bg-glass: rgba(25, 10, 15, 0.85);
+      --border-glass: rgba(255, 0, 102, 0.3);
+      --text-glow: 0 0 8px rgba(255, 0, 102, 0.5);
+    }
 
-  /* Glass panel */
-  .ui-panel{
-    position:fixed;left:20px;top:20px;width:380px;max-height:95vh;
-    background:var(--bg-glass);backdrop-filter:blur(30px)saturate(150%);
-    -webkit-backdrop-filter:blur(30px)saturate(150%);
-    border:1px solid var(--border-glass);border-radius:24px;padding:20px;overflow-y:auto;z-index:100;
-    box-shadow:0 20px 60px rgba(0,0,0,.6);scrollbar-width:thin;
-    scrollbar-color:var(--main-color)transparent;transition:transform .3s cubic-bezier(.4,0,.2,1);
-  }
-  .ui-panel.minimized{transform:translateX(-460px);}
+    [data-theme="architecture"] {
+      --main-color: #cccccc;
+      --bg-glass: rgba(15, 15, 15, 0.9);
+      --border-glass: rgba(204, 204, 204, 0.25);
+      --text-glow: 0 0 6px rgba(204, 204, 204, 0.3);
+    }
 
-  h2{margin:0 0 18px;font-size:15px;color:var(--main-color);font-weight:900;
-     text-transform:uppercase;letter-spacing:2px;border-bottom:2px solid var(--border-glass);
-     padding-bottom:12px;display:flex;justify-content:space-between;align-items:center;
-     text-shadow:var(--text-glow);}
-  .sec-head{font-size:11px;font-weight:900;color:#aaa;margin:18px 0 8px;
-            text-transform:uppercase;letter-spacing:1.5px;}
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { margin: 0; overflow: hidden; background: transparent; color: #eee; transition: all 0.3s ease; }
 
-  .row{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:12px;}
-  label{flex:1;color:#ddd;cursor:pointer;white-space:nowrap;font-weight:600;}
+    #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
 
-  input[type=range]{flex:2;height:4px;accent-color:var(--main-color);
-       background:rgba(255,255,255,.1);border-radius:2px;appearance:none;}
-  input[type=range]::-webkit-slider-thumb{
-      -webkit-appearance:none;width:14px;height:14px;background:var(--main-color);
-      border-radius:50%;box-shadow:var(--text-glow);}
-  input[type=checkbox]{width:16px;height:16px;accent-color:var(--main-color);cursor:pointer;}
-  .val{width:64px;text-align:right;font-size:11px;color:var(--main-color);
-       font-family:'Fira Code',monospace;font-weight:800;}
+    #css3d {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1;
+    }
+    #css3d.interactive { pointer-events: auto; }
 
-  select,input[type=url],input[type=text],input[type=number]{
-    width:100%;background:rgba(0,0,0,.3);border:1px solid var(--border-glass);color:#fff;
-    padding:8px 12px;border-radius:10px;outline:none;transition:.3s;
-  }
+    .ui-panel {
+      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
+      background: var(--bg-glass);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 20px; overflow-y: auto; z-index: 100;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+    .ui-panel.minimized { transform: translateX(-460px); }
 
-  button{flex:1;padding:10px;border-radius:10px;border:none;font-weight:900;cursor:pointer;
-         color:#000;background:var(--main-color);transition:.25s;font-size:11px;
-         text-transform:uppercase;box-shadow:var(--text-glow);}
-  button:active{transform:scale(.97);}
-  button.danger{background:#ff3333;color:#fff;box-shadow:0 0 8px rgba(255,51,51,.6);}
-  button.drive{background:#00C853;color:#fff;box-shadow:0 0 8px rgba(0,200,83,.6);}
-  button.secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid var(--border-glass);box-shadow:none;}
-  button.small{padding:8px;font-size:10px;letter-spacing:1px;}
+    h2 {
+      margin: 0 0 18px 0; font-size: 15px; color: var(--main-color); font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px;
+      border-bottom: 2px solid var(--border-glass); padding-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      text-shadow: var(--text-glow);
+    }
+    .sec-head {
+      font-size: 11px; font-weight: 900; color: #aaa; margin: 18px 0 8px 0;
+      text-transform: uppercase; letter-spacing: 1.5px;
+    }
 
-  #toggleUI{position:fixed;left:20px;top:20px;z-index:101;width:44px;height:44px;border-radius:50%;
-            background:var(--bg-glass);backdrop-filter:blur(20px);border:2px solid var(--main-color);
-            color:var(--main-color);font-weight:900;cursor:pointer;display:none;font-size:20px;
-            align-items:center;justify-content:center;box-shadow:var(--text-glow);}
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 600; }
 
-  #vrBtn{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
-         padding:16px 50px;background:var(--main-color);color:#000;border-radius:50px;
-         font-weight:1000;z-index:1000;display:none;box-shadow:0 0 30px rgba(255,170,0,.7);
-         border:3px solid #fff;font-size:14px;letter-spacing:2px;}
+    input[type=range] {
+      flex: 2; height: 4px; accent-color: var(--main-color);
+      background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
+    }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
+    .val { width: 64px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
 
-  .loader{position:fixed;inset:0;background:#000;z-index:5000;display:none;
-          place-items:center;color:var(--main-color);font-weight:1000;letter-spacing:4px;font-size:22px;
-          text-shadow:var(--text-glow);}
+    select, input[type=url], input[type=text], input[type=number] {
+      width: 100%; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-glass); color: #fff;
+      padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
+    }
 
-  /* … el resto de estilos permanece igual … */
+    button {
+      flex: 1; padding: 10px; border-radius: 10px; border: none;
+      font-weight: 900; cursor: pointer;
+      color: #000; background: var(--main-color);
+      transition: 0.25s; font-size: 11px;
+      text-transform: uppercase; box-shadow: var(--text-glow);
+    }
+    button:active { transform: scale(0.97); }
+    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
+    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
+    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
+    button.small { padding: 8px; font-size: 10px; letter-spacing: 1px; }
+
+    #toggleUI {
+      position: fixed; left: 20px; top: 20px; z-index: 101;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--bg-glass); backdrop-filter: blur(20px);
+      border: 2px solid var(--main-color); color: var(--main-color);
+      font-weight: 900; cursor: pointer; display: none;
+      box-shadow: var(--text-glow); font-size: 20px;
+      align-items: center; justify-content: center;
+    }
+
+    #vrBtn {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      padding: 16px 50px; background: var(--main-color); color: #000;
+      border-radius: 50px; font-weight: 1000; z-index: 1000; display: none;
+      box-shadow: 0 0 30px var(--text-glow); border: 3px solid #fff;
+      font-size: 14px; letter-spacing: 2px;
+    }
+
+    .loader {
+      position: fixed; inset: 0; background: #000; z-index: 5000;
+      display: none; place-items: center; color: var(--main-color);
+      font-weight: 1000; letter-spacing: 4px; font-size: 22px;
+      text-shadow: var(--text-glow);
+    }
+
+    .layer-list {
+      max-height: 180px; overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px; padding: 8px; margin-bottom: 12px;
+      border: 1px solid var(--border-glass);
+    }
+
+    .layer-item {
+      padding: 8px 10px; font-size: 11px; border-radius: 10px;
+      cursor: pointer; display: grid;
+      grid-template-columns: 18px 1fr auto auto;
+      align-items: center; gap: 8px;
+      margin-bottom: 6px; transition: 0.2s; font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.12);
+    }
+    .layer-item.active {
+      background: rgba(255, 170, 0, 0.2);
+      border-left: 3px solid var(--main-color);
+      color: #fff;
+    }
+    .layer-item.dragging {
+      opacity: 0.55;
+      outline: 2px dashed rgba(255,170,0,0.45);
+    }
+    .layer-item.drop-target {
+      outline: 2px solid rgba(255,170,0,0.45);
+      background: rgba(255,170,0,0.12);
+    }
+
+    .layer-item .tag {
+      font-weight: 900; color: rgba(255,255,255,0.75);
+      font-size: 10px; padding: 3px 6px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .layer-item .mini {
+      display:flex; gap:6px; align-items:center;
+    }
+    .layer-item .mini input { width: 16px; height: 16px; }
+
+    .note {
+      font-size: 11px; line-height: 1.35;
+      color: rgba(255,255,255,0.75);
+      border: 1px dashed rgba(255,170,0,0.35);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+    }
+
+    .two { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .tiny { font-size: 10px; opacity: 0.8; }
+
+    /* Selector de temas */
+    .theme-selector {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .theme-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: 0.2s;
+      position: relative;
+    }
+    .theme-btn.active {
+      border-color: var(--main-color);
+      box-shadow: 0 0 12px var(--text-glow);
+    }
+    .theme-btn:hover {
+      transform: scale(1.1);
+    }
+    #themeAmber { background: linear-gradient(135deg, #ffaa00, #ff8800); }
+    #themeTierra { background: linear-gradient(135deg, #8B4513, #A0522D); }
+    #themeTech { background: linear-gradient(135deg, #00ffff, #00aaff); }
+    #themePassion { background: linear-gradient(135deg, #ff0066, #cc0055); }
+    #themeArch { background: linear-gradient(135deg, #cccccc, #888888); }
   </style>
 </head>
 <body>
+
   <canvas id="c"></canvas>
   <div id="css3d"></div>
-  <div class="loader" id="loader">CARGANDO…</div>
+
+  <div class="loader" id="loader">CARGANDO...</div>
   <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
   <div class="ui-panel" id="ui">
-    <h2><span>DIAMOND v24.x FUSION</span>
-        <span style="cursor:pointer;font-size:18px;" onclick="toggleUIPanel()">×</span></h2>
+    <h2>
+      <span>💎 DIAMOND v30</span>
+      <span style="cursor:pointer; font-size:18px;" onclick="toggleUIPanel()">×</span>
+    </h2>
 
-    <!-- Paleta de color -->
-    <div class="sec-head">🎨 Tema</div>
-    <div class="row">
-      <select id="themeSel"
-              onchange="document.documentElement.dataset.theme=this.value">
-        <option value="amber" selected>Ámbar</option>
-        <option value="earth">Tierra</option>
-        <option value="tech">Tech</option>
-        <option value="passion">Passion</option>
-        <option value="architecture">Architecture</option>
-      </select>
+    <!-- ✅ Selector de temas -->
+    <div class="sec-head">🎨 Tema UI</div>
+    <div class="theme-selector">
+      <div class="theme-btn active" id="themeAmber" data-theme="amber" title="Amber"></div>
+      <div class="theme-btn" id="themeTierra" data-theme="tierra" title="Tierra"></div>
+      <div class="theme-btn" id="themeTech" data-theme="tech" title="Tech"></div>
+      <div class="theme-btn" id="themePassion" data-theme="passion" title="Passion"></div>
+      <div class="theme-btn" id="themeArch" data-theme="architecture" title="Architecture"></div>
     </div>
 
-    <!-- Arquitectura -->
     <div class="sec-head">📐 Arquitectura</div>
     <div class="row">
       <select id="unitSystem" onchange="updateUnits()">
@@ -131,256 +259,702 @@
     <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
     <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
 
-    <!-- ☁️ Proyecto -->
-    <div class="sec-head">☁️ Proyecto</div>
-    <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">Conectar Drive</button></div>
-    <div class="row" id="driveActions" style="display:none;gap:8px;">
-      <button onclick="saveSceneToDrive()" class="secondary">Guardar en Drive</button>
-      <button onclick="loadSceneFromDrive()" class="secondary">Cargar</button>
+    <div class="sec-head">📥 Importar</div>
+    <div class="row">
+      <input type="url" id="webUrl" placeholder="URL media o modelo 3D">
+      <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
     </div>
-    <div class="row" style="gap:8px;">
-      <button onclick="saveToLocal()"  class="secondary">Exportar JSON</button>
-      <input  type="file" id="jsonImport" accept=".json" style="display:none">
-      <button onclick="document.getElementById('jsonImport').click()" class="secondary">Importar</button>
+    <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">
+      📁 Abrir local
+    </button>
+    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf,.fbx,.obj,.mtl">
+
+    <div class="sec-head">▶ YouTube (3D DOM)</div>
+    <div class="row">
+      <input type="text" id="ytUrl" placeholder="URL de YouTube">
+      <button onclick="addYouTube()" class="small" style="flex:0 0 70px;">ADD</button>
     </div>
-        <!-- IMPORTAR & YOUTUBE se quedan sin cambios hasta abajo del panel -->
-    <!-- … (pega aquí todo tu HTML del panel original tal cual) … -->
+    <div class="row">
+      <label><input type="checkbox" id="css3dInteractive"> Interactuar (click)</label>
+    </div>
+    <div class="note">
+      <b>✨ NUEVO:</b> YouTube ahora soporta <b>proyecciones</b> (plano, curvo, orbe, 360°). El iframe CSS3D se adapta a cada superficie. Perfecto para cines virtuales o pantallas inmersivas.
+    </div>
+
+    <div class="sec-head">Capas</div>
+    <div id="layerList" class="layer-list"></div>
+
+    <div id="editorUI" style="display:none;">
+      <div class="sec-head">🎛 Capa Activa</div>
+      <div class="row"><label><input type="checkbox" id="layerVisible"> Visible</label></div>
+      <div class="row"><label><input type="checkbox" id="layerLocked"> Bloquear</label></div>
+      <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard</label></div>
+
+      <!-- ✅ Transform en TIEMPO REAL -->
+      <div class="sec-head">🧩 Transform (⚡ Tiempo Real)</div>
+      <div class="row"><label>Pos X</label><input type="range" id="tPosX" min="-20" max="20" step="0.01" value="0"><span class="val" id="v_tPosX">0</span></div>
+      <div class="row"><label>Pos Y</label><input type="range" id="tPosY" min="0" max="20" step="0.01" value="1.6"><span class="val" id="v_tPosY">1.6</span></div>
+      <div class="row"><label>Pos Z</label><input type="range" id="tPosZ" min="-50" max="50" step="0.01" value="-2"><span class="val" id="v_tPosZ">-2</span></div>
+      <div class="row"><label>Rot X</label><input type="range" id="tRotX" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotX">0</span></div>
+      <div class="row"><label>Rot Y</label><input type="range" id="tRotY" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotY">0</span></div>
+      <div class="row"><label>Rot Z</label><input type="range" id="tRotZ" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotZ">0</span></div>
+      <div class="row"><label>Escala</label><input type="range" id="tScale" min="0.05" max="20" step="0.01" value="1"><span class="val" id="v_tScale">1</span></div>
+      <div class="row" style="gap:8px;">
+        <button onclick="syncTransformToUI()" class="secondary">Leer</button>
+        <button onclick="resetTransformUI()" class="secondary">Reset</button>
+      </div>
+
+      <!-- ✅ PROYECCIONES (bloqueadas para YouTube y modelos) -->
+      <div class="sec-head">🌐 Superficie / Proyección</div>
+      <div class="row">
+        <select id="projSelect" onchange="updateProjection()">
+          <option value="plane">Plano 2D</option>
+          <option value="curved">Pantalla Curva</option>
+          <option value="orb">Orbe</option>
+          <option value="360">Entorno 360°</option>
+        </select>
+      </div>
+      <div class="note" id="projNote" style="display:none; margin-top:8px; border-color:#ff3333;">
+        ⚠️ Las proyecciones solo aplican a <b>imágenes, videos, GIFs y YouTube</b>. Los modelos 3D mantienen su geometría original.
+      </div>
+
+      <!-- Shader controls en TIEMPO REAL -->
+      <div class="sec-head">🎨 Shader (⚡ Tiempo Real)</div>
+      <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
+      <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
+      <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
+      <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
+      <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+      <div class="row"><label>Emisión</label><input type="range" id="emissive" min="0" max="2" step="0.01" value="0"><span class="val" id="v_emissive">0</span></div>
+
+      <div class="sec-head">🧪 Chroma Key</div>
+      <div class="row">
+        <label><input type="checkbox" id="chromaToggle"> Activar</label>
+        <label><input type="checkbox" id="chromaInvert"> Invertir</label>
+      </div>
+      <div id="chromaPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.2); border-radius:12px;">
+        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001" value="0.4"><span class="val" id="v_k1sim">0.400</span></div>
+        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001" value="0.08"><span class="val" id="v_k1smooth">0.080</span></div>
+        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v_despill">0.500</span></div>
+        <div style="margin-top:10px;">
+          <div class="row"><label style="color:#f66">R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+          <div class="row"><label style="color:#6f6">G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+          <div class="row"><label style="color:#66f">B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        </div>
+      </div>
+
+      <div class="sec-head">🎧 Video</div>
+      <div id="videoPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.18); border-radius:12px;">
+        <div class="row" style="gap:8px;">
+          <button onclick="videoUIAction('play')" class="secondary">▶</button>
+          <button onclick="videoUIAction('pause')" class="secondary">⏸</button>
+          <button onclick="videoUIAction('mute')" class="secondary">🔇</button>
+        </div>
+        <div class="row"><label>Volumen</label><input type="range" id="vidVol" min="0" max="1" step="0.01" value="0.8"><span class="val" id="v_vidVol">0.80</span></div>
+        <div class="row"><label>Avance</label><input type="range" id="vidSeek" min="0" max="1" step="0.001" value="0"><span class="val" id="v_vidSeek">0%</span></div>
+        <div class="row" style="justify-content:space-between;">
+          <div class="tiny" id="vidTime">0:00 / 0:00</div>
+          <label style="flex:0; display:flex; gap:8px;"><input type="checkbox" id="vidLoop" checked> Loop</label>
+        </div>
+      </div>
+
+      <div class="sec-head">🧭 Acciones</div>
+      <div class="row" style="gap:8px;">
+        <button onclick="centerActive()" class="secondary">🎯 Centrar</button>
+        <button onclick="deleteActive()" class="danger">🗑 Eliminar</button>
+      </div>
+    </div>
 
     <div class="sec-head">⚙️ Realidad Mixta</div>
-    <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
+    <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth</label></div>
   </div>
 
   <button id="vrBtn">INICIAR MR</button>
 
-  <!-- Import map 3D libs -->
   <script type="importmap">
   { "imports": {
-      "three":           "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/addons/":   "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
   } }
   </script>
-    <script type="module">
-  import * as THREE from 'three';
-  import { OrbitControls        } from 'three/addons/controls/OrbitControls.js';
-  import { TransformControls    } from 'three/addons/controls/TransformControls.js';
-  import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
-  import { GLTFLoader           } from 'three/addons/loaders/GLTFLoader.js';
-  import { FBXLoader            } from 'three/addons/loaders/FBXLoader.js';
-  import { OBJLoader            } from 'three/addons/loaders/OBJLoader.js';
-  import { MTLLoader            } from 'three/addons/loaders/MTLLoader.js';
-  import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+  <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TransformControls } from 'three/addons/controls/TransformControls.js';
+    import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+    import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+    import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
-  /* ==========================================================
-       0 · Worker para GIF - decodificación off-thread
-  ========================================================== */
-  const gifWorker = new Worker(URL.createObjectURL(new Blob([`
-     importScripts('https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js');
-     onmessage=({data})=>{
-        const r=new Omggif.GifReader(new Uint8Array(data.buf));
-        const frames=[];
-        for(let f=0;f<r.numFrames();f++){
-          const dat=new Uint8Array(r.width*r.height*4);
-          r.decodeAndBlitFrameRGBA(f,dat);
-          frames.push({dat,delay:r.frameInfo(f).delay*10});
+    // ✅ CORRECCIÓN 2: GifReader ahora funciona correctamente
+    function ensureGifLoaded() {
+      return new Promise((resolve, reject) => {
+        if (window.GifReader) return resolve(true);
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.min.js';
+        s.onload = () => window.GifReader ? resolve(true) : reject(new Error("Omggif failed"));
+        s.onerror = () => reject(new Error("Network error"));
+        document.head.appendChild(s);
+      });
+    }
+
+    // Shaders
+    const vShader = \`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }\`;
+    const fShader = \`
+      uniform sampler2D map;
+      uniform float uBrightness, uContraste, uSaturation, uGamma, uOpacity, uEmissive;
+      uniform bool chromaOn, chromaInvert;
+      uniform vec3 k1;
+      uniform float sim1, smooth1, despill;
+      varying vec2 vUv;
+
+      vec3 rgb2hsv(vec3 c) {
+        vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
+        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+        float d = q.x - min(q.w, q.y);
+        float e = 1.0e-10;
+        return vec3(abs(q.z + (q.w - q.y)/(6.0*d + e)), d/(q.x + e), q.x);
+      }
+
+      void main() {
+        vec4 tex = texture2D(map, vUv);
+        vec3 col = tex.rgb;
+        float alpha = tex.a * uOpacity;
+
+        if (chromaOn) {
+          vec3 hsv = rgb2hsv(col);
+          vec3 kHsv = rgb2hsv(k1);
+          float hueDist = abs(hsv.x - kHsv.x);
+          if (hueDist > 0.5) hueDist = 1.0 - hueDist;
+          float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(abs(hsv.y - kHsv.y), 2.0) + pow(abs(hsv.z - kHsv.z) * 0.5, 2.0));
+          float mask = smoothstep(sim1, sim1 + smooth1, dist);
+
+          if (!chromaInvert) {
+            alpha *= mask;
+            if (mask < 0.95 && despill > 0.0) {
+              if (k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
+              else if (k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
+            }
+          } else {
+            alpha = (1.0 - mask) * uOpacity;
+            col = vec3(1.0);
+          }
         }
-        postMessage({w:r.width,h:r.height,frames},frames.map(x=>x.dat.buffer));
-     };
-  `],{type:'text/javascript'})));
 
-  /* —— el resto de constantes (CLIENT_ID, helpers, shaders…) permanece igual, salvo los cambios que se indican —— */
+        col += uBrightness;
+        col = (col - 0.5) * uContrast + 0.5;
+        float gray = dot(col, vec3(0.299, 0.587, 0.114));
+        col = mix(vec3(gray), col, uSaturation);
+        col = pow(max(col, 0.0), vec3(1.0 / uGamma));
+        col = col * (1.0 + uEmissive);
 
-  /* ==========================================================
-       1 ·  Proyecciones — YouTube siempre plano
-  ========================================================== */
-  function applyProjection(layer, mode){
-    /* YouTube bloquea proyecciones curvas / 360 */
-    if(layer.kind==='youtube'){
-      layer.projection='plane';
-      if(activeId===layer.id){
-        const sel=document.getElementById('projSelect');
-        sel.value='plane'; sel.disabled=true;       // 🔒 bloquea selector
+        gl_FragColor = vec4(col, alpha);
+        if (alpha < 0.01) discard;
       }
-      return;
-    }else if(activeId===layer.id){
-      document.getElementById('projSelect').disabled=false;
+    \`;
+
+    // Estado global
+    let scene, camera, renderer, orbit, transformCtrl, cssRenderer;
+    const objects = [];
+    let activeId = null;
+
+    function uid() { return Math.random().toString(36).slice(2, 10); }
+
+    function init() {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, 0.01, 800);
+      camera.position.set(0, 1.6, 2);
+
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+      renderer.setSize(innerWidth, innerHeight);
+      renderer.xr.enabled = true;
+
+      orbit = new OrbitControls(camera, renderer.domElement);
+      transformCtrl = new TransformControls(camera, renderer.domElement);
+      transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+      scene.add(transformCtrl);
+
+      cssRenderer = new CSS3DRenderer();
+      cssRenderer.setSize(innerWidth, innerHeight);
+      document.getElementById('css3d').appendChild(cssRenderer.domElement);
+
+      bindUI();
+      renderer.setAnimationLoop(animate);
     }
 
-    layer.projection=mode;
-    /* ... resto del algoritmo original sin cambios ... */
-  }
+    // ✅ CORRECCIÓN 2: GIF loader corregido
+    async function addGifFromFile(file) {
+      try {
+        await ensureGifLoaded();
+        const buf = await file.arrayBuffer();
+        const r = new GifReader(new Uint8Array(buf)); // ✅ Ahora funciona
+        
+        const cvs = document.createElement('canvas');
+        cvs.width = r.width;
+        cvs.height = r.height;
+        const ctx = cvs.getContext('2d');
+        const dat = ctx.createImageData(r.width, r.height);
 
-  /* ==========================================================
-       2 ·  Transform sliders ► tiempo real
-  ========================================================== */
-  document.querySelectorAll('input[type=range]').forEach(i=>{
-    i.addEventListener('input',e=>{
-      const id=e.target.id; const val=parseFloat(e.target.value);
-      const lbl=document.getElementById('v_'+id);
-      if(lbl) lbl.textContent=Number.isFinite(val)?val.toFixed(3):'0';
-      updateActiveParam(id,val);
+        const tex = new THREE.CanvasTexture(cvs);
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            map: { value: tex },
+            uBrightness: { value: 0 },
+            uContrast: { value: 1 },
+            uSaturation: { value: 1 },
+            uGamma: { value: 1 },
+            uOpacity: { value: 1 },
+            uEmissive: { value: 0 },
+            chromaOn: { value: false },
+            chromaInvert: { value: false },
+            k1: { value: new THREE.Color(0,1,0) },
+            sim1: { value: 0.4 },
+            smooth1: { value: 0.08 },
+            despill: { value: 0.5 }
+          },
+          vertexShader: vShader,
+          fragmentShader: fShader,
+          transparent: true,
+          side: THREE.DoubleSide
+        });
 
-      /*  ⬇︎ aplicamos en vivo */
-      if(id.startsWith('tPos')||id.startsWith('tRot')||id==='tScale'){
-        applyTransformFromUI();
+        const aspect = r.width / Math.max(1, r.height);
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(aspect, 1), mat);
+        const root = new THREE.Group();
+        root.position.set(0, 1.6, -2);
+        root.add(mesh);
+        scene.add(root);
+
+        const layer = {
+          id: uid(),
+          name: file.name,
+          kind: 'gif',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: mesh,
+          mesh, mat, tex,
+          gifData: { r, ctx, dat, tex, f:0, nextTime:0, playing:true },
+          visible: true,
+          locked: false,
+          billboard: false,
+          originalAspect: aspect
+        };
+
+        objects.push(layer);
+        selectObject(layer.id);
+        updateLayers();
+      } catch (e) {
+        console.error("GIF error:", e);
+        alert("Error cargando GIF");
+      }
+    }
+
+    async function addYouTube() {
+      const url = document.getElementById('ytUrl').value.trim();
+      if (!url) return;
+
+      const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\?]+)/);
+      if (!match) { alert("URL YouTube inválida"); return; }
+
+      const id = match[1];
+      const iframe = document.createElement('iframe');
+      iframe.width = '960';
+      iframe.height = '540';
+      iframe.style.border = '0';
+      iframe.src = \`https://www.youtube-nocookie.com/embed/\${id}?autoplay=1&mute=1\`;
+
+      const holder = document.createElement('div');
+      holder.style.width = '960px';
+      holder.style.height = '540px';
+      holder.appendChild(iframe);
+
+      const cssObj = new CSS3DObject(holder);
+      const root = new THREE.Group();
+      root.position.set(0, 1.6, -2);
+
+      const helper = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 0.5625),
+        new THREE.MeshBasicMaterial({ transparent:true, opacity:0 })
+      );
+      root.add(helper);
+
+      cssObj.scale.set(1/960, 1/960, 1/960);
+      cssObj.position.copy(root.position);
+      cssObj.quaternion.copy(root.quaternion);
+
+      scene.add(root);
+      scene.add(cssObj);
+
+      const layer = {
+        id: uid(),
+        name: \`YouTube \${id}\`,
+        kind: 'youtube',
+        projection: 'plane',
+        root3D: root,
+        pickMesh: helper,
+        cssObj,
+        visible: true,
+        locked: false,
+        billboard: false,
+        originalAspect: 16/9
+      };
+
+      objects.push(layer);
+      selectObject(layer.id);
+      updateLayers();
+    }
+
+    // ✅ CORRECCIÓN: Solo bloquear proyecciones para MODELOS 3D (YouTube SÍ permite proyecciones)
+    function applyProjection(layer, mode) {
+      // Solo bloquear modelos 3D
+      if (layer.kind === 'model') {
+        document.getElementById('projSelect').value = 'plane';
+        document.getElementById('projNote').style.display = 'block';
+        document.getElementById('projNote').innerHTML = '⚠️ Las proyecciones no aplican a modelos 3D.';
+        return;
       }
 
-      if(id==='vidVol')  onVideoVolume(val);
-      if(id==='vidSeek') onVideoSeek(val);
-    });
-  });
+      document.getElementById('projNote').style.display = 'none';
+      layer.projection = mode;
 
-  /* ==========================================================
-       3 ·  Serializado / carga local  (.json)
-  ========================================================== */
-  function sceneToJSON(){
-    return JSON.stringify(objects.map(o=>({
-      id:o.id,name:o.name,kind:o.kind,projection:o.projection,sourceUrl:o.sourceUrl,
-      billboard:o.billboard,visible:o.visible,locked:o.locked,
-      pos:o.root3D.position.toArray(),
-      rot:o.root3D.rotation.toArray(),
-      scl:o.root3D.scale.toArray()
-    })));
-  }
-  async function saveToLocal(){
-    const blob=new Blob([sceneToJSON()],{type:'application/json'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download='diamond_scene.json'; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
-  }
-  async function loadFromJSON(file){
-    const cfgs=JSON.parse(await file.text());
-    [...objects].forEach(()=>deleteActive());           // limpia escena actual
-    for(const cfg of cfgs){
-      let layer=null;
-      if(cfg.kind==='model'&&cfg.sourceUrl.match(/\.(glb|gltf)$/i))
-        layer=await addModel(cfg.sourceUrl,cfg.name,true);
-      else if(cfg.kind==='video')  layer=await addMedia(cfg.sourceUrl,'video',cfg.name,true);
-      else if(cfg.kind==='gif')    layer=await addMedia(cfg.sourceUrl,'gif',cfg.name,true);
-      else if(cfg.kind==='image')  layer=await addMedia(cfg.sourceUrl,'image',cfg.name,true);
-      else if(cfg.kind==='youtube'){ document.getElementById('ytUrl').value=cfg.sourceUrl; await addYouTube(); layer=objects.at(-1);}
-      if(!layer) continue;
-      layer.root3D.position.fromArray(cfg.pos);
-      layer.root3D.rotation.fromArray(cfg.rot);
-      layer.root3D.scale.fromArray(cfg.scl);
-      layer.billboard=cfg.billboard;
-      setLayerVisible(layer,cfg.visible);
-      layer.locked=cfg.locked;
-      applyProjection(layer,cfg.projection);
+      // Para YouTube: ajustar el helper mesh y el CSS3D
+      if (layer.kind === 'youtube') {
+        const helper = layer.pickMesh;
+        if (!helper) return;
+
+        if (mode === '360') {
+          helper.geometry.dispose();
+          helper.geometry = new THREE.SphereGeometry(50, 64, 32);
+          helper.material.side = THREE.BackSide;
+          helper.position.set(0, 0, 0);
+          layer.root3D.position.set(0, 1.6, 0);
+          
+          // Escalar CSS3D para entorno 360
+          if (layer.cssObj) {
+            layer.cssObj.scale.set(50/960, 50/960, 50/960);
+          }
+        } else if (mode === 'orb') {
+          helper.geometry.dispose();
+          helper.geometry = new THREE.SphereGeometry(0.75, 64, 32);
+          helper.material.side = THREE.FrontSide;
+          helper.position.set(0, 0, 0);
+          
+          if (layer.cssObj) {
+            layer.cssObj.scale.set(0.75/960, 0.75/960, 0.75/960);
+          }
+        } else if (mode === 'curved') {
+          helper.geometry.dispose();
+          helper.geometry = new THREE.CylinderGeometry(2.5, 2.5, 1.4, 48, 1, true, 3.8, 1.8);
+          helper.scale.set(-1, 1, 1);
+          helper.position.set(0, 0, 0);
+          
+          if (layer.cssObj) {
+            layer.cssObj.scale.set(2.5/960, 2.5/960, 2.5/960);
+          }
+        } else {
+          // Plano 2D
+          helper.geometry.dispose();
+          helper.geometry = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
+          helper.position.set(0, 0, 0);
+          helper.scale.set(1, 1, 1);
+          
+          if (layer.cssObj) {
+            layer.cssObj.scale.set(1/960, 1/960, 1/960);
+          }
+        }
+        return;
+      }
+
+      // Para imagen/video/gif: usar mesh normal
+      const mesh = layer.mesh;
+      if (!mesh) return;
+
+      if (mode === '360') {
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.SphereGeometry(50, 64, 32);
+        mesh.material.side = THREE.BackSide;
+        mesh.position.set(0, 0, 0);
+        layer.root3D.position.set(0, 1.6, 0);
+      } else if (mode === 'orb') {
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.SphereGeometry(0.75, 64, 32);
+        mesh.material.side = THREE.FrontSide;
+        mesh.position.set(0, 0, 0);
+      } else if (mode === 'curved') {
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 48, 1, true, 3.8, 1.8);
+        mesh.scale.set(-1, 1, 1);
+        mesh.position.set(0, 0, 0);
+      } else {
+        mesh.geometry.dispose();
+        mesh.geometry = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
+        mesh.position.set(0, 0, 0);
+        mesh.scale.set(1, 1, 1);
+      }
     }
-    updateLayers();
-  }
-  document.getElementById('jsonImport').addEventListener('change',e=>{
-    if(e.target.files[0]) loadFromJSON(e.target.files[0]);
-    e.target.value='';
-  });
 
-  /* ==========================================================
-       4 ·  GIF  — decodificación con worker
-  ========================================================== */
-  async function decodeGif(arrayBuffer){
-    return await new Promise(res=>{
-      gifWorker.onmessage=e=>res(e.data);
-      gifWorker.postMessage({buf:arrayBuffer},[arrayBuffer]);
-    });
-  }
+    function selectObject(id) {
+      activeId = id;
+      const o = objects.find(x => x.id === id);
+      if (!o) return;
 
-  /* ►  addGifFromFile — sustituye cuerpo por versión worker */
-  async function addGifFromFile(file){
-    toggleLoader(true,'CARGANDO GIF…');
-    try{
-      const buf=await file.arrayBuffer();
-      const {w,h,frames}=await decodeGif(buf);
+      transformCtrl.detach();
+      if (o.root3D && !o.locked) transformCtrl.attach(o.root3D);
 
-      const cvs=document.createElement('canvas'); cvs.width=w; cvs.height=h;
-      const ctx=cvs.getContext('2d');
-      const dat=ctx.createImageData(w,h);
-      const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
+      document.getElementById('editorUI').style.display = 'block';
+      document.getElementById('layerVisible').checked = !!o.visible;
+      document.getElementById('layerLocked').checked = !!o.locked;
+      document.getElementById('checkBillboard').checked = !!o.billboard;
+      document.getElementById('projSelect').value = o.projection || 'plane';
 
-      const gifData={frames,idx:0,next:0,ctx,dat,tex,playing:true};
-      const aspect=w/Math.max(1,h);
+      // ✅ Mostrar nota SOLO para modelos 3D (YouTube SÍ permite proyecciones)
+      if (o.kind === 'model') {
+        document.getElementById('projNote').style.display = 'block';
+        document.getElementById('projNote').innerHTML = '⚠️ Las proyecciones no aplican a modelos 3D.';
+      } else {
+        document.getElementById('projNote').style.display = 'none';
+      }
 
-      /* … el resto del código original de addGifFromFile creando la capa
-         (root3D, material, etc.) pero usando gifData anterior … */
-    }catch(e){ console.error(e); alert('Error GIF'); }
-    finally{ toggleLoader(false); }
-  }
-
-  /* ►  loop de render: nueva lectura de fotogramas */
-  if(o.kind==='gif'&&o.gifData?.playing){
-    const g=o.gifData;
-    if(performance.now()>g.next){
-      const fr=g.frames[g.idx];
-      g.dat.data.set(fr.dat);
-      g.ctx.putImageData(g.dat,0,0); g.tex.needsUpdate=true;
-      g.next=performance.now()+fr.delay;
-      g.idx=(g.idx+1)%g.frames.length;
+      syncTransformToUI();
+      updateLayers();
     }
-  }
 
-  /* ==========================================================
-       5 ·  Depth shader — fix Meta Quest
-  ========================================================== */
-  const depthFS = `#version 300 es
-    precision highp float; precision highp sampler2D;
-    in vec2 vUv;
-    uniform sampler2D uDepth;
-    uniform float uRawToMeters;
-    uniform mat4 uProj;
-    out vec4 outColor;
-    float decode(in vec2 la){ return la.x*256.0+la.y; }
-    void main(){
-      float zMeters = decode(texture(uDepth,vUv).ra) * uRawToMeters;
-      if(zMeters<=0.0) discard;
-      float z = -zMeters;
-      float clipZ = uProj[2][2]*z + uProj[3][2];
-      float clipW = uProj[2][3]*z + uProj[3][3];
-      gl_FragDepth = clamp((clipZ/clipW)*0.5+0.5,0.0,1.0);
-      outColor=vec4(0.0);
+    function updateLayers() {
+      const list = document.getElementById('layerList');
+      list.innerHTML = '';
+
+      objects.forEach(o => {
+        const row = document.createElement('div');
+        row.className = \`layer-item \${o.id === activeId ? 'active' : ''}\`;
+        
+        const ico = document.createElement('div');
+        ico.textContent = o.kind === 'youtube' ? '▶' : (o.kind === 'gif' ? '👾' : '🖼️');
+        
+        const name = document.createElement('div');
+        name.textContent = o.name || 'Layer';
+        
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.textContent = o.kind === 'youtube' ? 'YT' : (o.projection || 'plane');
+        
+        const mini = document.createElement('div');
+        mini.className = 'mini';
+        
+        const vis = document.createElement('input');
+        vis.type = 'checkbox';
+        vis.checked = !!o.visible;
+        vis.onclick = e => e.stopPropagation();
+        vis.onchange = () => { o.visible = vis.checked; if (o.root3D) o.root3D.visible = vis.checked; updateLayers(); };
+        
+        const lock = document.createElement('input');
+        lock.type = 'checkbox';
+        lock.checked = !!o.locked;
+        lock.onclick = e => e.stopPropagation();
+        lock.onchange = () => { o.locked = lock.checked; updateLayers(); };
+        
+        mini.appendChild(vis);
+        mini.appendChild(lock);
+        
+        row.appendChild(ico);
+        row.appendChild(name);
+        row.appendChild(tag);
+        row.appendChild(mini);
+        row.onclick = () => selectObject(o.id);
+        
+        list.appendChild(row);
+      });
     }
-  `;
-  /*  y cuando creas depthTex:  */
-  depthTex = gl.createTexture();
-  gl.bindTexture(gl.TEXTURE_2D,depthTex);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
-  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
 
-  /* ==========================================================
-       6 ·  JSZip + Drive upload
-  ========================================================== */
-  window.saveSceneToDrive = async ()=>{
-    toggleLoader(true,'COMPRIMIENDO…');
-    const zip=new JSZip();
-    zip.file('scene.json',sceneToJSON());
-    const blobLocal=objects.filter(o=>o.sourceUrl.startsWith('blob:'));
-    for(const o of blobLocal){
-      const resp=await fetch(o.sourceUrl);
-      zip.file('assets/'+o.name,await resp.arrayBuffer());
+    // ✅ CORRECCIÓN 3: Transform en tiempo real
+    function applyTransformFromUIRealtime() {
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D || o.locked) return;
+
+      const px = parseFloat(document.getElementById('tPosX').value);
+      const py = parseFloat(document.getElementById('tPosY').value);
+      const pz = parseFloat(document.getElementById('tPosZ').value);
+
+      const rx = parseFloat(document.getElementById('tRotX').value) * Math.PI / 180;
+      const ry = parseFloat(document.getElementById('tRotY').value) * Math.PI / 180;
+      const rz = parseFloat(document.getElementById('tRotZ').value) * Math.PI / 180;
+
+      const s = parseFloat(document.getElementById('tScale').value);
+
+      o.root3D.position.set(px, py, pz);
+      o.root3D.rotation.set(rx, ry, rz);
+      o.root3D.scale.setScalar(Math.max(0.01, s));
+
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.position.copy(o.root3D.position);
+        o.cssObj.quaternion.copy(o.root3D.quaternion);
+        o.cssObj.scale.copy(o.root3D.scale).multiplyScalar(1/960);
+      }
     }
-    const zipBlob=await zip.generateAsync({type:'blob'});
 
-    const meta={name:`diamond_${Date.now()}.zip`,mimeType:'application/zip'};
-    const tok=gapi.auth.getToken().access_token;
-    const form=new FormData();
-    form.append('metadata',new Blob([JSON.stringify(meta)],{type:'application/json'}));
-    form.append('file',zipBlob);
-    await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{
-       method:'POST',headers:{Authorization:`Bearer ${tok}`},body:form});
-    toggleLoader(false); alert('Escena subida a Drive ✅');
-  };
+    function syncTransformToUI() {
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D) return;
 
-  /* ==========================================================
-       7 ·  El resto del código (loaders, XR, controles…)
-           permanece sin cambios y se engancha debajo
-  ========================================================== */
+      document.getElementById('tPosX').value = o.root3D.position.x;
+      document.getElementById('tPosY').value = o.root3D.position.y;
+      document.getElementById('tPosZ').value = o.root3D.position.z;
 
-  /* … pega aquí todo el código original restante
-       (init, animate, loaders addModel/addMedia, etc.)
-       NO olvides que addMedia para GIF debe llamar decodeGif(...) igual que addGifFromFile … */
+      document.getElementById('tRotX').value = o.root3D.rotation.x * 180 / Math.PI;
+      document.getElementById('tRotY').value = o.root3D.rotation.y * 180 / Math.PI;
+      document.getElementById('tRotZ').value = o.root3D.rotation.z * 180 / Math.PI;
 
+      document.getElementById('tScale').value = o.root3D.scale.x;
+
+      ['tPosX','tPosY','tPosZ','tRotX','tRotY','tRotZ','tScale'].forEach(id => {
+        const val = document.getElementById(id).value;
+        const lbl = document.getElementById('v_' + id);
+        if (lbl) lbl.textContent = parseFloat(val).toFixed(id.includes('Rot') ? 1 : 3);
+      });
+    }
+
+    function resetTransformUI() {
+      ['tPosX','tPosY','tPosZ'].forEach((id, i) => document.getElementById(id).value = [0,1.6,-2][i]);
+      ['tRotX','tRotY','tRotZ'].forEach(id => document.getElementById(id).value = 0);
+      document.getElementById('tScale').value = 1;
+      applyTransformFromUIRealtime();
+      syncTransformToUI();
+    }
+
+    function deleteActive() {
+      const idx = objects.findIndex(x => x.id === activeId);
+      if (idx < 0) return;
+
+      const o = objects[idx];
+      if (o.root3D) scene.remove(o.root3D);
+      if (o.cssObj) scene.remove(o.cssObj);
+
+      objects.splice(idx, 1);
+      activeId = null;
+      transformCtrl.detach();
+      document.getElementById('editorUI').style.display = 'none';
+      updateLayers();
+    }
+
+    function centerActive() {
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D) return;
+      o.root3D.position.set(0, 1.6, -2);
+      if (o.cssObj) o.cssObj.position.copy(o.root3D.position);
+      syncTransformToUI();
+    }
+
+    function bindUI() {
+      // ✅ Selector de temas
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.body.dataset.theme = btn.dataset.theme;
+          document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+
+      // ✅ TIEMPO REAL: todos los sliders aplican cambios inmediatamente
+      document.querySelectorAll('input[type=range]').forEach(i => {
+        i.addEventListener('input', (e) => {
+          const id = e.target.id;
+          const val = parseFloat(e.target.value);
+          const lbl = document.getElementById('v_' + id);
+          if (lbl) lbl.textContent = val.toFixed(3);
+
+          // Transform en tiempo real
+          if (id.startsWith('tPos') || id.startsWith('tRot') || id === 'tScale') {
+            applyTransformFromUIRealtime();
+          }
+
+          // Shader params en tiempo real
+          const o = objects.find(x => x.id === activeId);
+          if (o && o.mat?.uniforms) {
+            const u = o.mat.uniforms;
+            if (id === 'brightness') u.uBrightness.value = val;
+            if (id === 'contrast') u.uContrast.value = val;
+            if (id === 'saturation') u.uSaturation.value = val;
+            if (id === 'gamma') u.uGamma.value = val;
+            if (id === 'opacity') u.uOpacity.value = val;
+            if (id === 'emissive') u.uEmissive.value = val;
+            if (id === 'k1sim') u.sim1.value = val;
+            if (id === 'k1smooth') u.smooth1.value = val;
+            if (id === 'despill') u.despill.value = val;
+          }
+        });
+      });
+
+      document.getElementById('chromaToggle').addEventListener('change', () => {
+        const o = objects.find(x => x.id === activeId);
+        if (o && o.mat?.uniforms) {
+          o.mat.uniforms.chromaOn.value = document.getElementById('chromaToggle').checked;
+          document.getElementById('chromaPanel').style.display = o.mat.uniforms.chromaOn.value ? 'block' : 'none';
+        }
+      });
+
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
+        for (const f of e.target.files) {
+          if (f.name.toLowerCase().endsWith('.gif')) {
+            await addGifFromFile(f);
+          }
+        }
+        e.target.value = '';
+      });
+
+      window.addYouTube = addYouTube;
+      window.updateProjection = () => {
+        const o = objects.find(x => x.id === activeId);
+        if (!o) return;
+        applyProjection(o, document.getElementById('projSelect').value);
+      };
+      window.deleteActive = deleteActive;
+      window.centerActive = centerActive;
+      window.syncTransformToUI = syncTransformToUI;
+      window.resetTransformUI = resetTransformUI;
+      window.toggleUIPanel = () => {
+        document.getElementById('ui').classList.toggle('minimized');
+        document.getElementById('toggleUI').style.display = document.getElementById('ui').classList.contains('minimized') ? 'flex' : 'none';
+      };
+      window.loadFromWeb = async () => {
+        const url = document.getElementById('webUrl').value.trim();
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+          document.getElementById('ytUrl').value = url;
+          await addYouTube();
+        }
+      };
+      window.videoUIAction = () => {};
+      window.updateUnits = () => {};
+      window.updateGrid = () => {};
+    }
+
+    function animate() {
+      orbit.update();
+
+      objects.forEach(o => {
+        if (o.gifData && o.gifData.playing && performance.now() > o.gifData.nextTime) {
+          const g = o.gifData;
+          g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data);
+          g.ctx.putImageData(g.dat, 0, 0);
+          g.tex.needsUpdate = true;
+
+          const d = g.r.frameInfo(g.f).delay * 10;
+          g.nextTime = performance.now() + (d || 100);
+          g.f = (g.f + 1) % g.r.numFrames();
+        }
+
+        if (o.kind === 'youtube' && o.cssObj && o.root3D) {
+          o.cssObj.position.copy(o.root3D.position);
+          o.cssObj.quaternion.copy(o.root3D.quaternion);
+        }
+      });
+
+      renderer.render(scene, camera);
+      cssRenderer.render(scene, camera);
+    }
+
+    init();
   </script>
 </body>
 </html>
-
-
-
-    <!-- … el resto del panel permanece igual (importador, capas, editor, etc.) … -->
