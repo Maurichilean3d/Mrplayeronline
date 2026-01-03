@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v24.x | Fusion Projections + 3D + 360</title>
+  <title>MR Studio Diamond v30.x | Fusion Projections + 3D + 360</title>
 
   <!-- omggif (para GIF). Mantengo tu script, pero además en JS agrego fallback robusto si no carga -->
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
@@ -180,7 +180,7 @@
 
   <div class="ui-panel" id="ui">
     <h2>
-      <span>DIAMOND v24.x FUSION</span>
+      <span>DIAMOND v30.x FUSION</span>
       <span style="cursor:pointer; font-size:18px;" onclick="toggleUIPanel()">×</span>
     </h2>
 
@@ -402,16 +402,18 @@
     // ✅ Asegura que Omggif exista (soluciona 'librería no cargada')
     function ensureOmggifLoaded() {
       return new Promise((resolve, reject) => {
-        if (window.Omggif && window.Omggif.GifReader) return resolve(true);
+        // Intenta detectar la librería en diferentes posibles namespaces
+        const Lib = window.GifReader ? window : (window.omggif || {});
+        if (Lib.GifReader) return resolve(true);
 
-        // Intento fallback: inyecta script si no está cargado
         const s = document.createElement('script');
         s.src = 'https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js';
         s.onload = () => {
-          if (window.Omggif && window.Omggif.GifReader) resolve(true);
-          else reject(new Error("Omggif no disponible"));
+          const FallbackLib = window.GifReader ? window : (window.omggif || {});
+          if (FallbackLib.GifReader) resolve(true);
+          else reject(new Error("Omggif no disponible después de la carga"));
         };
-        s.onerror = () => reject(new Error("No se pudo cargar omggif (bloqueo de red/CSP)"));
+        s.onerror = () => reject(new Error("Error de red al cargar omggif"));
         document.head.appendChild(s);
       });
     }
@@ -1635,9 +1637,11 @@
       toggleLoader(true, "CARGANDO GIF...");
       try {
         await ensureOmggifLoaded();
-
         const buf = await file.arrayBuffer();
-        const r = new window.Omggif.GifReader(new Uint8Array(buf));
+        
+        // Usa la referencia robusta detectada en el paso anterior
+        const Lib = window.GifReader ? window : (window.omggif || {});
+        const r = new Lib.GifReader(new Uint8Array(buf));
 
         const cvs = document.createElement('canvas');
         cvs.width = r.width; cvs.height = r.height;
@@ -1648,12 +1652,12 @@
         tex.colorSpace = THREE.SRGBColorSpace;
 
         const gifData = { r, ctx, dat, tex, f:0, nextTime:0, playing:true };
-
         const aspect = r.width / Math.max(1, r.height);
 
         const root = new THREE.Group();
         root.position.set(0, 1.6, -2);
 
+        // Mantenemos tu material avanzado de la v24 (Chroma + Brillo + etc)
         const mat = new THREE.ShaderMaterial({
           uniforms: {
             map: { value: tex },
@@ -1676,6 +1680,43 @@
           side: THREE.DoubleSide,
           depthWrite: false
         });
+
+        const mesh = new THREE.Mesh(new THREE.PlaneGeometry(aspect, 1), mat);
+        mesh.userData.layerId = null; 
+        root.add(mesh);
+        scene.add(root);
+
+        const layer = {
+          id: uid(), // Usamos tu función de ID de la v24
+          name: file.name,
+          kind: 'gif',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: mesh,
+          mesh,
+          mat,
+          tex,
+          video: null,
+          gifData,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: aspect,
+          sourceUrl: 'localfile'
+        };
+        mesh.userData.layerId = layer.id;
+
+        objects.push(layer);
+        applyLayerOrderToRender();
+        selectObject(layer.id);
+        updateLayers();
+      } catch (e) {
+        console.error(e);
+        alert("Error al procesar el GIF: " + e.message);
+      } finally {
+        toggleLoader(false);
+      }
+    }
 
         const planeGeo = new THREE.PlaneGeometry(aspect, 1);
         const mesh = new THREE.Mesh(planeGeo, mat);
