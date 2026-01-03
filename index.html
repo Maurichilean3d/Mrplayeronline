@@ -3,110 +3,145 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v4.1 (Editor+MR Workflow + 360 Surfaces)</title>
+  <title>MR Studio Diamond v6.9 (Stable Core + Earth)</title>
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <style>
+    /* ESTILOS UI - Mantenidos de la versión Pro */
     * { box-sizing: border-box; user-select: none; }
     body { margin: 0; overflow: hidden; background: transparent; font-family: 'Segoe UI', system-ui, sans-serif; color: #eee; }
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
+    
+    .ui-panel { position: fixed; left: 20px; top: 20px; width: 400px; max-height: 95vh; background: rgba(10, 10, 14, 0.96); backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 18px; padding: 20px; overflow-y: auto; z-index: 100; box-shadow: 0 25px 60px rgba(0,0,0,0.85); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); scrollbar-width: thin; scrollbar-color: #6c5ce7 transparent; }
+    .ui-panel.hidden { transform: translateX(-460px); }
+    
+    h2 { margin: 0 0 18px 0; font-size: 20px; color: #a29bfe; font-weight: 900; text-transform: uppercase; letter-spacing: 1.5px; border-bottom: 2px solid rgba(108, 92, 231, 0.3); padding-bottom: 10px; background: linear-gradient(135deg, #6c5ce7, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; display: flex; justify-content: space-between; align-items: center; }
+    .ver-badge { font-size: 10px; background: #55efc4; color: #000; padding: 2px 6px; border-radius: 4px; vertical-align: middle; font-weight: 800; }
 
-    .ui-panel {
-      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
-      background: rgba(10, 10, 14, 0.95); backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;
-      padding: 18px; overflow-y: auto; z-index: 100;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-      transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-      scrollbar-width: thin; scrollbar-color: #444 transparent;
-    }
-    .ui-panel.hidden { transform: translateX(-420px); }
+    .sec-head { font-size: 11px; font-weight: 800; color: #b2b9c6; margin: 18px 0 10px 0; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 8px; }
+    .row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    label { font-size: 12px; flex: 1; color: #d1d5db; white-space: nowrap; font-weight: 500; }
+    
+    /* FIX: Slider optimizado 0.1 a 5 */
+    input[type=range] { flex: 2; height: 6px; background: #2a2d35; border-radius: 3px; accent-color: #6c5ce7; cursor: pointer; }
+    
+    .val { width: 50px; text-align: right; font-size: 11px; font-family: 'Consolas', monospace; color: #a29bfe; font-weight: 600; }
+    select, input[type=file], input[type=text] { width: 100%; background: #1e1e24; border: 1px solid #444; color: #eee; padding: 10px; border-radius: 10px; font-size: 11px; outline: none; cursor: pointer; transition: 0.2s; }
+    select:hover, input[type=file]:hover { border-color: #6c5ce7; }
+    
+    button { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 11px; font-weight: 800; cursor: pointer; color: white; background: #2a2d35; transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); filter: brightness(1.2); }
+    button.primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); box-shadow: 0 5px 20px rgba(108,92,231,0.4); }
+    button.danger { background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.4); color: #ff7675; }
+    button.warn { background: rgba(253, 203, 110, 0.15); border: 1px solid rgba(253, 203, 110, 0.4); color: #ffeaa7; }
+    button.info { background: rgba(116, 185, 255, 0.15); border: 1px solid rgba(116, 185, 255, 0.4); color: #74b9ff; }
 
-    h2 { margin: 0 0 15px 0; font-size: 18px; color: #a29bfe; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-    .sec-head { font-size: 11px; font-weight: 700; color: #aaa; margin: 15px 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+    .layer-list { max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 6px; margin-bottom: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .layer-item { padding: 10px; font-size: 12px; border-radius: 8px; cursor: move; display: flex; align-items: center; gap: 12px; margin-bottom: 5px; border: 1px solid transparent; transition: all 0.2s; background: rgba(255,255,255,0.02); }
+    .layer-item:hover { background: rgba(108, 92, 231, 0.15); border-color: rgba(108, 92, 231, 0.3); }
+    .layer-item.active { background: rgba(108, 92, 231, 0.3); border-color: rgba(108, 92, 231, 0.6); color: white; box-shadow: 0 0 15px rgba(108, 92, 231, 0.3); }
+    .layer-item.dragging { opacity: 0.5; transform: scale(0.95); }
 
-    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-    label { font-size: 12px; flex: 1; color: #ccc; white-space: nowrap; font-weight: 500; }
-    input[type=range] { flex: 2; height: 4px; background: #333; border-radius: 2px; accent-color: #6c5ce7; cursor: pointer; }
-    .val { width: 54px; text-align: right; font-size: 11px; font-family: ui-monospace, Menlo, Consolas, monospace; color: #a29bfe; }
-    select, input[type=file] { width: 100%; background: #1e1e24; border: 1px solid #444; color: #eee; padding: 8px; border-radius: 8px; font-size: 11px; outline: none; }
+    .toggle-ui { position: fixed; bottom: 30px; right: 30px; width: 56px; height: 56px; background: linear-gradient(135deg, #1e1e24, #2a2d35); border-radius: 50%; display: grid; place-items: center; font-size: 22px; border: 2px solid #6c5ce7; z-index: 200; cursor: pointer; box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5); transition: 0.3s; }
+    .toggle-ui:hover { transform: scale(1.1); }
 
-    button { flex: 1; padding: 12px; border-radius: 8px; border: none; font-size: 12px; font-weight: 700; cursor: pointer; color: white; background: #333; transition: 0.2s; }
-    button.primary { background: linear-gradient(135deg, #6c5ce7, #a29bfe); box-shadow: 0 4px 15px rgba(108,92,231,0.3); }
-    button.danger { background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.3); color: #ff7675; }
-    button.warn { background: rgba(253, 203, 110, 0.15); border: 1px solid rgba(253, 203, 110, 0.3); color: #ffeaa7; }
+    #vrBtn { position: fixed; bottom: 35px; left: 50%; transform: translateX(-50%); padding: 16px 50px; background: linear-gradient(135deg, #6c5ce7, #0984e3); color: white; border-radius: 60px; border: none; font-weight: 900; cursor: pointer; z-index: 1000; display: none; font-size: 14px; box-shadow: 0 0 35px rgba(108,92,231,0.7); animation: pulse 2s infinite; text-transform: uppercase; letter-spacing: 2px; }
+    @keyframes pulse { 0% {box-shadow: 0 0 25px rgba(108,92,231,0.7);} 50% {box-shadow: 0 0 45px rgba(108,92,231,0.9);} 100% {box-shadow: 0 0 25px rgba(108,92,231,0.7);} }
 
-    .layer-list { max-height: 140px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 5px; margin-bottom: 10px; }
-    .layer-item { padding: 10px; font-size: 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; border: 1px solid transparent; }
-    .layer-item.active { background: rgba(108, 92, 231, 0.25); border-color: rgba(108, 92, 231, 0.5); color: white; }
+    #modeBadge{ position: fixed; top: 20px; right: 20px; z-index: 1200; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); padding: 12px 16px; border-radius: 14px; font-size: 13px; display:flex; gap:12px; align-items:center; backdrop-filter: blur(15px); box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+    #modeDot{ width:12px; height:12px; border-radius:50%; background:#55efc4; box-shadow: 0 0 20px rgba(85,239,196,0.7); }
+    #modeText{ color:#e8e8e8; font-weight:900; letter-spacing:0.8px; }
+    #exitXrBtn{ display:none; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,0.2); background:rgba(255,255,255,0.1); color:#fff; cursor:pointer; font-weight:900; transition: 0.2s; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+    #exitXrBtn:hover { background:rgba(255,255,255,0.15); }
 
-    .toggle-ui { position: fixed; bottom: 25px; right: 25px; width: 50px; height: 50px; background: #1e1e24; border-radius: 50%; display: grid; place-items: center; font-size: 20px; border: 1px solid #555; z-index: 200; cursor: pointer; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-    #vrBtn { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); padding: 14px 45px; background: linear-gradient(135deg, #6c5ce7, #0984e3); color: white; border-radius: 50px; border: none; font-weight: 800; cursor: pointer; z-index: 1000; display: none; box-shadow: 0 0 30px rgba(108,92,231,0.6); animation: pulse 2s infinite; }
-    @keyframes pulse { 0% {box-shadow: 0 0 20px rgba(108,92,231,0.6);} 50% {box-shadow: 0 0 40px rgba(108,92,231,0.8);} 100% {box-shadow: 0 0 20px rgba(108,92,231,0.6);} }
-
-    #modeBadge{
-      position: fixed; top: 18px; right: 18px; z-index: 1200;
-      background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.12);
-      padding: 10px 12px; border-radius: 12px; font-size: 12px;
-      display:flex; gap:10px; align-items:center;
-      backdrop-filter: blur(10px);
-    }
-    #modeDot{ width:10px; height:10px; border-radius:50%; background:#55efc4; box-shadow: 0 0 18px rgba(85,239,196,0.6); }
-    #modeText{ color:#ddd; font-weight:800; letter-spacing:0.6px; }
-    #exitXrBtn{ display:none; padding:8px 10px; border-radius:10px; border:1px solid rgba(255,255,255,0.16); background:rgba(255,255,255,0.08); color:#fff; cursor:pointer; font-weight:800; }
-
-    .loader { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 5000; display: none; place-items: center; flex-direction: column; gap: 15px; color: #a29bfe; font-size: 14px; font-weight: bold; letter-spacing: 2px; }
-    .spinner { width: 40px; height: 40px; border: 4px solid #333; border-top-color: #a29bfe; border-radius: 50%; animation: spin 1s infinite linear; }
+    .loader { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; place-items: center; flex-direction: column; gap: 20px; color: #a29bfe; font-size: 15px; font-weight: 900; letter-spacing: 3px; }
+    .spinner { width: 50px; height: 50px; border: 5px solid #333; border-top-color: #6c5ce7; border-right-color: #a29bfe; border-radius: 50%; animation: spin 1s infinite linear; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .disabled-overlay{
-      opacity: 0.55;
-      filter: saturate(0.9);
-      pointer-events: none;
-    }
+    .hint { font-size: 11px; color: #9aa5b1; line-height: 1.4; background: rgba(108, 92, 231, 0.08); border: 1px solid rgba(108, 92, 231, 0.2); padding: 12px; border-radius: 12px; margin-top: 12px; }
+    .kbd { font-family: 'Consolas', monospace; font-size: 11px; color:#fff; background: rgba(108, 92, 231, 0.25); padding: 3px 8px; border-radius: 8px; border: 1px solid rgba(108, 92, 231, 0.3); font-weight: 700; }
 
-    .hint {
-      font-size: 11px; color: #9aa0a6; line-height: 1.3;
-      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-      padding: 10px; border-radius: 10px; margin-top: 10px;
-    }
-    .kbd { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11px; color:#fff;
-      background: rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 7px; border: 1px solid rgba(255,255,255,0.12);
-    }
+    #mediaPlayer { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%); background: rgba(10, 10, 14, 0.97); backdrop-filter: blur(25px); border: 1px solid rgba(108, 92, 231, 0.3); border-radius: 18px; padding: 18px 24px; display: none; z-index: 150; box-shadow: 0 12px 45px rgba(0,0,0,0.8); min-width: 450px; }
+    #mediaPlayer.show { display: block; }
+    .media-type-badge { font-size: 10px; padding: 4px 10px; border-radius: 6px; background: rgba(108, 92, 231, 0.2); color: #a29bfe; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 10px; display: inline-block; }
+    .media-btn-row { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+    .media-btn { width: 44px; height: 44px; border-radius: 50%; background: #2a2d35; border: 1px solid #555; display: grid; place-items: center; cursor: pointer; transition: 0.2s; font-size: 20px; }
+    .media-btn:hover { background: #3a3d45; border-color: #6c5ce7; transform: scale(1.05); }
+    .media-progress { flex: 1; height: 8px; background: #2a2d35; border-radius: 4px; cursor: pointer; position: relative; }
+    .media-progress-bar { height: 100%; background: linear-gradient(90deg, #6c5ce7, #a29bfe); border-radius: 4px; width: 0%; transition: width 0.1s; }
+    .media-time { font-size: 12px; color: #b2b9c6; font-family: 'Consolas', monospace; min-width: 110px; text-align: center; font-weight: 600; }
 
-    .miniBtn{
-      padding: 8px 10px; border-radius: 10px; border:1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.08); color:#fff; font-weight: 800; cursor: pointer;
-    }
-    .miniBtn.red{ border-color: rgba(255,118,117,0.35); background: rgba(255,118,117,0.12); }
+    .preset-grid { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .preset-item { width: 38px; height: 38px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; display: grid; place-items: center; font-size: 20px; }
+    .preset-item:hover { border-color: #6c5ce7; transform: scale(1.1); }
+    .preset-item.active { border-color: #a29bfe; box-shadow: 0 0 20px rgba(108,92,231,0.7); }
+
+    .model-components { max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 10px; padding: 10px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.05); }
+    .model-comp-item { display: flex; align-items: center; gap: 10px; padding: 8px; font-size: 11px; border-radius: 8px; margin-bottom: 5px; background: rgba(255,255,255,0.02); transition: 0.2s; }
+    .model-comp-item:hover { background: rgba(108, 92, 231, 0.1); }
+    .model-comp-item input[type=checkbox] { width: 18px; height: 18px; cursor: pointer; }
+    .model-comp-item label { font-size: 11px; flex: 1; cursor: pointer; color: #d1d5db; }
+
+    #projectManager { background: rgba(108, 92, 231, 0.1); border: 1px solid rgba(108, 92, 231, 0.3); padding: 15px; border-radius: 12px; margin: 15px 0; }
+    #projectManager input { width: 100%; padding: 10px; background: #1e1e24; border: 1px solid #444; border-radius: 8px; color: #eee; margin-bottom: 10px; font-size: 11px; }
+
+    .view-mode-toggle { display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 10px; margin: 10px 0; }
+    .view-mode-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid transparent; border-radius: 8px; font-size: 11px; font-weight: 700; color: #999; cursor: pointer; transition: 0.2s; text-align: center; }
+    .view-mode-btn.active { background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; border-color: rgba(255,255,255,0.2); }
+
+    .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 25px; }
   </style>
 </head>
 <body>
-
 <canvas id="c"></canvas>
-<div class="loader" id="loader"><div class="spinner"></div><span>CARGANDO...</span></div>
+<div class="loader" id="loader"><div class="spinner"></div><span>PROCESANDO...</span></div>
+<div id="modeBadge"><div id="modeDot"></div><div id="modeText">MODO EDITOR</div><button id="exitXrBtn">SALIR</button></div>
 
-<div id="modeBadge">
-  <div id="modeDot"></div>
-  <div id="modeText">MODO EDITOR</div>
-  <button id="exitXrBtn" title="Salir de XR para editar propiedades">SALIR A EDICIÓN</button>
+<div id="mediaPlayer">
+  <div class="media-type-badge" id="mediaTypeBadge">VIDEO</div>
+  <div class="media-btn-row">
+    <div class="media-btn" id="mediaPlayPause">▶️</div>
+    <div class="media-btn" id="mediaStop">⏹️</div>
+    <div class="media-progress" id="mediaProgress"><div class="media-progress-bar" id="mediaProgressBar"></div></div>
+    <div class="media-time" id="mediaTime">0:00 / 0:00</div>
+  </div>
+  <div class="row"><label>🔊 Volumen</label><input type="range" id="mediaVolume" min="0" max="1" step="0.01" value="1"><span class="val" id="v_mediaVolume">100</span></div>
+  <div id="audioControls" style="display:none;">
+    <div class="row"><label>⚡ Velocidad</label><input type="range" id="audioSpeed" min="0.25" max="2" step="0.05" value="1"><span class="val" id="v_audioSpeed">1.0x</span></div>
+    <div class="row"><label>🎚️ Tipo Audio</label><select id="audioType"><option value="global">Global (2D)</option><option value="spatial">Espacial 3D</option></select></div>
+    <div id="spatialControls" style="display:none;">
+      <div class="row"><label>📏 Distancia Ref.</label><input type="range" id="audioRefDist" min="0.1" max="50" step="0.1" value="1"><span class="val" id="v_audioRefDist">1.0</span></div>
+      <div class="row"><label>🌀 Efecto Doppler</label><input type="range" id="audioDoppler" min="0" max="10" step="0.1" value="1"><span class="val" id="v_audioDoppler">1.0</span></div>
+    </div>
+  </div>
 </div>
 
 <div class="ui-panel" id="ui">
-  <h2>🥽 MR Studio Diamond v4.1</h2>
+  <h2><span>MR Studio Diamond <span class="ver-badge">v6.9</span></span></h2>
 
-  <div class="sec-head">📂 Archivos <button class="warn" style="padding:4px; font-size:10px; width:auto; flex:0;" onclick="fileInput.click()">+ IMPORTAR</button></div>
-  <input type="file" id="fileInput" accept="image/*,video/*,.gif,.glb,.gltf,.fbx,.obj" multiple style="display:none;" />
+  <div id="projectManager">
+    <div class="sec-head">💾 Proyecto</div>
+    <input type="text" id="projectName" placeholder="Nombre del proyecto..." value="Mi Escena MR">
+    <div style="display:flex; gap:8px;">
+      <button class="success" id="btnSaveProject">💾 Guardar</button>
+      <button class="warn" id="btnLoadProject">📂 Cargar</button>
+      <button class="danger" onclick="clearScene()" title="Borrar Escena">🗑️ Limpiar</button>
+    </div>
+    <input type="file" id="projectFileInput" accept=".mrsd,application/json" style="display:none;">
+  </div>
 
+  <div class="sec-head">📂 Biblioteca <button class="info" style="padding:6px 12px; font-size:10px; width:auto; flex:0;" onclick="fileInput.click()">+ IMPORTAR</button></div>
+  <input type="file" id="fileInput" accept="image/*,video/*,audio/*,.gif,.glb,.gltf,.fbx,.obj" multiple style="display:none;" />
   <div class="layer-list" id="layerList"></div>
 
-  <div class="sec-head">🧭 Editor (tipo Blender)</div>
+  <div class="sec-head">🧭 Entorno</div>
   <div class="row">
     <label><input type="checkbox" id="checkGrid" checked> Grilla</label>
     <label><input type="checkbox" id="checkAxes" checked> Ejes</label>
+    <label><input type="checkbox" id="checkGizmo" checked> Gizmos</label>
   </div>
   <div class="row">
     <label><input type="checkbox" id="checkSnap"> Snap (0.25m)</label>
-    <label><input type="checkbox" id="checkGizmo" checked> Gizmos</label>
+    <label><input type="checkbox" id="checkOcclusion"> Oclusión (Depth API)</label>
   </div>
 
   <div id="generalControls">
@@ -119,117 +154,119 @@
       </select>
     </div>
 
+    <div id="viewModeSection" style="display:none;">
+      <div class="sec-head">🌟 Modo de Vista 360/180</div>
+      <div class="view-mode-toggle">
+        <div class="view-mode-btn active" data-mode="orb">🔮 Orbe</div>
+        <div class="view-mode-btn" data-mode="immersive">🌊 Inmersivo</div>
+      </div>
+      <div class="hint"><b>Orbe:</b> Esfera manipulable.<br><b>Inmersivo:</b> Entorno VR (Fondo).</div>
+    </div>
+
     <div class="row" id="surfaceRow" style="display:none;">
-      <label>Superficie 360/180</label>
+      <label>Superficie</label>
       <select id="surfaceSelect" style="flex:2;">
         <option value="sphere">Esfera</option>
         <option value="cube">Cubo</option>
         <option value="ovoid">Ovoide</option>
+        <option value="earth">Tierra (Achatada)</option>
       </select>
     </div>
 
     <div class="row" id="followRow" style="display:none;">
-      <label title="Mantiene la superficie centrada en el observador (útil para preview inmersivo)">Centrado en observador</label>
-      <input type="checkbox" id="followViewer" style="flex:0; width:18px; height:18px;">
-    </div>
-
-    <div class="row" id="surfaceSizeRow" style="display:none;">
-      <label>Tamaño soporte</label>
-      <input type="range" id="surfaceSize" min="5" max="80" step="0.5" value="20">
-      <span class="val" id="v_surfaceSize">20.0</span>
-    </div>
-
-    <div class="row" id="surfaceHeightRow" style="display:none;">
-      <label>Altura soporte</label>
-      <input type="range" id="surfaceHeight" min="-10" max="10" step="0.1" value="0">
-      <span class="val" id="v_surfaceHeight">0.0</span>
+      <label>Centrar en Usuario</label>
+      <input type="checkbox" id="followViewer" style="flex:0; width:20px; height:20px;">
     </div>
 
     <div class="sec-head">📏 Transformación</div>
-    <div class="row">
-      <label>Escala</label><input type="range" id="scale" min="0.1" max="10" step="0.05" value="1">
-      <span class="val" id="v_scale">1.0</span>
-    </div>
-    <div class="row">
-      <label>Modo Espejo (Flip H)</label>
-      <input type="checkbox" id="checkFlip" style="flex:0; width:18px; height:18px;">
-    </div>
+    <div class="row"><label>Escala</label><input type="range" id="scale" min="0.1" max="5.0" step="0.1" value="1"><span class="val" id="v_scale">1.0</span></div>
+    <div class="row"><label>Flip Horizontal</label><input type="checkbox" id="checkFlip" style="flex:0; width:20px; height:20px;"></div>
 
     <div id="posControls">
-      <div class="row"><label>Distancia</label><input type="range" id="dist" min="0" max="15" step="0.1" value="2"><span class="val" id="v_dist">2.0</span></div>
-      <div class="row"><label>Altura</label><input type="range" id="height" min="-5" max="5" step="0.1" value="1.6"><span class="val" id="v_height">1.6</span></div>
+      <div class="row"><label>Pos X</label><input type="range" id="posX" min="-20" max="20" step="0.1" value="0"><span class="val" id="v_posX">0.0</span></div>
+      <div class="row"><label>Pos Y (Altura)</label><input type="range" id="posY" min="-10" max="10" step="0.1" value="1.6"><span class="val" id="v_posY">1.6</span></div>
+      <div class="row"><label>Pos Z (Distancia)</label><input type="range" id="posZ" min="-30" max="30" step="0.1" value="-2"><span class="val" id="v_posZ">-2.0</span></div>
     </div>
 
     <div class="row"><label>Rotación Y</label><input type="range" id="rotY" min="0" max="360" step="1" value="0"><span class="val" id="v_rotY">0</span></div>
   </div>
 
+  <div id="modelControls" style="display:none;">
+    <div class="sec-head">🎨 Renderizado 3D</div>
+    <div class="row">
+      <select id="renderMode">
+        <option value="standard">Standard (PBR)</option>
+        <option value="wireframe">Wireframe</option>
+        <option value="flat">Flat Shading</option>
+        <option value="workbench">Workbench</option>
+      </select>
+    </div>
+    <div class="sec-head">🧩 Componentes</div>
+    <div class="model-components" id="modelComponentsList"></div>
+    <div class="sec-head">🖼️ Textura Custom</div>
+    <div class="row"><label>Imagen</label><input type="file" id="textureInput" accept="image/*" style="flex:2; padding:8px; font-size:10px;"></div>
+  </div>
+
   <div id="mediaControls" style="display:none;">
     <div class="sec-head">🎨 Color & Imagen</div>
-    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0.0</span></div>
+    <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0.00</span></div>
     <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1.0</span></div>
     <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1.0</span></div>
     <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1.0</span></div>
 
-    <div class="sec-head">🧼 Anti dominante (360 “gris azulado”)</div>
-    <div class="row"><label>Anti-azulado</label><input type="range" id="deblue" min="0" max="1" step="0.01" value="0"><span class="val" id="v_deblue">0.00</span></div>
+    <div class="sec-head">🧼 Anti Dominante</div>
+    <div class="row"><label>Anti-Azul</label><input type="range" id="deblue" min="0" max="1" step="0.01" value="0"><span class="val" id="v_deblue">0.00</span></div>
+    <div class="row"><label>Anti-Verde</label><input type="range" id="degreen" min="0" max="1" step="0.01" value="0"><span class="val" id="v_degreen">0.00</span></div>
 
     <div class="sec-head">🖼️ Ajuste Visual</div>
-    <div class="row"><label>Desfase X</label><input type="range" id="offsetX" min="-1" max="1" step="0.01" value="0"><span class="val" id="v_offsetX">0.0</span></div>
-    <div class="row"><label>Desfase Y</label><input type="range" id="offsetY" min="-1" max="1" step="0.01" value="0"><span class="val" id="v_offsetY">0.0</span></div>
+    <div class="row"><label>Offset X</label><input type="range" id="offsetX" min="-1" max="1" step="0.01" value="0"><span class="val" id="v_offsetX">0.00</span></div>
+    <div class="row"><label>Offset Y</label><input type="range" id="offsetY" min="-1" max="1" step="0.01" value="0"><span class="val" id="v_offsetY">0.00</span></div>
 
-    <div class="sec-head">🟩 Chroma Key Pro (Face Protect)</div>
-    <div class="row">
-      <label>Activar</label> <input type="checkbox" id="chromaActive" style="flex:0; width:18px; height:18px;">
-      <label style="margin-left:15px">Invertir</label> <input type="checkbox" id="chromaInvert" style="flex:0; width:18px; height:18px;">
+    <div class="sec-head">🎭 Chroma Key Ultra Pro</div>
+    <div class="row"><label>Activar Chroma</label> <input type="checkbox" id="chromaActive" style="flex:0; width:20px; height:20px;"></div>
+    <div id="chromaControls" style="display:none;">
+      <div style="font-size:10px; color:#b2b9c6; margin-bottom:10px; font-weight:600;">Presets Rápidos:</div>
+      <div class="preset-grid">
+        <div class="preset-item" data-color="0,1,0" style="background:#0f0;">🟢</div>
+        <div class="preset-item" data-color="0,0,1" style="background:#00f;">🔵</div>
+        <div class="preset-item" data-color="1,0,0" style="background:#f00;">🔴</div>
+        <div class="preset-item" data-color="1,1,0" style="background:#ff0;">🟡</div>
+        <div class="preset-item" data-color="1,0,1" style="background:#f0f;">🟣</div>
+        <div class="preset-item" data-color="0,1,1" style="background:#0ff;">🔷</div>
+        <div class="preset-item" data-color="0.5,0.5,0.5" style="background:#888;">⚪</div>
+        <div class="preset-item" data-color="0,0,0" style="background:#000; border:1px solid #555;">⚫</div>
+        <div class="preset-item" data-color="1,1,1" style="background:#fff; border:1px solid #555;">⚪</div>
+      </div>
+
+      <div class="row"><label>Invertir</label> <input type="checkbox" id="chromaInvert" style="flex:0; width:20px; height:20px;"></div>
+
+      <div style="background:rgba(108,92,231,0.1); padding:12px; border-radius:10px; margin:10px 0; border:1px solid rgba(108,92,231,0.2);">
+        <div class="row"><label style="color:#ff7675">🔴 Rojo</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"><span class="val" id="v_keyR">0.00</span></div>
+        <div class="row"><label style="color:#55efc4">🟢 Verde</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"><span class="val" id="v_keyG">1.00</span></div>
+        <div class="row"><label style="color:#74b9ff">🔵 Azul</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"><span class="val" id="v_keyB">0.00</span></div>
+        <div id="colorPrev" style="height:10px; width:100%; border-radius:6px; background:#0f0; margin-top:8px;"></div>
+      </div>
+
+      <div class="row"><label>Similitud</label><input type="range" id="sim" min="0" max="1" step="0.001" value="0.4"><span class="val" id="v_sim">0.400</span></div>
+      <div class="row"><label>Suavizado</label><input type="range" id="smooth" min="0" max="0.5" step="0.001" value="0.08"><span class="val" id="v_smooth">0.080</span></div>
+      <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v_despill">0.50</span></div>
     </div>
 
-    <div class="row" style="gap:8px;">
-      <button class="miniBtn" id="presetGreen" title="Preset verde clásico">Key Verde</button>
-      <button class="miniBtn" id="presetBlue" title="Preset azul">Key Azul</button>
-      <button class="miniBtn red" id="presetBlueGray" title="Preset gris-azulado (360 típico)">Key Gris-Azulado</button>
-    </div>
-
-    <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:8px; margin:8px 0; border:1px solid rgba(255,255,255,0.05);">
-      <div class="row"><label style="color:#ff7675">Rojo</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"><span class="val" id="v_keyR">0.0</span></div>
-      <div class="row"><label style="color:#55efc4">Verde</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"><span class="val" id="v_keyG">1.0</span></div>
-      <div class="row"><label style="color:#74b9ff">Azul</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"><span class="val" id="v_keyB">0.0</span></div>
-      <div id="colorPrev" style="height:8px; width:100%; border-radius:4px; background:#0f0; margin-top:6px; transition:0.3s;"></div>
-    </div>
-
-    <div class="row"><label>Similitud</label><input type="range" id="sim" min="0" max="1" step="0.001" value="0.4"><span class="val" id="v_sim">0.4</span></div>
-    <div class="row"><label>Suavizado</label><input type="range" id="smooth" min="0" max="0.5" step="0.001" value="0.05"><span class="val" id="v_smooth">0.05</span></div>
-    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.05" value="1"><span class="val" id="v_opacity">1.0</span></div>
-
-    <div class="sec-head">🧯 Seguridad en MR</div>
-    <div class="row">
-      <label title="Por defecto se bloquea el panel en MR para evitar cambios accidentales">Desbloquear color en MR</label>
-      <input type="checkbox" id="unlockInMR" style="flex:0; width:18px; height:18px;">
-    </div>
-
-    <div class="hint">
-      En <b>MR</b> el panel de color/chroma se bloquea por seguridad. Si realmente quieres editar en MR,
-      activa <b>Desbloquear color en MR</b> (con confirmación).
-    </div>
+    <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1.00</span></div>
   </div>
 
-  <div class="btn-group" style="margin-top:20px;">
+  <div class="action-grid">
     <button class="primary" onclick="centerActive()">🎯 Centrar</button>
-    <button class="warn" onclick="reloadVideo()">🔄 Recargar Video</button>
+    <button class="warn" onclick="reloadMedia()">🔄 Reload</button>
+    <button class="info" onclick="duplicateActive()">👥 Clonar</button>
     <button class="danger" onclick="deleteActive()">🗑️ Borrar</button>
   </div>
 
-  <div class="row" style="margin-top:20px; font-size:11px; color:#888; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px;">
-    <label title="Requiere reiniciar sesión VR"><input type="checkbox" id="checkOcclusion" checked> Oclusión (Mundo Real)</label>
-  </div>
-
-  <div class="hint">
-    Atajos: <span class="kbd">G</span> mover, <span class="kbd">R</span> rotar, <span class="kbd">S</span> escala,
-    <span class="kbd">Supr</span> borrar, click para seleccionar.
-  </div>
+  <div class="hint"><b>Atajos:</b> <span class="kbd">G</span> mover, <span class="kbd">R</span> rotar, <span class="kbd">S</span> escala, <span class="kbd">Supr</span> borrar.</div>
 </div>
 
 <div class="toggle-ui" onclick="toggleUI()">👁️</div>
-<button id="vrBtn">ENTRAR EN MR</button>
+<button id="vrBtn">🥽 ENTRAR EN MR</button>
 
 <script type="importmap">
   { "imports": {
@@ -237,7 +274,6 @@
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
     } }
 </script>
-
 <script type="module">
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -246,6 +282,8 @@ import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { TransformControls } from 'three/addons/controls/TransformControls.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+console.log('🚀 MR Studio Diamond v6.9 (Stable) iniciando...');
+
 let scene, camera, renderer, xrSession;
 let objects = [];
 let activeId = null;
@@ -253,31 +291,34 @@ let transformControl, orbit;
 let grid, axes;
 let raycaster, mouse = new THREE.Vector2();
 let hoverId;
+let audioListener;
+let occlusionEnabled = false;
 
+// ======= CONTROLES VR =======
 const ctrl = {
-  right: { gripped: false, lastQuat: new THREE.Quaternion(), lastTrig: false, lastBtn: false },
+  right: { gripped: false, lastQuat: new THREE.Quaternion(), lastTrig: false, lastBtn: false, currPos: new THREE.Vector3(), currQuat: new THREE.Quaternion() },
   left: { gripped: false },
   gesture: { startDist: 0, startScale: 1 }
 };
 let rightRay, rayCursor;
 
-// ======= Shaders =======
-const vert = `
+// ======= SHADERS (Estilo v5 - Ligero y Estable) =======
+const vertShader = `
 varying vec2 vUv;
 uniform vec2 offset;
 void main() {
   vUv = uv + offset;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}`;
+}
+`;
 
-const frag = `
+const fragShader = `
 uniform sampler2D map;
 uniform bool chromaEnabled, chromaInvert;
 uniform vec3 keyColor;
-uniform float similarity, smoothness, opacity;
+uniform float similarity, smoothness, opacity, despill;
 uniform float brightness, contrast, saturation, gamma;
-uniform float deblue;
-
+uniform float deblue, degreen;
 varying vec2 vUv;
 
 vec3 rgb2hsv(vec3 c) {
@@ -298,7 +339,6 @@ vec3 adjustColor(vec3 color) {
   return color;
 }
 
-// Neutraliza dominante azul/cian en zonas de baja saturación (típico "gris azulado" 360)
 vec3 removeBlueGray(vec3 col, float amt) {
   if(amt <= 0.0) return col;
   vec3 hsv = rgb2hsv(col);
@@ -306,11 +346,24 @@ vec3 removeBlueGray(vec3 col, float amt) {
   float midVal = smoothstep(0.15, 0.95, hsv.z);
   float hueCyan = 1.0 - smoothstep(0.20, 0.32, abs(hsv.x - 0.50));
   float w = amt * lowSat * midVal * hueCyan;
-
   float g = dot(col, vec3(0.299, 0.587, 0.114));
   vec3 neutral = vec3(g);
   vec3 outc = mix(col, neutral, w * 0.65);
   outc.b = mix(outc.b, outc.b * (1.0 - 0.35*w), 1.0);
+  return outc;
+}
+
+vec3 removeGreenGray(vec3 col, float amt) {
+  if(amt <= 0.0) return col;
+  vec3 hsv = rgb2hsv(col);
+  float lowSat = 1.0 - smoothstep(0.20, 0.45, hsv.y);
+  float midVal = smoothstep(0.15, 0.95, hsv.z);
+  float hueGreen = 1.0 - smoothstep(0.15, 0.30, abs(hsv.x - 0.33));
+  float w = amt * lowSat * midVal * hueGreen;
+  float g = dot(col, vec3(0.299, 0.587, 0.114));
+  vec3 neutral = vec3(g);
+  vec3 outc = mix(col, neutral, w * 0.65);
+  outc.g = mix(outc.g, outc.g * (1.0 - 0.35*w), 1.0);
   return outc;
 }
 
@@ -322,28 +375,33 @@ void main() {
   if (chromaEnabled) {
     vec3 hsv = rgb2hsv(col);
     vec3 kHsv = rgb2hsv(keyColor);
-
     float hueDist = abs(hsv.x - kHsv.x);
     if (hueDist > 0.5) hueDist = 1.0 - hueDist;
-    float dist = sqrt(pow(hueDist * 2.0, 2.0) + pow(hsv.y - kHsv.y, 2.0));
+    float satDist = abs(hsv.y - kHsv.y);
+    float valDist = abs(hsv.z - kHsv.z);
+    float rgbDist = distance(col, keyColor);
+    float isGray = 1.0 - smoothstep(0.0, 0.3, kHsv.y);
+    float dist = mix(sqrt(pow(hueDist * 2.0, 2.0) + pow(satDist, 2.0) + pow(valDist * 0.5, 2.0)), rgbDist, isGray);
     float mask = smoothstep(similarity, similarity + smoothness, dist);
 
-    // Protección rojos (ojos/labios)
-    float protection = 0.0;
-    if(keyColor.g > keyColor.r && keyColor.g > keyColor.b) {
-      protection = (col.r - col.g) * 3.0;
-    } else if(keyColor.b > keyColor.r && keyColor.b > keyColor.g) {
-      protection = (col.r - col.b) * 3.0;
+    float skinProtect = 0.0;
+    if(keyColor.g > 0.7 || keyColor.b > 0.7) {
+      float skinHue = smoothstep(0.0, 0.1, hsv.x) * (1.0 - smoothstep(0.1, 0.15, hsv.x));
+      float skinSat = smoothstep(0.2, 0.6, hsv.y);
+      skinProtect = skinHue * skinSat * 3.0;
     }
-    if(protection > 0.0) mask = clamp(mask + protection, 0.0, 1.0);
+    if(skinProtect > 0.0) mask = clamp(mask + skinProtect, 0.0, 1.0);
 
     if (!chromaInvert) {
       alpha *= mask;
-      if(mask < 0.9) {
-        float maxRB = max(col.r, col.b);
-        float maxRG = max(col.r, col.g);
-        if (keyColor.g > keyColor.r && keyColor.g > keyColor.b && col.g > maxRB) col.g = mix(col.g, maxRB, 1.0-mask);
-        else if (keyColor.b > keyColor.g && keyColor.b > keyColor.r && col.b > maxRG) col.b = mix(col.b, maxRG, 1.0-mask);
+      if(mask < 0.95 && despill > 0.0) {
+        if(keyColor.g > keyColor.r && keyColor.g > keyColor.b) {
+          float maxRB = max(col.r, col.b);
+          col.g = mix(col.g, maxRB, (1.0 - mask) * despill);
+        } else if(keyColor.b > keyColor.g && keyColor.b > keyColor.r) {
+          float maxRG = max(col.r, col.g);
+          col.b = mix(col.b, maxRG, (1.0 - mask) * despill);
+        }
       }
     } else {
       alpha *= (1.0 - mask);
@@ -351,14 +409,14 @@ void main() {
   }
 
   col = removeBlueGray(col, deblue);
+  col = removeGreenGray(col, degreen);
   col = adjustColor(col);
-
   gl_FragColor = vec4(col, alpha);
   if (alpha < 0.01) discard;
 }
 `;
 
-// ======= Init =======
+// ======= INIT ENGINE =======
 function init() {
   renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), alpha: true, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -369,65 +427,31 @@ function init() {
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 2000);
   camera.position.set(0, 1.6, 3);
+  audioListener = new THREE.AudioListener();
+  camera.add(audioListener);
 
   scene.add(new THREE.AmbientLight(0xffffff, 1.2));
-  const d = new THREE.DirectionalLight(0xffffff, 1.5); d.position.set(2, 5, 2); scene.add(d);
+  const d = new THREE.DirectionalLight(0xffffff, 1.5); 
+  d.position.set(2, 5, 2); scene.add(d);
 
-  grid = new THREE.GridHelper(30, 60, 0x444444, 0x222222);
-  grid.position.y = 0;
+  grid = new THREE.GridHelper(30, 60, 0x6c5ce7, 0x333333);
   scene.add(grid);
-
-  axes = new THREE.AxesHelper(1.2);
-  axes.position.set(0, 0.01, 0);
+  axes = new THREE.AxesHelper(2.5);
   scene.add(axes);
 
   orbit = new OrbitControls(camera, renderer.domElement);
-  orbit.enableDamping = true;
-  orbit.dampingFactor = 0.06;
-  orbit.target.set(0, 1.6, 0);
-  orbit.update();
+  orbit.enableDamping = true; orbit.dampingFactor = 0.06; orbit.target.set(0, 1.6, 0);
 
   transformControl = new TransformControls(camera, renderer.domElement);
-  transformControl.addEventListener('dragging-changed', e=>{
-    orbit.enabled = !e.value;
-  });
-  transformControl.setTranslationSnap(null);
-  transformControl.setRotationSnap(null);
-  transformControl.setScaleSnap(null);
+  transformControl.setSize(1.3);
+  transformControl.addEventListener('dragging-changed', e=>{ orbit.enabled = !e.value; });
+  transformControl.setTranslationSnap(null); transformControl.setRotationSnap(null); transformControl.setScaleSnap(null);
   scene.add(transformControl);
 
-  setupVR();
-  initRay();
-  initMousePick();
-  initShortcuts();
-
-  document.getElementById('checkGrid').addEventListener('change', e=>grid.visible=e.target.checked);
-  document.getElementById('checkAxes').addEventListener('change', e=>axes.visible=e.target.checked);
-  document.getElementById('checkGizmo').addEventListener('change', e=>transformControl.visible=e.target.checked);
-  document.getElementById('checkSnap').addEventListener('change', e=>{
-    const on = e.target.checked;
-    transformControl.setTranslationSnap(on ? 0.25 : null);
-  });
-
-  // Presets key
-  document.getElementById('presetGreen').onclick = ()=>setKeyPreset(0.0, 1.0, 0.0, 0.40, 0.05);
-  document.getElementById('presetBlue').onclick = ()=>setKeyPreset(0.0, 0.25, 1.0, 0.38, 0.06);
-  // gris-azulado: key + ajuste default para que sea usable (puedes refinar con sliders)
-  document.getElementById('presetBlueGray').onclick = ()=>setKeyPreset(0.35, 0.45, 0.60, 0.33, 0.08);
-
-  // Unlock en MR (confirmación explícita)
-  document.getElementById('unlockInMR').addEventListener('change', (e)=>{
-    if(!xrSession) return; // solo relevante en MR
-    if(e.target.checked){
-      const ok = confirm("¿Seguro? Esto DESBLOQUEA color/chroma en MR y puede causar cambios accidentales.\n\nRecomendado: editar en Modo Editor.");
-      if(!ok) e.target.checked = false;
-    }
-    setMode(!!xrSession);
-  });
-
+  setupVR(); initRay(); initMousePick(); initShortcuts(); initMediaPlayer(); initChromaPresets(); initLayerDragDrop(); initViewModeToggle(); initEventListeners(); initProjectIO();
+  
   window.addEventListener('resize', onResize);
   renderer.setAnimationLoop(render);
-
   document.getElementById('exitXrBtn').onclick = ()=>{ if(xrSession) xrSession.end(); };
   setMode(false);
 }
@@ -442,422 +466,438 @@ function setMode(isXR){
   const dot = document.getElementById('modeDot');
   const text = document.getElementById('modeText');
   const exitBtn = document.getElementById('exitXrBtn');
-
-  const unlock = document.getElementById('unlockInMR').checked;
-
   if(isXR){
-    dot.style.background = '#ff7675';
-    dot.style.boxShadow = '0 0 18px rgba(255,118,117,0.7)';
-    text.innerText = 'MODO MR (PREVIEW)';
-    exitBtn.style.display = 'inline-block';
-
-    // Bloqueo por seguridad (a menos que lo desbloquees explícitamente)
-    if(!unlock) document.getElementById('mediaControls').classList.add('disabled-overlay');
-    else document.getElementById('mediaControls').classList.remove('disabled-overlay');
-
-    orbit.enabled = false;
+    dot.style.background = '#ff7675'; dot.style.boxShadow = '0 0 20px rgba(255,118,117,0.8)';
+    text.innerText = 'MODO MR'; exitBtn.style.display = 'inline-block';
+    orbit.enabled = false; grid.visible = false; axes.visible = false;
   } else {
-    dot.style.background = '#55efc4';
-    dot.style.boxShadow = '0 0 18px rgba(85,239,196,0.6)';
-    text.innerText = 'MODO EDITOR';
-    exitBtn.style.display = 'none';
-
-    document.getElementById('mediaControls').classList.remove('disabled-overlay');
-    orbit.enabled = true;
+    dot.style.background = '#55efc4'; dot.style.boxShadow = '0 0 20px rgba(85,239,196,0.7)';
+    text.innerText = 'MODO EDITOR'; exitBtn.style.display = 'none';
+    orbit.enabled = true; grid.visible = document.getElementById('checkGrid').checked; axes.visible = document.getElementById('checkAxes').checked;
   }
 }
 
+// ======= LISTENERS =======
+function initEventListeners() {
+  document.getElementById('checkGrid').addEventListener('change', e=>grid.visible=e.target.checked);
+  document.getElementById('checkAxes').addEventListener('change', e=>axes.visible=e.target.checked);
+  document.getElementById('checkGizmo').addEventListener('change', e=>transformControl.visible=e.target.checked);
+  document.getElementById('checkSnap').addEventListener('change', e=>{ transformControl.setTranslationSnap(e.target.checked ? 0.25 : null); });
+  document.getElementById('chromaActive').addEventListener('change', e=>{ document.getElementById('chromaControls').style.display = e.target.checked ? 'block' : 'none'; });
+  document.getElementById('renderMode').addEventListener('change', e=>{ const o = objects.find(x=>x.id===activeId); if(o && o.type==='model') applyRenderMode(o, e.target.value); });
+
+  document.getElementById('textureInput').addEventListener('change', async e=>{
+    if(!e.target.files.length) return;
+    const o = objects.find(x=>x.id===activeId); if(!o || o.type!=='model') return;
+    const tex = await new THREE.TextureLoader().loadAsync(URL.createObjectURL(e.target.files[0]));
+    tex.colorSpace = THREE.SRGBColorSpace;
+    o.mesh.traverse(c=>{ if(c.isMesh && c.material) { if(Array.isArray(c.material)) c.material.forEach(m=>m.map=tex); else c.material.map = tex; } });
+  });
+
+  document.getElementById('audioType').addEventListener('change', e=>{
+    document.getElementById('spatialControls').style.display = e.target.value === 'spatial' ? 'block' : 'none';
+    const o = objects.find(x=>x.id===activeId); if(o && o.audio) updateAudioType(o);
+  });
+  document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+}
+
+function initViewModeToggle() {
+  document.querySelectorAll('.view-mode-btn').forEach(btn => {
+    btn.onclick = () => {
+      const mode = btn.dataset.mode;
+      const o = objects.find(x=>x.id===activeId);
+      if(!o || (o.settings.projection !== '360' && o.settings.projection !== '180')) return;
+      document.querySelectorAll('.view-mode-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+      o.settings.viewMode = mode;
+      applyViewMode(o);
+    };
+  });
+}
+
+function applyViewMode(obj) {
+  if(obj.settings.projection === 'plane' || obj.type === 'model') return;
+  const mode = obj.settings.viewMode || 'immersive';
+  if(mode === 'orb') {
+    obj.mesh.scale.set(2, 2, 2); obj.mesh.position.set(0, 1.6, -3);
+    obj.settings.scale = 2; obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -3;
+    if(obj.mesh.material) obj.mesh.material.side = THREE.FrontSide;
+  } else {
+    const bs = obj.baseScale || 1; obj.mesh.scale.set(20 * bs, 20 * bs, 20 * bs); obj.mesh.position.set(0, 0, 0);
+    obj.settings.scale = 20; obj.settings.posX = 0; obj.settings.posY = 0; obj.settings.posZ = 0;
+    if(obj.mesh.material) obj.mesh.material.side = THREE.BackSide;
+  }
+  syncUI();
+}
+
+function initMediaPlayer() {
+  let activeMedia = null;
+  const updatePlayer = () => {
+    const o = objects.find(x=>x.id===activeId);
+    const player = document.getElementById('mediaPlayer');
+    const audioCtrl = document.getElementById('audioControls');
+    if(o && (o.video || o.audioEl)) {
+      activeMedia = o.video || o.audioEl;
+      player.classList.add('show');
+      document.getElementById('mediaTypeBadge').innerText = o.video ? '🎬 VIDEO' : '🎵 AUDIO';
+      audioCtrl.style.display = o.audioEl ? 'block' : 'none';
+      document.getElementById('mediaPlayPause').innerHTML = activeMedia.paused ? '▶️' : '⏸️';
+      document.getElementById('mediaVolume').value = activeMedia.volume;
+      document.getElementById('v_mediaVolume').innerText = Math.round(activeMedia.volume * 100);
+    } else { activeMedia = null; player.classList.remove('show'); }
+  };
+  document.getElementById('mediaPlayPause').onclick = () => { if(activeMedia){ if(activeMedia.paused) activeMedia.play(); else activeMedia.pause(); updatePlayer(); } };
+  document.getElementById('mediaStop').onclick = () => { if(activeMedia){ activeMedia.pause(); activeMedia.currentTime = 0; updatePlayer(); } };
+  document.getElementById('mediaProgress').onclick = (e) => { if(activeMedia){ const r=e.currentTarget.getBoundingClientRect(); activeMedia.currentTime = ((e.clientX - r.left)/r.width) * activeMedia.duration; } };
+  document.getElementById('mediaVolume').oninput = (e) => { if(activeMedia){ activeMedia.volume = parseFloat(e.target.value); document.getElementById('v_mediaVolume').innerText = Math.round(activeMedia.volume * 100); } };
+  setInterval(() => {
+    if(!activeMedia || activeMedia.paused) return;
+    document.getElementById('mediaProgressBar').style.width = ((activeMedia.currentTime / activeMedia.duration) * 100) + '%';
+    const fmt = s => { if(!isFinite(s)) return '0:00'; return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`; };
+    document.getElementById('mediaTime').innerText = `${fmt(activeMedia.currentTime)} / ${fmt(activeMedia.duration)}`;
+  }, 100);
+  window.addEventListener('activeObjChanged', updatePlayer);
+}
+
+function initChromaPresets() {
+  document.querySelectorAll('.preset-item').forEach(el=>{
+    el.onclick = () => {
+      const c = el.dataset.color.split(',').map(Number);
+      updateObj('keyR', c[0]); updateObj('keyG', c[1]); updateObj('keyB', c[2]);
+      syncUI();
+      document.querySelectorAll('.preset-item').forEach(e=>e.classList.remove('active')); el.classList.add('active');
+    };
+  });
+}
+
+function initLayerDragDrop() {
+  let draggedId = null;
+  window.addEventListener('layerListUpdated', ()=>{
+    document.querySelectorAll('.layer-item').forEach(el=>{
+      el.draggable = true;
+      el.ondragstart = () => { draggedId = el.dataset.id; el.classList.add('dragging'); };
+      el.ondragend = () => { el.classList.remove('dragging'); draggedId = null; };
+      el.ondragover = e => { e.preventDefault();
+        const after = getDragAfterElement(e.clientY);
+        if(after == null) document.getElementById('layerList').appendChild(document.querySelector('.dragging'));
+        else document.getElementById('layerList').insertBefore(document.querySelector('.dragging'), after);
+      };
+      el.ondrop = e => { e.preventDefault(); if(!draggedId) return;
+        const newOrder = [...document.querySelectorAll('.layer-item')].map(i=>i.dataset.id);
+        const newObjects = []; newOrder.forEach(id=>newObjects.push(objects.find(o=>o.id===id)));
+        objects = newObjects; updateRenderOrder();
+      };
+    });
+  });
+}
+
+function getDragAfterElement(y) {
+  return [...document.querySelectorAll('.layer-item:not(.dragging)')].reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function updateRenderOrder() { objects.forEach((o, i) => { if(o.mesh) o.mesh.renderOrder = i; }); }
+
+function populateModelComponents(obj) {
+  const list = document.getElementById('modelComponentsList'); list.innerHTML = '';
+  const components = [];
+  obj.mesh.traverse(child => { if(child.isMesh || child.isLight) components.push({ name: child.name || child.type, obj: child, type: child.isLight ? '💡' : '📦' }); });
+  if(components.length === 0) { list.innerHTML = '<div style="color:#888; font-size:10px; padding:10px;">Sin componentes</div>'; return; }
+  components.forEach(comp => {
+    const item = document.createElement('div'); item.className = 'model-comp-item';
+    item.innerHTML = `<input type="checkbox" checked><label>${comp.type} ${comp.name}</label>`;
+    item.querySelector('input').onchange = (e) => { comp.obj.visible = e.target.checked; };
+    list.appendChild(item);
+  });
+}
+
+function applyRenderMode(obj, mode) {
+  obj.renderMode = mode;
+  obj.mesh.traverse(child => {
+    if(!child.isMesh) return;
+    const mats = Array.isArray(child.material) ? child.material : [child.material];
+    mats.forEach(mat => {
+      switch(mode) {
+        case 'wireframe': mat.wireframe = true; mat.flatShading = false; break;
+        case 'flat': mat.wireframe = false; mat.flatShading = true; mat.needsUpdate = true; break;
+        case 'workbench': mat.wireframe = false; mat.flatShading = true; mat.color.setHex(0xcccccc); mat.roughness = 0.8; mat.metalness = 0.1; mat.needsUpdate = true; break;
+        default: mat.wireframe = false; mat.flatShading = false; mat.needsUpdate = true;
+      }
+    });
+  });
+}
+
+// ======= Helpers Base64 =======
+function abToB64(buf){
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for(let i=0;i<bytes.length;i+=0x8000) bin += String.fromCharCode(...bytes.subarray(i, i+0x8000));
+  return btoa(bin);
+}
+function b64ToAb(b64){
+  const bin = atob(b64); const len = bin.length; const bytes = new Uint8Array(len);
+  for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+async function fileToDataURL(file){ return await new Promise((res, rej)=>{ const r = new FileReader(); r.onload=()=>res(r.result); r.onerror=rej; r.readAsDataURL(file); }); }
+async function fileToArrayBuffer(file){ return await file.arrayBuffer(); }
+
 // ======= Import =======
-document.getElementById('fileInput').addEventListener('change', async e => {
+async function handleFileUpload(e) {
   if(!e.target.files.length) return;
   toggleLoader(true);
   for(const f of e.target.files) {
     try {
-      const url = URL.createObjectURL(f);
       const n = f.name.toLowerCase();
-      if(n.match(/\.(glb|gltf)$/)) await load3D(url, n, 'gltf');
-      else if(n.match(/\.fbx$/)) await load3D(url, n, 'fbx');
-      else if(n.match(/\.obj$/)) await load3D(url, n, 'obj');
-      else if(n.match(/\.gif$/)) await loadGif(f, n);
-      else if(f.type.startsWith('video/') || n.includes('360') || n.includes('180')) await loadVideo(url, n);
-      else if(f.type.startsWith('image/')) await loadImg(url, n);
-    } catch(err) {
-      console.error('Error al cargar archivo:', f.name, err);
-    }
+      let source = { name: f.name, mime: f.type || '', ext: (f.name.split('.').pop()||'').toLowerCase(), kind: '' };
+
+      if(n.match(/\.(glb|gltf|fbx|obj)$/)){
+        source.kind = 'binary'; const ab = await fileToArrayBuffer(f); source.dataB64 = abToB64(ab);
+        const url = URL.createObjectURL(new Blob([ab], {type: f.type || 'application/octet-stream'}));
+        await load3D(url, n, n.match(/\.fbx$/)?'fbx':(n.match(/\.obj$/)?'obj':'gltf'), source);
+      }
+      else if(n.match(/\.gif$/)){
+        source.kind = 'binary'; const ab = await fileToArrayBuffer(f); source.dataB64 = abToB64(ab);
+        await loadGifFromArrayBuffer(ab, n, source);
+      }
+      else if(f.type.startsWith('video/') || n.includes('360') || n.includes('180')){
+        source.kind = 'dataurl'; source.dataURL = await fileToDataURL(f);
+        await loadVideo(source.dataURL, n, source);
+      }
+      else if(f.type.startsWith('audio/') || n.match(/\.(mp3|wav|m4a|ogg)$/)){
+        source.kind = 'dataurl'; source.dataURL = await fileToDataURL(f);
+        await loadAudioFromDataURL(source.dataURL, n, source);
+      }
+      else if(f.type.startsWith('image/')){
+        source.kind = 'dataurl'; source.dataURL = await fileToDataURL(f);
+        await loadImg(source.dataURL, n, source);
+      }
+    } catch(err) { console.error('Error cargando:', f.name, err); }
   }
   toggleLoader(false);
   e.target.value = '';
-});
+}
 
-async function loadVideo(url, name) {
+// ======= Loaders =======
+async function loadVideo(url, name, source=null, settingsOverride=null, transformOverride=null) {
   const vid = document.createElement('video');
-  vid.src = url; vid.crossOrigin = 'anonymous';
-  vid.loop = true; vid.muted = true; vid.playsInline = true;
-  vid.style.display = 'none'; document.body.appendChild(vid);
-
-  await new Promise(resolve => {
-    vid.onloadedmetadata = () => resolve();
-    vid.play().catch(e=>console.log("Autoplay prevent:", e));
-  });
+  vid.src = url; vid.crossOrigin = 'anonymous'; vid.loop = true; vid.muted = false; vid.playsInline = true; vid.style.display = 'none';
+  document.body.appendChild(vid);
+  await new Promise(r => { vid.onloadedmetadata = () => r(); vid.play().catch(()=>{}); });
 
   const tex = new THREE.VideoTexture(vid);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-  tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter;
+  tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping; tex.minFilter = THREE.LinearFilter;
+  let proj = (name.includes('360') ? '360' : (name.includes('180') ? '180' : 'plane'));
+  const mesh = createMesh(proj, 'sphere', tex, (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77);
 
-  let proj = 'plane';
-  if(name.includes('360')) proj='360';
-  else if(name.includes('180')) proj='180';
-
-  const ar = (vid.videoWidth && vid.videoHeight) ? vid.videoWidth/vid.videoHeight : 1.77;
-
-  const obj = {
-    id: uid(),
-    mesh: null,
-    name,
-    type:'video',
-    video:vid,
-    tex,
-    settings: defSettings()
-  };
+  const obj = { id: uid(), mesh, name, type:'video', video:vid, tex, settings: defSettings(), source };
   obj.settings.projection = proj;
-
-  // defaults para 360/180
-  if(proj !== 'plane') {
-    obj.settings.surface = 'sphere';
-    obj.settings.surfaceSize = 20;
-    obj.settings.followViewer = true; // por defecto centrado
-    obj.settings.surfaceHeight = 0;
-  }
-
-  const mesh = createMesh(obj.settings, tex, ar);
-  obj.mesh = mesh;
-
-  if(proj !== 'plane') {
-    obj.mesh.position.set(0, obj.settings.surfaceHeight, 0);
-  } else {
-    obj.mesh.position.set(0, 1.6, -2);
-    obj.settings.dist = 2;
-  }
-
+  if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
+  if(obj.settings.projection !== 'plane') { obj.settings.viewMode = obj.settings.viewMode || 'immersive'; applyViewMode(obj); } 
+  else { mesh.position.set(0, 1.6, -2); obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2; }
+  if(transformOverride) applyTransform(mesh, transformOverride);
   addObj(obj);
 }
 
-async function loadGif(file, name) {
-  const buf = await file.arrayBuffer();
-  // @ts-ignore
-  let R = window.GifReader || (window.Omggif ? window.Omggif.GifReader : null);
-  if(!R) return;
+async function loadAudioFromDataURL(url, name, source=null, settingsOverride=null, transformOverride=null){
+  const audioEl = document.createElement('audio'); audioEl.src = url; audioEl.loop = true; audioEl.preload = 'auto'; audioEl.crossOrigin = 'anonymous'; audioEl.style.display = 'none';
+  document.body.appendChild(audioEl); await audioEl.play().catch(()=>{});
+  const audio = new THREE.Audio(audioListener);
+  const loader = new THREE.AudioLoader();
+  const ab = await (await fetch(url)).arrayBuffer();
+  await new Promise((res, rej)=>{ loader.load(URL.createObjectURL(new Blob([ab], {type: source?.mime || 'audio/*'})), b=>{ audio.setBuffer(b); audio.setLoop(true); audio.setVolume(1.0); res(); }, undefined, rej); });
+
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 16), new THREE.MeshStandardMaterial({ color: 0x6c5ce7, emissive: 0x6c5ce7, emissiveIntensity: 0.5 }));
+  mesh.position.set(0, 1.6, -2);
+  const obj = { id: uid(), mesh, name, type:'audio', audio, audioEl, settings: defSettings(), source };
+  obj.settings.audioType = 'global'; obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2;
+  if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
+  if(transformOverride) applyTransform(mesh, transformOverride);
+  addObj(obj);
+  audio.play();
+}
+
+async function loadGifFromArrayBuffer(buf, name, source=null, settingsOverride=null, transformOverride=null) {
+  let R = window.GifReader || (window.Omggif ? window.Omggif.GifReader : null); if(!R) return;
   const r = new R(new Uint8Array(buf));
-  const w=r.width, h=r.height;
-  const cvs=document.createElement('canvas'); cvs.width=w; cvs.height=h;
-  const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(w,h);
-  const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace;
-  tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-
-  const obj = { id:uid(), mesh:null, name, type:'gif', tex, settings:defSettings(), gif:{r,ctx,dat,tex,f:0,num:r.numFrames(),t:0} };
-  obj.settings.projection = 'plane';
-  obj.mesh = createMesh(obj.settings, tex, w/h);
-  obj.mesh.position.set(0, 1.6, -2);
+  const cvs=document.createElement('canvas'); cvs.width=r.width; cvs.height=r.height; const ctx=cvs.getContext('2d'); const dat=ctx.createImageData(r.width,r.height);
+  const tex=new THREE.CanvasTexture(cvs); tex.colorSpace=THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+  const mesh = createMesh('plane', 'sphere', tex, r.width/r.height);
+  mesh.position.set(0, 1.6, -2);
+  const obj = { id:uid(), mesh, name, type:'gif', settings:defSettings(), gif:{r,ctx,dat,tex,f:0,num:r.numFrames(),t:0}, source };
+  obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2;
+  if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
+  if(transformOverride) applyTransform(mesh, transformOverride);
   addObj(obj);
 }
 
-async function loadImg(url, name) {
+async function loadImg(url, name, source=null, settingsOverride=null, transformOverride=null) {
   const tex = await new THREE.TextureLoader().loadAsync(url);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
-
-  const obj = { id:uid(), mesh:null, name, type:'image', tex, settings:defSettings() };
-  obj.settings.projection = 'plane';
-  obj.mesh = createMesh(obj.settings, tex, tex.image.width/tex.image.height);
-  obj.mesh.position.set(0, 1.6, -2);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+  const mesh = createMesh('plane', 'sphere', tex, tex.image.width/tex.image.height);
+  mesh.position.set(0, 1.6, -2);
+  const obj = { id:uid(), mesh, name, type:'image', tex, settings:defSettings(), source };
+  obj.settings.posX = 0; obj.settings.posY = 1.6; obj.settings.posZ = -2;
+  if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
+  if(transformOverride) applyTransform(mesh, transformOverride);
   addObj(obj);
 }
 
-async function load3D(url, name, type) {
+async function load3D(url, name, type, source=null, settingsOverride=null, transformOverride=null) {
   let m;
   if(type==='gltf') m=(await new GLTFLoader().loadAsync(url)).scene;
   else if(type==='fbx') m=await new FBXLoader().loadAsync(url);
   else m=await new OBJLoader().loadAsync(url);
 
-  const box = new THREE.Box3().setFromObject(m);
+  // AUTO-SCALE FIX (Detecta gigantes y los reduce)
+  const box = new THREE.Box3().setFromObject(m); 
   const sz = box.getSize(new THREE.Vector3()).length();
-  const sc = (sz>0 && sz<1000) ? 2/sz : 1;
-  m.scale.setScalar(sc);
-  m.position.set(0, 1, -2);
-  m.traverse(c=>{ if(c.isMesh) { c.material.transparent=true; c.material.depthWrite=true; c.castShadow=true; }});
+  const sc = sz > 0 ? 2/sz : 1; 
 
-  const obj = { id:uid(), mesh:m, name, type:'model', settings:defSettings() };
-  obj.baseScale = sc;
+  m.scale.setScalar(sc); 
+  m.position.set(0, 1, -2);
+  m.traverse(c=>{ if(c.isMesh) { if(!c.material.transparent) c.material.transparent = true; c.material.depthWrite = true; c.castShadow = true; } });
+
+  const obj = { id:uid(), mesh:m, name, type:'model', settings:defSettings(), renderMode:'standard', baseScale: sc, source };
+  obj.settings.posX = 0; obj.settings.posY = 1; obj.settings.posZ = -2;
+  
+  if(settingsOverride) obj.settings = {...obj.settings, ...settingsOverride};
+  if(transformOverride) applyTransform(m, transformOverride);
   addObj(obj);
 }
 
-// ======= Superficies =======
-function createMesh(settings, tex, aspect) {
-  const proj = settings.projection;
-  const surface = settings.surface || 'sphere';
-  const size = settings.surfaceSize ?? 20;
+function applyTransform(mesh, t) {
+  mesh.position.set(t.position.x, t.position.y, t.position.z);
+  mesh.rotation.set(t.rotation.x, t.rotation.y, t.rotation.z);
+  mesh.scale.set(t.scale.x, t.scale.y, t.scale.z);
+}
 
+// ======= GEOMETRÍA CON OPCIÓN TIERRA =======
+function createMesh(proj, surface, tex, aspect) {
   let geo, side=THREE.DoubleSide;
-
   const makeInside = (g)=>{ g.computeVertexNormals(); return g; };
-
   if(proj === '360') {
     side = THREE.BackSide;
-
-    if(surface === 'cube'){
-      geo = makeInside(new THREE.BoxGeometry(size*2, size*2, size*2, 1, 1, 1));
-    } else {
-      geo = makeInside(new THREE.SphereGeometry(size, 64, 64));
-      if(surface === 'ovoid'){
-        geo.scale(1.25, 1.0, 1.0);
-      }
+    if(surface === 'cube'){ geo = makeInside(new THREE.BoxGeometry(40, 40, 40, 1, 1, 1)); }
+    else { 
+      geo = makeInside(new THREE.SphereGeometry(20, 64, 64)); 
+      if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
+      // FIX TIERRA
+      if(surface === 'earth') geo.scale(1.0, 0.75, 1.0); 
     }
-
-    // FIX MIRROR 360: invertimos X en la geometría para que la equirectangular no quede espejo
-    geo.scale(-1, 1, 1);
-
   } else if(proj === '180') {
-    side = THREE.BackSide;
-
-    if(surface === 'cube'){
-      geo = makeInside(new THREE.SphereGeometry(size, 64, 64, 0, Math.PI));
-    } else {
-      geo = makeInside(new THREE.SphereGeometry(size, 64, 64, 0, Math.PI));
-      if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0);
-    }
+    side = THREE.BackSide; geo = makeInside(new THREE.SphereGeometry(20, 64, 64, 0, Math.PI));
+    if(surface === 'ovoid') geo.scale(1.25, 1.0, 1.0); 
+    if(surface === 'earth') geo.scale(1.0, 0.75, 1.0); 
     geo.rotateY(-Math.PI/2);
-
-    // FIX MIRROR 180
-    geo.scale(-1, 1, 1);
-
-  } else {
-    geo = new THREE.PlaneGeometry(aspect, 1);
-  }
+  } else { geo = new THREE.PlaneGeometry(aspect, 1); }
 
   const mat = new THREE.ShaderMaterial({
     uniforms: {
       map: { value: tex },
       chromaEnabled:{value:false}, chromaInvert:{value:false}, keyColor:{value:new THREE.Color(0,1,0)},
-      similarity:{value:0.4}, smoothness:{value:0.1},
-      offset:{value:new THREE.Vector2(0,0)},
-      opacity:{value:1.0},
+      similarity:{value:0.4}, smoothness:{value:0.08}, despill:{value:0.5},
+      offset:{value:new THREE.Vector2(0,0)}, opacity:{value:1.0},
       brightness:{value:0.0}, contrast:{value:1.0}, saturation:{value:1.0}, gamma:{value:1.0},
-      deblue:{value:0.0}
+      deblue:{value:0.0}, degreen:{value:0.0}
     },
-    vertexShader: vert, fragmentShader: frag,
-    transparent: true, side: side,
-    depthWrite: (proj==='plane'),
-    depthTest: true
+    vertexShader: vertShader, fragmentShader: fragShader, 
+    transparent: true, side: side, depthWrite: (proj==='plane'), depthTest: true
   });
-
-  const mesh = new THREE.Mesh(geo, mat);
-
-  if(proj !== 'plane') {
-    mesh.frustumCulled = false;
-    mesh.renderOrder = -1;
-  }
+  
+  const mesh = new THREE.Mesh(geo, mat); 
+  if(proj !== 'plane') { mesh.frustumCulled = false; mesh.renderOrder = -1; }
   return mesh;
 }
 
-// ======= Settings =======
 function defSettings() {
   return {
-    scale:1, dist:2, height:1.6, rotY:0, projection:'plane',
-    surface:'sphere', surfaceSize:20, surfaceHeight:0, followViewer:false,
-    flipX:false,
-    chromaEnabled:false, chromaInvert:false, keyR:0, keyG:1, keyB:0, sim:0.4, smooth:0.05,
-    offsetX:0, offsetY:0, opac:1,
-    brightness:0, contrast:1, saturation:1, gamma:1,
-    deblue:0
+    scale:1, posX:0, posY:1.6, posZ:-2, rotY:0, projection:'plane', surface:'sphere', followViewer:false, viewMode:'immersive', flipX:false,
+    chromaEnabled:false, chromaInvert:false, keyR:0, keyG:1, keyB:0, sim:0.4, smooth:0.08, despill:0.5,
+    offsetX:0, offsetY:0, opac:1, brightness:0, contrast:1, saturation:1, gamma:1, deblue:0, degreen:0,
+    audioType:'global', audioSpeed:1.0, audioRefDist:1.0, audioDoppler:1.0
   };
 }
 
 function uid() { return Math.random().toString(36).substr(2,9); }
 
 function addObj(obj) {
-  scene.add(obj.mesh);
-  objects.push(obj);
-  updateList();
-  selectObj(obj.id);
+  scene.add(obj.mesh); objects.push(obj); updateRenderOrder(); updateList(); selectObj(obj.id);
 }
 
-// ======= Update / UI =======
 function updateObj(k, v) {
   const o = objects.find(x=>x.id===activeId); if(!o) return;
-  o.settings[k]=v;
-  const s = o.settings;
-  let m = o.mesh;
+  o.settings[k]=v; const s = o.settings; const m = o.mesh;
 
-  // Cambios que requieren recrear
-  const needsRebuild = (k==='projection' || k==='surface' || k==='surfaceSize');
-
-  if(needsRebuild) {
-    if(o.type==='model') return;
-
+  if((k==='projection' || k==='surface') && (o.type!=='model' && o.type!=='audio')) {
     scene.remove(m);
-
-    let ar=1.77;
-    if(o.video) ar=o.video.videoWidth/o.video.videoHeight;
-    else if(o.tex && o.tex.image) ar=o.tex.image.width/o.tex.image.height;
-
+    let ar=1.77; if(o.video) ar=o.video.videoWidth/o.video.videoHeight; else if(o.tex && o.tex.image) ar=o.tex.image.width/o.tex.image.height;
     const tex = o.tex || m.material.uniforms?.map.value;
-
-    const nm = createMesh(s, tex, ar);
-
-    // Mantener transform cuando no es followViewer
-    nm.position.copy(m.position);
-    nm.rotation.copy(m.rotation);
-    nm.scale.copy(m.scale);
-
-    o.mesh = nm;
-    m = nm;
-
-    applyUniforms(o);
-
-    // Forzar defaults según proyección
-    if(s.projection !== 'plane'){
-      // Si followViewer true, se centra en render; si no, respetamos posición (y altura)
-      if(s.followViewer){
-        nm.position.set(0, s.surfaceHeight ?? 0, 0);
-      } else {
-        // si venía de plane, lo llevamos al origen pero con altura
-        if(Math.abs(nm.position.length()) < 0.001) nm.position.set(0, s.surfaceHeight ?? 0, 0);
-        nm.position.y = (s.surfaceHeight ?? 0);
-      }
-      o.settings.dist = 0;
-    } else {
-      if(Math.abs(o.settings.dist) < 0.01) o.settings.dist = 2;
-      nm.position.set(0, o.settings.height, -o.settings.dist);
-    }
-
-    scene.add(nm);
-    selectObj(o.id);
-    return;
+    const nm = createMesh(s.projection, s.surface, tex, ar);
+    nm.rotation.copy(m.rotation); nm.position.copy(m.position); nm.scale.copy(m.scale);
+    o.mesh = nm; applyUniforms(o); if(s.projection !== 'plane') applyViewMode(o);
+    scene.add(nm); selectObj(o.id); return;
   }
-
-  // Escala + flip
-  if(k==='scale' || k==='flipX') {
-    const bs = o.baseScale || 1;
-    const dir = s.flipX ? -1 : 1;
-    m.scale.set(s.scale * bs * dir, s.scale * bs, s.scale * bs);
-  }
-
-  // Posición (plane/model con sliders)
-  if(s.projection==='plane' || o.type==='model') {
-    if(k==='dist') m.position.z = -s.dist;
-    if(k==='height') m.position.y = s.height;
-  } else {
-    // 360/180: solo forzamos si followViewer está activo
-    if(k==='surfaceHeight'){
-      m.position.y = s.surfaceHeight;
-    }
-    if(s.followViewer){
-      // si está follow, lo centraremos en render loop (pero respetamos altura)
-      m.position.y = s.surfaceHeight ?? 0;
-    }
-  }
-
-  // Rotación Y
-  if(k==='rotY') {
-    const extra = (s.projection==='180' ? -Math.PI/2 : 0);
-    m.rotation.y = THREE.MathUtils.degToRad(s.rotY) + extra;
-  }
-
-  // Follow viewer toggle
-  if(k==='followViewer') {
-    // si se apaga follow, dejamos posición actual; si se prende, se recentra en render
-    if(s.followViewer){
-      m.position.y = s.surfaceHeight ?? 0;
-    }
-    // Al cambiar follow, dejamos que el gizmo se re-ataque si corresponde
-    selectObj(o.id);
-  }
-
-  // Uniforms
-  if(o.type !== 'model' && m.material.uniforms) {
-    applyUniforms(o);
-  }
-}
-
-function applyUniforms(o){
-  const s=o.settings;
-  const m=o.mesh;
-  if(o.type === 'model') return;
-  if(!m.material?.uniforms) return;
-  const u=m.material.uniforms;
-
-  u.chromaEnabled.value=s.chromaEnabled;
-  u.chromaInvert.value=s.chromaInvert;
-  u.keyColor.value.setRGB(s.keyR, s.keyG, s.keyB);
-  u.similarity.value=s.sim;
-  u.smoothness.value=s.smooth;
-  u.offset.value.set(s.offsetX, s.offsetY);
-  u.opacity.value=s.opac;
-
-  u.brightness.value=s.brightness;
-  u.contrast.value=s.contrast;
-  u.saturation.value=s.saturation;
-  u.gamma.value=s.gamma;
-
-  u.deblue.value=s.deblue;
+  if(k==='scale' || k==='flipX') { const bs = o.baseScale || 1; const dir = s.flipX ? -1 : 1; m.scale.set(s.scale * bs * dir, s.scale * bs, s.scale * bs); }
+  if(k==='posX' || k==='posY' || k==='posZ') m.position.set(s.posX, s.posY, s.posZ);
+  if(k==='rotY') m.rotation.y = THREE.MathUtils.degToRad(s.rotY) + (s.projection==='180'?-Math.PI/2:0);
+  if(k==='audioSpeed' && o.audio) o.audio.setPlaybackRate(v);
+  if(k==='audioRefDist' && o.audio && o.audio.panner) o.audio.setRefDistance(v);
+  if(k==='audioDoppler' && o.audio && o.audio.panner) o.audio.panner.dopplerFactor = v;
+  if(o.type !== 'model' && o.type !== 'audio') applyUniforms(o);
 }
 
 const bind = (id, k, type='float') => {
-  document.getElementById(id).addEventListener('input', e=>{
-    let v=e.target.value;
-    if(type==='float') v=parseFloat(v);
-    else if(type==='bool') v=e.target.checked;
-    else if(type==='str') v=String(v);
-    updateObj(k,v);
-    syncUI();
-  });
+  const el = document.getElementById(id); if(!el) return;
+  el.addEventListener('input', e=>{ let v=e.target.value; if(type==='float') v=parseFloat(v); else if(type==='bool') v=e.target.checked; updateObj(k,v); syncUI(); });
 };
-
-bind('projSelect','projection','str');
-bind('surfaceSelect','surface','str');
-bind('followViewer','followViewer','bool');
-bind('surfaceSize','surfaceSize','float');
-bind('surfaceHeight','surfaceHeight','float');
-
-bind('scale','scale');
-bind('dist','dist');
-bind('height','height');
-bind('rotY','rotY');
-
-bind('chromaActive','chromaEnabled','bool');
-bind('chromaInvert','chromaInvert','bool');
-bind('keyR','keyR'); bind('keyG','keyG'); bind('keyB','keyB');
-bind('sim','sim'); bind('smooth','smooth');
-bind('offsetX','offsetX'); bind('offsetY','offsetY');
-bind('opacity','opac');
+bind('projSelect','projection','str'); bind('surfaceSelect','surface','str'); bind('followViewer','followViewer','bool');
+bind('scale','scale'); bind('posX','posX'); bind('posY','posY'); bind('posZ','posZ'); bind('rotY','rotY');
+bind('chromaActive','chromaEnabled','bool'); bind('chromaInvert','chromaInvert','bool');
+bind('keyR','keyR'); bind('keyG','keyG'); bind('keyB','keyB'); bind('sim','sim'); bind('smooth','smooth'); bind('despill','despill');
+bind('offsetX','offsetX'); bind('offsetY','offsetY'); bind('opacity','opac');
 bind('brightness','brightness'); bind('contrast','contrast'); bind('saturation','saturation'); bind('gamma','gamma');
-bind('deblue','deblue');
+bind('deblue','deblue'); bind('degreen','degreen'); 
+bind('audioSpeed','audioSpeed'); bind('audioRefDist','audioRefDist'); bind('audioDoppler','audioDoppler'); bind('checkFlip', 'flipX', 'bool');
 
-bind('checkFlip', 'flipX', 'bool');
+function isPickable(o){
+  if(o.type==='model' || o.type==='audio') return true;
+  if(o.settings?.projection === 'plane') return true;
+  if((o.settings?.projection === '360' || o.settings?.projection === '180') && (o.settings?.viewMode === 'orb')) return true;
+  return false;
+}
 
 function selectObj(id) {
   activeId = id;
   const o = objects.find(x=>x.id===id);
-
   if(o) {
-    // Gizmo:
-    // - plane y modelos siempre
-    // - 360/180 solo si NO está followViewer (para que puedas mover/salirte de la superficie)
-    const isImm = (o.settings.projection === '360' || o.settings.projection === '180');
-    const allowImmEdit = isImm && !o.settings.followViewer;
+    if(isPickable(o)) transformControl.attach(o.mesh); else transformControl.detach();
+    const isMedia = (o.type === 'image' || o.type === 'video' || o.type === 'gif');
+    const is3D = (o.type === 'model');
+    const isAudio = (o.type === 'audio');
 
-    if(o.type === 'model' || o.settings.projection === 'plane' || allowImmEdit) transformControl.attach(o.mesh);
-    else transformControl.detach();
-
-    const isMedia = (o.type !== 'model');
     document.getElementById('mediaControls').style.display = isMedia ? 'block' : 'none';
-    document.getElementById('generalControls').style.display = 'block';
+    document.getElementById('modelControls').style.display = is3D ? 'block' : 'none';
+    document.getElementById('generalControls').style.display = (isMedia || is3D || isAudio) ? 'block' : 'none';
 
-    syncUI();
+    const is360 = (o.settings.projection === '360' || o.settings.projection === '180');
+    document.getElementById('viewModeSection').style.display = is360 ? 'block' : 'none';
+    if(is360){
+      document.querySelectorAll('.view-mode-btn').forEach(btn => {
+        if(btn.dataset.mode === (o.settings.viewMode || 'immersive')) btn.classList.add('active'); else btn.classList.remove('active');
+      });
+    }
+
+    if(is3D) { populateModelComponents(o); document.getElementById('renderMode').value = o.renderMode || 'standard'; }
+    syncUI(); window.dispatchEvent(new Event('activeObjChanged'));
   } else {
     transformControl.detach();
     document.getElementById('mediaControls').style.display = 'none';
+    document.getElementById('modelControls').style.display = 'none';
+    document.getElementById('generalControls').style.display = 'none';
   }
   updateList();
 }
@@ -865,167 +905,156 @@ function selectObj(id) {
 function syncUI() {
   const o = objects.find(x=>x.id===activeId); if(!o) return;
   const s = o.settings;
-
   const set = (id, v) => {
-    const el=document.getElementById(id);
-    if(el && el.type !== 'checkbox') el.value=v;
+    const el=document.getElementById(id); if(!el) return;
+    if(el.type !== 'checkbox') el.value=v;
     const t=document.getElementById('v_'+id);
-    if(t) t.innerText=(typeof v==='number') ? v.toFixed(2) : v;
+    if(t) {
+      if(typeof v==='number') {
+        if(id==='sim' || id==='smooth' || id==='despill') t.innerText=v.toFixed(3);
+        else if(id==='audioSpeed') t.innerText=v.toFixed(2)+'x';
+        else t.innerText=v.toFixed(2);
+      } else t.innerText = v;
+    }
   };
 
-  // Proyección
-  if(o.type!=='model') document.getElementById('projSelect').value = s.projection;
+  if(o.type!=='model' && o.type!=='audio') document.getElementById('projSelect').value = s.projection;
 
-  const isImm = (s.projection === '360' || s.projection === '180');
+  const is360 = (s.projection === '360' || s.projection === '180');
+  document.getElementById('surfaceRow').style.display = is360 ? 'flex' : 'none';
+  document.getElementById('followRow').style.display = is360 ? 'flex' : 'none';
+  if(is360){ document.getElementById('surfaceSelect').value = s.surface || 'sphere'; document.getElementById('followViewer').checked = !!s.followViewer; }
 
-  // Pos sliders 2D
-  document.getElementById('posControls').style.display = isImm ? 'none' : 'block';
-
-  // Surface controls
-  document.getElementById('surfaceRow').style.display = isImm ? 'flex' : 'none';
-  document.getElementById('followRow').style.display = isImm ? 'flex' : 'none';
-  document.getElementById('surfaceSizeRow').style.display = isImm ? 'flex' : 'none';
-  document.getElementById('surfaceHeightRow').style.display = isImm ? 'flex' : 'none';
-
-  if(isImm){
-    document.getElementById('surfaceSelect').value = s.surface || 'sphere';
-    document.getElementById('followViewer').checked = !!s.followViewer;
-    set('surfaceSize', s.surfaceSize ?? 20);
-    set('surfaceHeight', s.surfaceHeight ?? 0);
-  }
-
-  set('scale',s.scale);
-  if(!isImm) {
-    set('dist',Math.abs(o.mesh.position.z));
-    set('height',o.mesh.position.y);
-  }
-  set('rotY',s.rotY);
+  set('scale',s.scale); set('posX',s.posX); set('posY',s.posY); set('posZ',s.posZ); set('rotY',s.rotY);
   document.getElementById('checkFlip').checked = s.flipX;
 
-  if(o.type !== 'model' && o.mesh.material.uniforms) {
+  if(o.type !== 'model' && o.type !== 'audio') {
     document.getElementById('chromaActive').checked = s.chromaEnabled;
+    document.getElementById('chromaControls').style.display = s.chromaEnabled ? 'block' : 'none';
     document.getElementById('chromaInvert').checked = s.chromaInvert;
     set('keyR',s.keyR); set('keyG',s.keyG); set('keyB',s.keyB);
     document.getElementById('colorPrev').style.background = `rgb(${s.keyR*255},${s.keyG*255},${s.keyB*255})`;
-    set('sim',s.sim); set('smooth',s.smooth);
-    set('offsetX',s.offsetX); set('offsetY',s.offsetY);
-    set('opacity',s.opac);
+    set('sim',s.sim); set('smooth',s.smooth); set('despill',s.despill);
+    set('offsetX',s.offsetX); set('offsetY',s.offsetY); set('opacity',s.opac);
     set('brightness',s.brightness); set('contrast',s.contrast); set('saturation',s.saturation); set('gamma',s.gamma);
-    set('deblue', s.deblue);
+    set('deblue', s.deblue); set('degreen', s.degreen);
+  }
+
+  if(o.type === 'audio') {
+    set('audioSpeed', s.audioSpeed || 1.0); set('audioRefDist', s.audioRefDist || 1.0); set('audioDoppler', s.audioDoppler || 1.0);
+    document.getElementById('audioType').value = s.audioType || 'global';
+    document.getElementById('spatialControls').style.display = s.audioType === 'spatial' ? 'block' : 'none';
   }
 }
 
-function setKeyPreset(r,g,b, sim=0.4, smooth=0.05){
-  const o = objects.find(x=>x.id===activeId); if(!o) return;
-  if(o.type==='model') return;
-
-  o.settings.keyR = r; o.settings.keyG = g; o.settings.keyB = b;
-  o.settings.sim = sim;
-  o.settings.smooth = smooth;
-  o.settings.chromaEnabled = true;
-
-  applyUniforms(o);
-  syncUI();
-}
-
+// ======= UI Actions =======
 window.centerActive = () => {
-  const o=objects.find(x=>x.id===activeId);
-  if(!o) return;
-
-  const s=o.settings;
-
-  if(s.projection==='plane' || o.type==='model'){
-    o.mesh.position.set(0,1.6,-2);
-    o.mesh.rotation.set(0,0,0);
-    o.settings.dist=2; o.settings.height=1.6; o.settings.rotY=0;
-    syncUI();
-    return;
-  }
-
-  // 360/180
-  o.settings.followViewer = true;
-  o.settings.surfaceHeight = 0;
-  o.mesh.position.set(0, 0, 0);
-  o.mesh.rotation.set(0,0,0);
-  syncUI();
+  const o=objects.find(x=>x.id===activeId); if(!o) return;
+  o.mesh.position.set(0,1.6,-2); o.mesh.rotation.set(0,0,0);
+  o.settings.posX=0; o.settings.posY=1.6; o.settings.posZ=-2; o.settings.rotY=0; syncUI();
 };
 
-window.reloadVideo = () => {
+window.reloadMedia = () => {
   const o=objects.find(x=>x.id===activeId);
-  if(o && o.video) { o.video.pause(); o.video.currentTime=0; o.video.play().catch(e=>console.log(e)); }
+  if(o && o.video) { o.video.pause(); o.video.currentTime=0; o.video.play().catch(()=>{}); }
+  if(o && o.audio) { try{ o.audio.stop(); }catch{}; o.audio.play(); }
+  if(o && o.audioEl) { o.audioEl.pause(); o.audioEl.currentTime=0; o.audioEl.play().catch(()=>{}); }
 };
 
 window.deleteActive = () => {
   const i = objects.findIndex(x=>x.id===activeId);
   if(i>-1) {
-    const o=objects[i];
-    scene.remove(o.mesh);
-    if(o.video){o.video.pause();o.video.remove();}
-    if(o.mesh.geometry)o.mesh.geometry.dispose();
-    objects.splice(i,1);
-    activeId=null;
-    selectObj(null);
+    const o=objects[i]; scene.remove(o.mesh);
+    if(o.video){ o.video.pause(); o.video.remove(); }
+    if(o.audioEl){ o.audioEl.pause(); o.audioEl.remove(); }
+    if(o.audio){ try{ o.audio.stop(); }catch{}; if(o.audio.parent) o.audio.parent.remove(o.audio); }
+    if(o.mesh.geometry) o.mesh.geometry.dispose();
+    objects.splice(i,1); activeId=null; selectObj(null); updateRenderOrder();
   }
+};
+
+window.clearScene = () => {
+  if(objects.length === 0) return;
+  if(!confirm("⚠️ ¿Estás seguro de que quieres BORRAR TODO el proyecto? Esta acción no se puede deshacer.")) return;
+  for (let i = objects.length - 1; i >= 0; i--) {
+      const o = objects[i];
+      scene.remove(o.mesh);
+      if(o.video){ o.video.pause(); o.video.remove(); }
+      if(o.audioEl){ o.audioEl.pause(); o.audioEl.remove(); }
+      if(o.audio){ try{ o.audio.stop(); }catch{}; if(o.audio.parent) o.audio.parent.remove(o.audio); }
+      if(o.mesh.geometry) o.mesh.geometry.dispose();
+  }
+  objects = []; activeId = null; selectObj(null); updateRenderOrder();
+};
+
+window.duplicateActive = async () => {
+  const o = objects.find(x => x.id === activeId);
+  if (!o) { alert("Selecciona un objeto para clonar."); return; }
+  if (!o.source) { alert("No se puede clonar este objeto (sin datos de origen)."); return; }
+  toggleLoader(true);
+  try {
+    const newName = o.name + " (Copia)";
+    const newSettings = { ...o.settings, posX: o.settings.posX + 0.5, posZ: o.settings.posZ + 0.5 };
+    const newTransform = {
+      position: { x: o.mesh.position.x + 0.5, y: o.mesh.position.y, z: o.mesh.position.z + 0.5 },
+      rotation: { x: o.mesh.rotation.x, y: o.mesh.rotation.y, z: o.mesh.rotation.z },
+      scale:    { x: o.mesh.scale.x, y: o.mesh.scale.y, z: o.mesh.scale.z }
+    };
+    const s = o.source;
+    if (o.type === 'video') await loadVideo(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
+    else if (o.type === 'image') await loadImg(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
+    else if (o.type === 'audio') await loadAudioFromDataURL(s.kind==='dataurl'?s.dataURL:'', newName, s, newSettings, newTransform);
+    else if (o.type === 'gif') { const ab = b64ToAb(s.dataB64 || ''); await loadGifFromArrayBuffer(ab, newName, s, newSettings, newTransform); }
+    else if (o.type === 'model') {
+       const ab = b64ToAb(s.dataB64 || '');
+       const url = URL.createObjectURL(new Blob([ab], {type: s.mime}));
+       const ext = s.ext || 'glb';
+       await load3D(url, newName, (ext==='fbx'?'fbx':(ext==='obj'?'obj':'gltf')), s, newSettings, newTransform);
+       const created = objects[objects.length - 1];
+       if(created && o.renderMode) { created.renderMode = o.renderMode; applyRenderMode(created, o.renderMode); }
+    }
+  } catch (e) { console.error("Error clonando:", e); alert("Error al clonar el objeto."); }
+  toggleLoader(false);
 };
 
 function updateList() {
   const l=document.getElementById('layerList'); l.innerHTML='';
   objects.forEach(o=>{
-    const isImm = (o.settings.projection==='360'||o.settings.projection==='180');
-    const ico = o.type==='model' ? '📦' : (isImm ? '🌐' : '🎬');
     const d=document.createElement('div');
     d.className=`layer-item ${o.id===activeId?'active':''}`;
-    d.innerHTML=`<span>${ico}</span> <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${o.name}</span>`;
+    d.dataset.id = o.id;
+    let icon = '🎬'; if(o.type==='model') icon='📦'; else if(o.type==='audio') icon='🎵'; else if(o.settings.projection==='360'||o.settings.projection==='180') icon='🌐';
+    d.innerHTML=`<span>${icon}</span> <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${o.name}</span>`;
     d.onclick=()=>selectObj(o.id);
     l.appendChild(d);
   });
+  window.dispatchEvent(new Event('layerListUpdated'));
 }
 
 window.toggleUI=()=>document.getElementById('ui').classList.toggle('hidden');
+function toggleLoader(s){ document.getElementById('loader').style.display=s?'flex':'none'; }
 
-document.getElementById('checkOcclusion').addEventListener('change', e => {
-  if(xrSession) alert("Para cambiar la oclusión real (Depth API), sal y vuelve a entrar en MR.");
-});
-
-function toggleLoader(s){document.getElementById('loader').style.display=s?'flex':'none';}
-
-// ======= Mouse picking =======
-function initMousePick(){
+function initMousePick() {
   raycaster = new THREE.Raycaster();
-  renderer.domElement.addEventListener('pointerdown', (ev)=>{
-    if(xrSession) return;
-    if(transformControl.dragging) return;
-
+  renderer.domElement.addEventListener('pointerdown', e => {
+    if(xrSession || transformControl.dragging) return;
     const rect = renderer.domElement.getBoundingClientRect();
-    mouse.x = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
-    mouse.y = -((ev.clientY - rect.top) / rect.height) * 2 + 1;
-
-    // picking: plane/model + 360 si NO followViewer (para poder editar soporte)
-    const targets = objects
-      .filter(o=>{
-        const isImm = (o.settings.projection==='360'||o.settings.projection==='180');
-        return (o.settings.projection==='plane' || o.type==='model' || (isImm && !o.settings.followViewer));
-      })
-      .map(o=>o.mesh);
-
+    mouse.x = 2 * (e.clientX - rect.left) / rect.width - 1; mouse.y = -2 * (e.clientY - rect.top) / rect.height + 1;
+    const targets = objects.filter(isPickable).map(o=>o.mesh);
     raycaster.setFromCamera(mouse, camera);
     const hits = raycaster.intersectObjects(targets, true);
     if(hits.length){
-      let m = hits[0].object;
-      const found = objects.find(o => { let x=m; while(x){ if(x===o.mesh) return true; x=x.parent; } return false; });
-      if(found) selectObj(found.id);
+      let hitObj = hits[0].object;
+      const obj = objects.find(o => { let current = hitObj; while(current){ if(current === o.mesh) return true; current = current.parent; } return false; });
+      if(obj) selectObj(obj.id);
     }
   });
 }
 
-// ======= Shortcuts =======
-function initShortcuts(){
-  window.addEventListener('keydown', (e)=>{
+function initShortcuts() {
+  window.addEventListener('keydown', e => {
     if(e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
-
-    if(e.key === 'Delete' || e.key === 'Backspace'){
-      deleteActive();
-    }
+    if(e.key === 'Delete' || e.key === 'Backspace') deleteActive();
     if(e.key.toLowerCase() === 'g') transformControl.setMode('translate');
     if(e.key.toLowerCase() === 'r') transformControl.setMode('rotate');
     if(e.key.toLowerCase() === 's') transformControl.setMode('scale');
@@ -1033,199 +1062,171 @@ function initShortcuts(){
   });
 }
 
-// ======= GIF playback =======
-function tickGifs(dt){
-  for(const o of objects){
-    if(!o.gif) continue;
-    const g=o.gif;
-    g.t += dt;
-    if(g.t < 1/24) continue;
-    g.t = 0;
-    g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data);
-    g.ctx.putImageData(g.dat,0,0);
-    g.tex.needsUpdate = true;
-    g.f = (g.f+1) % g.num;
+function tickGifs(dt) {
+  for(const o of objects) {
+    if(!o.gif) continue; const g = o.gif; g.t += dt; if(g.t < 1/24) continue;
+    g.t = 0; g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data); g.ctx.putImageData(g.dat, 0, 0); g.tex.needsUpdate = true; g.f = (g.f + 1) % g.num;
   }
 }
 
-// ======= VR =======
 function setupVR() {
-  if('xr' in navigator) {
-    navigator.xr.isSessionSupported('immersive-ar').then(s=>{
-      if(s) {
-        const b=document.getElementById('vrBtn');
-        b.style.display='block';
-        b.onclick=startVR;
-      }
-    });
-  }
+  if('xr' in navigator) navigator.xr.isSessionSupported('immersive-ar').then(s => { if(s) { const b=document.getElementById('vrBtn'); b.style.display='block'; b.onclick=startVR; } });
 }
 
 async function startVR() {
-  const useOcclusion = document.getElementById('checkOcclusion').checked;
-  const sessionInit = {
-    requiredFeatures: ['local-floor'],
-    optionalFeatures: ['dom-overlay'],
-    domOverlay: { root: document.body }
-  };
-
-  if(useOcclusion) {
-    sessionInit.optionalFeatures.push('depth-sensing');
-    sessionInit.depthSensing = {
-      usagePreference: ["gpu-optimized", "cpu-optimized"],
-      dataFormatPreference: ["luminance-alpha"]
-    };
-  }
-
-  xrSession = await navigator.xr.requestSession('immersive-ar', sessionInit);
-  renderer.xr.setSession(xrSession);
-  setMode(true);
-
-  xrSession.addEventListener('end', ()=>{
-    xrSession=null;
-    setMode(false);
-  });
+  occlusionEnabled = document.getElementById('checkOcclusion').checked;
+  const init = { requiredFeatures: ['local-floor'], optionalFeatures: ['dom-overlay'], domOverlay: { root: document.body } };
+  if(occlusionEnabled) { init.optionalFeatures.push('depth-sensing'); init.depthSensing = { usagePreference: ['gpu-optimized', 'cpu-optimized'], dataFormatPreference: ['luminance-alpha'] }; }
+  try {
+    xrSession = await navigator.xr.requestSession('immersive-ar', init);
+    renderer.xr.setSession(xrSession); setMode(true);
+    xrSession.addEventListener('end', () => { xrSession = null; setMode(false); });
+  } catch(err) { console.error('Error XR:', err); alert('Error al iniciar MR.'); }
 }
 
-// ======= Controles VR =======
 function initRay() {
-  rightRay = new THREE.Line(
-    new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]),
-    new THREE.LineBasicMaterial({color:0x6c5ce7})
-  );
+  rightRay = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]), new THREE.LineBasicMaterial({ color: 0x6c5ce7, linewidth: 4 }));
   scene.add(rightRay);
-  rayCursor = new THREE.Mesh(new THREE.SphereGeometry(0.02), new THREE.MeshBasicMaterial({color:0xff7675}));
+  rayCursor = new THREE.Mesh(new THREE.SphereGeometry(0.04), new THREE.MeshBasicMaterial({ color: 0xff9c65 }));
   scene.add(rayCursor);
 }
 
 function handleVR(frame, dt) {
   if(!xrSession) return;
   const ref = renderer.xr.getReferenceSpace();
-  let lSrc, rSrc;
-  for(const s of xrSession.inputSources) { if(s.handedness==='left') lSrc=s; if(s.handedness==='right') rSrc=s; }
+  let lSrc, rSrc; for(const s of xrSession.inputSources) { if(s.handedness==='left') lSrc=s; if(s.handedness==='right') rSrc=s; }
 
   if(rSrc && rSrc.gripSpace) {
     const p = frame.getPose(rSrc.gripSpace, ref);
     if(p) {
       const pos = p.transform.position;
       rightRay.position.set(pos.x,pos.y,pos.z);
-      rightRay.quaternion.set(p.transform.orientation.x,p.transform.orientation.y,p.transform.orientation.z,p.transform.orientation.w);
+      rightRay.quaternion.set(p.transform.orientation.x, p.transform.orientation.y, p.transform.orientation.z, p.transform.orientation.w);
       rightRay.visible = true;
-
       const orig = new THREE.Vector3(pos.x, pos.y, pos.z);
       const dir = new THREE.Vector3(0,0,-1).applyQuaternion(rightRay.quaternion);
-
-      // En VR: seleccionamos plane/model + 360 si NO followViewer
-      const targets = objects.filter(o=>{
-        const isImm = (o.settings.projection==='360'||o.settings.projection==='180');
-        return (o.settings.projection==='plane'||o.type==='model'||(isImm && !o.settings.followViewer));
-      }).map(o=>o.mesh);
-
-      const hits = new THREE.Raycaster(orig, dir, 0, 10).intersectObjects(targets, true);
-
+      const targets = objects.filter(isPickable).map(o=>o.mesh);
+      const hits = new THREE.Raycaster(orig, dir, 0, 15).intersectObjects(targets, true);
       if(hits.length>0) {
         rayCursor.visible = true; rayCursor.position.copy(hits[0].point);
-        let m = hits[0].object;
-        const found = objects.find(o => { let x=m; while(x){if(x===o.mesh)return true; x=x.parent;} return false; });
+        let m = hits[0].object; const found = objects.find(o => { let x=m; while(x){ if(x===o.mesh) return true; x=x.parent; } return false; });
         hoverId = found ? found.id : null;
-      } else { rayCursor.visible=false; hoverId=null; }
-
-      ctrl.right.currQuat = rightRay.quaternion.clone();
-      ctrl.right.currPos = orig;
+      } else { rayCursor.visible = false; hoverId = null; }
+      ctrl.right.currPos = orig; ctrl.right.currQuat = rightRay.quaternion.clone();
     }
   }
 
   if(rSrc && rSrc.gamepad) {
     const gp = rSrc.gamepad;
-    const trig = gp.buttons[0].pressed;
-    const grip = gp.buttons[1].pressed;
-    const btnA = gp.buttons[4]?.pressed || gp.buttons[5]?.pressed;
-
+    const trig = gp.buttons[0].pressed; const grip = gp.buttons[1].pressed; const btnA = gp.buttons[4]?.pressed || gp.buttons[5]?.pressed;
+    if(trig && !ctrl.right.lastTrig && hoverId) selectObj(hoverId); ctrl.right.lastTrig = trig;
     if(btnA && !ctrl.right.lastBtn && activeId) {
       const o = objects.find(x=>x.id===activeId);
-      if(o && o.video) { if(o.video.paused) o.video.play(); else o.video.pause(); }
+      if(o?.video) { if(o.video.paused) o.video.play(); else o.video.pause(); }
+      if(o?.audioEl) { if(o.audioEl.paused) o.audioEl.play(); else o.audioEl.pause(); }
+      if(o?.audio) { if(o.audio.isPlaying) { try{o.audio.pause();}catch{ o.audio.stop(); } } else o.audio.play(); }
     }
     ctrl.right.lastBtn = btnA;
 
-    const sx = gp.axes[2]||0; const sy = gp.axes[3]||0;
-    if(trig && !ctrl.right.lastTrig && hoverId) selectObj(hoverId);
-    ctrl.right.lastTrig = trig;
-
     if(grip) {
       const obj = objects.find(o=>o.id===activeId);
-      if(obj) {
-        const isImm = (obj.settings.projection==='360'||obj.settings.projection==='180');
-        const allowImmEdit = isImm && !obj.settings.followViewer;
-
-        // Permitir mover/rotar soporte 360 si allowImmEdit (misma lógica que modelos)
-        if(obj.settings.projection==='plane' || obj.type==='model' || allowImmEdit) {
-          if(Math.abs(sx)>0.1) obj.mesh.position.x += sx*dt*2;
-          if(Math.abs(sy)>0.1) obj.mesh.position.z += sy*dt*2;
-
-          if(ctrl.right.gripped) {
-            const dQ = ctrl.right.currQuat.clone().multiply(ctrl.right.lastQuat.clone().invert());
-            obj.mesh.quaternion.premultiply(dQ);
-            // sincroniza altura soporte si es inmersivo
-            if(isImm) obj.settings.surfaceHeight = obj.mesh.position.y;
-            syncUI();
-          }
+      if(obj && isPickable(obj)) {
+        const sx = gp.axes[2]||0; const sy = gp.axes[3]||0;
+        if(Math.abs(sx)>0.1) { obj.mesh.position.x += sx*dt*2; obj.settings.posX = obj.mesh.position.x; }
+        if(Math.abs(sy)>0.1) { obj.mesh.position.z += sy*dt*2; obj.settings.posZ = obj.mesh.position.z; }
+        if(ctrl.right.gripped) {
+          const dQ = ctrl.right.currQuat.clone().multiply(ctrl.right.lastQuat.clone().invert());
+          obj.mesh.quaternion.premultiply(dQ); obj.settings.rotY = THREE.MathUtils.radToDeg(obj.mesh.rotation.y); syncUI();
         }
-
         if(lSrc && lSrc.gamepad) {
-          const lGrip = lSrc.gamepad.buttons[1].pressed;
-          const lsy = lSrc.gamepad.axes[3]||0;
-
-          if(Math.abs(lsy)>0.1 && (obj.settings.projection==='plane'||obj.type==='model'||allowImmEdit)) {
-            obj.mesh.position.y -= lsy*dt;
-            if(isImm) obj.settings.surfaceHeight = obj.mesh.position.y;
-            syncUI();
-          }
-
-          if(lGrip) {
+          const lGrip = lSrc.gamepad.buttons[1].pressed; const lsy = lSrc.gamepad.axes[3]||0;
+          if(Math.abs(lsy)>0.1) { obj.mesh.position.y -= lsy*dt; obj.settings.posY = obj.mesh.position.y; syncUI(); }
+          if(lGrip && lSrc.gripSpace) {
             const lp = frame.getPose(lSrc.gripSpace, ref);
             if(lp) {
-              const lPos = new THREE.Vector3(lp.transform.position.x, lp.transform.position.y, lp.transform.position.z);
-              const d = lPos.distanceTo(ctrl.right.currPos);
-              if(!ctrl.left.gripped) { ctrl.gesture.startDist=d; ctrl.gesture.startScale=obj.settings.scale; }
-              else {
-                const ns = Math.max(0.1, ctrl.gesture.startScale * (d/ctrl.gesture.startDist));
-                updateObj('scale', ns);
-              }
+              const d = new THREE.Vector3(lp.transform.position.x, lp.transform.position.y, lp.transform.position.z).distanceTo(ctrl.right.currPos);
+              if(!ctrl.left.gripped) { ctrl.gesture.startDist = d; ctrl.gesture.startScale = obj.settings.scale; }
+              else { const ns = Math.max(0.01, ctrl.gesture.startScale * (d/ctrl.gesture.startDist)); updateObj('scale', ns); }
             }
             ctrl.left.gripped = true;
           } else ctrl.left.gripped = false;
         }
       }
-      ctrl.right.gripped = true;
-      ctrl.right.lastQuat.copy(ctrl.right.currQuat);
+      ctrl.right.gripped = true; ctrl.right.lastQuat.copy(ctrl.right.currQuat);
     } else ctrl.right.gripped = false;
   }
 }
 
-// ======= Render =======
-let lastT = performance.now();
-function render(t, frame) {
-  const dt = Math.min(0.05, (t-lastT)/1000);
-  lastT = t;
-
+let lastTime = performance.now();
+function render(time, frame) {
+  const dt = Math.min(0.05, (time - lastTime) / 1000); lastTime = time;
   if(!xrSession) orbit.update();
   tickGifs(dt);
+  objects.forEach(o=>{ if(o.mesh?.material?.uniforms?.time) o.mesh.material.uniforms.time.value = time/1000; });
 
-  // Follow viewer (360/180) con altura global
-  for(const o of objects){
-    if(o.type === 'model') continue;
-    const s=o.settings;
-    const isImm = (s.projection==='360'||s.projection==='180');
-    if(isImm && s.followViewer){
-      const cam = renderer.xr.isPresenting ? renderer.xr.getCamera(camera) : camera;
-      o.mesh.position.copy(cam.position);
-      o.mesh.position.y += (s.surfaceHeight ?? 0);
-    }
+  for(const obj of objects){
+    if(obj.type === 'model' || obj.type === 'audio') continue;
+    const s = obj.settings;
+    if((s.projection !== '360' && s.projection !== '180')) continue;
+    if(!s.followViewer) continue; if(s.viewMode !== 'immersive') continue;
+    const cam = renderer.xr.isPresenting ? renderer.xr.getCamera(camera) : camera;
+    obj.mesh.position.copy(cam.position);
   }
 
+  // ANTI-CRASH: Sin renderDepthForView (Oclusión nativa simple si el visor lo permite)
   if(frame) handleVR(frame, dt);
-
   renderer.render(scene, camera);
+}
+
+function initProjectIO(){
+  document.getElementById('btnSaveProject').onclick = saveProject;
+  document.getElementById('btnLoadProject').onclick = ()=>document.getElementById('projectFileInput').click();
+  document.getElementById('projectFileInput').addEventListener('change', async e=>{
+    if(!e.target.files.length) return;
+    const file = e.target.files[0];
+    try{ const text = await file.text(); await loadProjectData(JSON.parse(text)); }catch(err){ console.error(err); alert('Error cargando proyecto.'); }
+    e.target.value = '';
+  });
+}
+
+async function saveProject(){
+  const projectName = document.getElementById('projectName').value || 'Mi Escena MR';
+  const serialized = [];
+  for(const o of objects){
+    serialized.push({
+      id: o.id, name: o.name, type: o.type, settings: o.settings,
+      renderMode: o.renderMode || null, baseScale: o.baseScale || null,
+      transform: { position: { x: o.mesh.position.x, y: o.mesh.position.y, z: o.mesh.position.z }, rotation: { x: o.mesh.rotation.x, y: o.mesh.rotation.y, z: o.mesh.rotation.z }, scale: { x: o.mesh.scale.x, y: o.mesh.scale.y, z: o.mesh.scale.z } },
+      source: o.source || null
+    });
+  }
+  const blob = new Blob([JSON.stringify({ version: '6.9', name: projectName, created: new Date().toISOString(), objects: serialized }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${projectName.replace(/\s+/g, '_')}.mrsd`; a.click();
+}
+
+async function loadProjectData(data){
+  console.log('📂 Cargando:', data.name);
+  toggleLoader(true);
+  window.clearScene(); 
+  document.getElementById('projectName').value = data.name || 'Mi Escena MR';
+  for(const rec of (data.objects || [])){
+    try{
+      const s = rec.settings || defSettings(); const t = rec.transform || null; const src = rec.source || null; if(!src) continue;
+      const type = rec.type;
+      if(type === 'video') await loadVideo(src.kind==='dataurl'?src.dataURL: '', rec.name.toLowerCase(), src, s, t);
+      else if(type === 'image') await loadImg(src.kind==='dataurl'?src.dataURL: '', rec.name.toLowerCase(), src, s, t);
+      else if(type === 'gif') await loadGifFromArrayBuffer(b64ToAb(src.dataB64 || ''), rec.name.toLowerCase(), src, s, t);
+      else if(type === 'audio') await loadAudioFromDataURL(src.kind==='dataurl'?src.dataURL: '', rec.name.toLowerCase(), src, s, t);
+      else if(type === 'model'){
+        const url = URL.createObjectURL(new Blob([b64ToAb(src.dataB64 || '')], {type: src.mime || 'application/octet-stream'}));
+        const ext = (src.ext || '').toLowerCase();
+        await load3D(url, rec.name.toLowerCase(), (ext==='fbx'?'fbx':(ext==='obj'?'obj':'gltf')), src, s, t);
+        const created = objects[objects.length-1]; if(created && rec.renderMode) { created.renderMode = rec.renderMode; applyRenderMode(created, rec.renderMode); }
+      }
+    }catch(err){ console.error('Error objeto:', rec.name, err); }
+  }
+  updateList(); toggleLoader(false);
+  alert(`Proyecto "${data.name}" cargado.`);
 }
 
 init();
