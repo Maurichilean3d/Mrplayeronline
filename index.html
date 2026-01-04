@@ -3,418 +3,522 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MRstudio Studio Ultimate - v2025 Patch 2</title>
+  <title>MRstudio Ultimate v2026 | Patched Pro</title>
 
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    /* Estilos base Diamond v24 */
+    /* =========================================
+       ESTILO "AMBER GLASS" (Optimizado)
+    ========================================= */
     :root {
       --main-color: #ffaa00;
-      --bg-glass: rgba(20, 20, 25, 0.85);
-      --border-glass: rgba(255, 170, 0, 0.3);
-      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
+      --bg-glass: rgba(20, 20, 25, 0.9);
+      --border-glass: rgba(255, 170, 0, 0.4);
+      --text-glow: 0 0 10px rgba(255, 170, 0, 0.5);
     }
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', sans-serif; }
+
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { margin: 0; overflow: hidden; background: #000; color: #eee; }
+
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
     #css3d { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
     #css3d.interactive { pointer-events: auto; }
 
     .ui-panel {
       position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
-      background: var(--bg-glass); backdrop-filter: blur(30px);
-      border: 1px solid var(--border-glass); border-radius: 24px;
+      background: var(--bg-glass);
+      backdrop-filter: blur(35px) saturate(160%);
+      -webkit-backdrop-filter: blur(35px) saturate(160%);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
       padding: 20px; overflow-y: auto; z-index: 100;
-      transition: transform 0.3s;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.8);
+      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
+      transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
     }
     .ui-panel.minimized { transform: translateX(-460px); }
 
-    h2 { font-size: 15px; color: var(--main-color); text-transform: uppercase; border-bottom: 2px solid var(--border-glass); padding-bottom: 12px; display: flex; justify-content: space-between; }
-    .sec-head { font-size: 11px; font-weight: 900; color: #aaa; margin: 18px 0 8px 0; text-transform: uppercase; }
-
-    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
-    input[type=range] { flex: 2; accent-color: var(--main-color); }
-    .val { width: 60px; text-align: right; color: var(--main-color); font-family: monospace; }
-    
-    select, input[type=url], input[type=text], input[type=number] {
-      width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border-glass); color: #fff; padding: 8px; border-radius: 8px;
+    h2 {
+      margin: 0 0 18px 0; font-size: 15px; color: var(--main-color); font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px;
+      border-bottom: 2px solid var(--border-glass); padding-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      text-shadow: var(--text-glow);
+    }
+    .sec-head {
+      font-size: 11px; font-weight: 900; color: #ffaa00; margin: 18px 0 8px 0;
+      text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8;
     }
 
-    button { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; background: var(--main-color); color: #000; }
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 600; }
+
+    input[type=range] { flex: 2; height: 4px; accent-color: var(--main-color); background: rgba(255,255,255,0.1); appearance: none; }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
+    .val { width: 64px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+
+    select, input[type=url], input[type=text], input[type=number] {
+      width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-glass); 
+      color: #fff; padding: 8px 12px; border-radius: 10px; outline: none;
+    }
+
+    button {
+      flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer;
+      color: #000; background: var(--main-color); transition: 0.2s; font-size: 11px;
+      text-transform: uppercase; box-shadow: var(--text-glow);
+    }
+    button:active { transform: scale(0.95); }
     button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); }
     button.danger { background: #ff3333; color: #fff; }
 
-    .layer-list { max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 8px; margin-bottom: 12px; border: 1px solid var(--border-glass); }
-    .layer-item { padding: 8px; font-size: 11px; border-radius: 10px; display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; margin-bottom: 4px; background: rgba(255,255,255,0.05); }
-    .layer-item.active { border-left: 3px solid var(--main-color); background: rgba(255,170,0,0.1); }
+    #toggleUI {
+      position: fixed; left: 20px; top: 20px; z-index: 101; width: 44px; height: 44px; border-radius: 50%;
+      background: var(--bg-glass); border: 2px solid var(--main-color); color: var(--main-color);
+      display: none; align-items: center; justify-content: center; font-size: 20px; cursor: pointer;
+    }
+
+    #vrBtn {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      padding: 18px 60px; background: var(--main-color); color: #000;
+      border-radius: 50px; font-weight: 1000; z-index: 1000; display: none;
+      box-shadow: 0 0 35px rgba(255, 170, 0, 0.8); border: 3px solid #fff;
+      font-size: 15px; letter-spacing: 2px;
+    }
+
+    .layer-list { max-height: 180px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 12px; padding: 8px; border: 1px solid var(--border-glass); }
+    .layer-item { padding: 8px; font-size: 11px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; background: rgba(255,255,255,0.05); }
+    .layer-item.active { background: rgba(255, 170, 0, 0.2); border-left: 3px solid var(--main-color); }
     
-    #vrBtn { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); padding: 16px 40px; background: var(--main-color); border-radius: 50px; font-weight: bold; z-index: 1000; }
-    .loader { position: fixed; inset: 0; background: #000; z-index: 5000; display: none; place-items: center; color: var(--main-color); font-size: 20px; }
+    #modelComponents { max-height: 200px; overflow-y: auto; margin-top: 10px; background: rgba(0,0,0,0.5); border-radius: 8px; padding: 5px; border: 1px solid var(--border-glass); }
+    .comp-row { display: flex; justify-content: space-between; padding: 4px; font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
 
   <canvas id="c"></canvas>
   <div id="css3d"></div>
-  <div class="loader" id="loader">CARGANDO...</div>
+  <div class="loader" id="loader">CARGANDO SISTEMA...</div>
+  <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
 
   <div class="ui-panel" id="ui">
-    <h2><span>STUDIO v2025.2</span><span onclick="toggleUIPanel()" style="cursor:pointer">×</span></h2>
+    <h2>
+      <span>DIAMOND v26.x ULTIMATE</span>
+      <span style="cursor:pointer;" onclick="toggleUIPanel()">×</span>
+    </h2>
 
-    <div class="sec-head">📐 Unidades y Calibración</div>
+    <div class="sec-head">📐 Arquitectura y Medidas</div>
     <div class="row">
-      <label><input type="checkbox" id="unitSystem" onchange="toggleUnitSystem()"> Imperial (Pies/Pulg)</label>
+      <select id="unitSystem" onchange="setupUnitOptions()">
+        <option value="mks">Sistema Métrico (MKS)</option>
+        <option value="imperial">Sistema Imperial</option>
+      </select>
     </div>
     <div class="row">
       <select id="unitSelect" onchange="updateUnits()">
         </select>
     </div>
-    <div class="row"><label><input type="checkbox" id="showCalibrator" onchange="updateCalibrator()"> Ver Calibrador 1m/3.2ft</label></div>
+    <div class="row"><button onclick="spawnCalibrator()" class="secondary">📏 Generar Regla Calibración (1m)</button></div>
+    <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
+
+    <div class="sec-head">🧩 Render & 3D Tools</div>
+    <div id="modelTools" style="display:none;">
+      <div class="row">
+        <label>Modo Render</label>
+        <select id="renderMode" onchange="applyRenderMode()">
+          <option value="original">Original</option>
+          <option value="wireframe">Wireframe</option>
+          <option value="shaded">Shaded (Flat)</option>
+          <option value="workbench">Workbench (Normals)</option>
+        </select>
+      </div>
+      <div class="sec-head">Componentes Internos (Luces/Mallas)</div>
+      <div id="modelComponents"></div>
+    </div>
 
     <div class="sec-head">📥 Importar Media</div>
     <div class="row">
-      <input type="url" id="webUrl" placeholder="URL .mp4, .glb, .png, .mp3...">
-      <button onclick="loadFromWeb()" style="flex:0 0 40px;">+</button>
+      <input type="url" id="webUrl" placeholder="URL (.mp4, .glb, .png, .gif)">
+      <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
     </div>
-    <button onclick="document.getElementById('fileInput').click()" class="secondary" style="width:100%; margin-top:5px;">📁 Abrir Local</button>
-    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.gif,.mp4,.glb,.fbx,.obj,.mtl,.mp3,.wav">
+    <button onclick="document.getElementById('fileInput').click()" class="secondary" style="width:100%; margin-top:8px;">📁 Abrir Archivos Locales</button>
+    <input type="file" id="fileInput" multiple style="display:none;" accept=".png,.jpg,.gif,.mp4,.glb,.fbx,.obj,.mp3,.wav">
+
+    <div class="sec-head">▶ YouTube (Fusión MR)</div>
+    <div class="row">
+      <input type="text" id="ytUrl" placeholder="URL YouTube">
+      <button onclick="addYouTube()" class="small">AÑADIR</button>
+    </div>
 
     <div class="sec-head">Capas</div>
     <div id="layerList" class="layer-list"></div>
 
     <div id="editorUI" style="display:none;">
-      <div class="sec-head">🎛 Transform (Tiempo Real)</div>
-      <div class="row"><label>X</label><input type="range" id="tPosX" min="-10" max="10" step="0.01"><span class="val" id="v_tPosX">0</span></div>
-      <div class="row"><label>Y</label><input type="range" id="tPosY" min="0" max="10" step="0.01"><span class="val" id="v_tPosY">0</span></div>
-      <div class="row"><label>Z</label><input type="range" id="tPosZ" min="-20" max="20" step="0.01"><span class="val" id="v_tPosZ">0</span></div>
-      <div class="row"><label>Escala</label><input type="range" id="tScale" min="0.01" max="10" step="0.01"><span class="val" id="v_tScale">1</span></div>
-
-      <div id="modelTools" style="display:none;">
-        <div class="sec-head">🎨 Renderizado 3D</div>
-        <select id="modelRenderMode" onchange="changeModelRender()">
-          <option value="original">Original (Textures)</option>
-          <option value="wireframe">Wireframe</option>
-          <option value="shaded">Flat Shaded</option>
-          <option value="workbench">Workbench (Normals)</option>
-        </select>
-        <div class="sec-head">🧩 Componentes del Modelo</div>
-        <div id="modelComponents" class="layer-list" style="max-height:150px;"></div>
-      </div>
-
-      <div class="sec-head">🧪 Chroma & Imagen</div>
-      <div class="row"><label><input type="checkbox" id="chromaToggle"> Activar Chroma</label></div>
-      <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01"><span class="val" id="v_opacity">1</span></div>
-
-      <div class="sec-head">🧭 Acciones</div>
-      <div class="row" style="gap:5px;">
+      <div class="sec-head">🎛 Transformación (Tiempo Real)</div>
+      <div class="row"><label>Pos X</label><input type="range" id="tPosX" min="-15" max="15" step="0.01" oninput="applyTransformLive()"><span class="val" id="v_tPosX">0</span></div>
+      <div class="row"><label>Pos Y</label><input type="range" id="tPosY" min="0" max="10" step="0.01" oninput="applyTransformLive()"><span class="val" id="v_tPosY">1.6</span></div>
+      <div class="row"><label>Escala</label><input type="range" id="tScale" min="0.01" max="10" step="0.01" oninput="applyTransformLive()"><span class="val" id="v_tScale">1</span></div>
+      
+      <div class="sec-head">🧪 Chroma / Shader</div>
+      <div class="row"><label><input type="checkbox" id="chromaToggle" onchange="updateChroma()"> Activar Chroma</label></div>
+      <div id="chromaPanel" style="display:none;">
+         </div>
+      
+      <div class="sec-head">⚙️ Realidad Mixta</div>
+      <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
+      <div class="row" style="gap:8px;">
         <button onclick="centerActive()" class="secondary">🎯 Centrar</button>
         <button onclick="deleteActive()" class="danger">🗑 Borrar</button>
       </div>
     </div>
-
-    <div class="sec-head">⚙️ Realidad Mixta</div>
-    <div class="row"><label><input type="checkbox" id="checkOcclusion" checked> Oclusión Depth API</label></div>
   </div>
 
-  <button id="vrBtn" style="display:none;">INICIAR AR</button>
-
+  <button id="vrBtn">INICIAR MR</button>
   <script type="importmap">
-    { "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-    } }
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
   </script>
 
   <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { TransformControls } from 'three/addons/controls/TransformControls.js';
+    import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+    import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
     import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
 
-    let scene, camera, renderer, cssRenderer, orbit, transformCtrl;
-    let audioListener, xrSession, xrRefSpace;
-    let objects = [], activeId = null;
-    let calibratorMesh;
+    // Variables de Estado
+    let scene, camera, renderer, orbit, transformCtrl, cssRenderer, audioListener;
+    let xrSession, xrRefSpace, calibratorLine;
+    let objects = [];
+    let activeId = null;
+    let currentUnit = 'm';
+
     const gltfLoader = new GLTFLoader();
+    const fbxLoader = new FBXLoader();
+    const objLoader = new OBJLoader();
+    const mtlLoader = new MTLLoader();
 
-    // Oclusión State
-    let xrGlBinding = null, depthTex = null, depthProgram = null, depthVao = null;
+    // =========================================
+    // 1. CORRECCIÓN CARGA DE GIF (Punto 1)
+    // =========================================
+    async function addGif(file) {
+        toggleLoader(true, "PROCESANDO GIF...");
+        try {
+            // Verificación de librería omggif
+            if (typeof window.omggif === 'undefined' && !window.Omggif) {
+                const s = document.createElement('script');
+                s.src = 'https://unpkg.com/omggif@1.0.10/omggif.js';
+                await new Promise(res => s.onload = res);
+            }
 
-    function init() {
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 1000);
-      camera.position.set(0, 1.6, 3);
+            const arrayBuffer = await file.arrayBuffer();
+            const reader = new window.Omggif.GifReader(new Uint8Array(arrayBuffer));
 
-      audioListener = new THREE.AudioListener();
-      camera.add(audioListener);
+            const canvas = document.createElement('canvas');
+            canvas.width = reader.width; canvas.height = reader.height;
+            const ctx = canvas.getContext('2d');
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.colorSpace = THREE.SRGBColorSpace;
 
-      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.xr.enabled = true;
-
-      cssRenderer = new CSS3DRenderer();
-      cssRenderer.setSize(window.innerWidth, window.innerHeight);
-      document.getElementById('css3d').appendChild(cssRenderer.domElement);
-
-      orbit = new OrbitControls(camera, renderer.domElement);
-      transformCtrl = new TransformControls(camera, renderer.domElement);
-      transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
-      scene.add(transformCtrl);
-
-      scene.add(new THREE.AmbientLight(0xffffff, 1.0));
-      const sun = new THREE.DirectionalLight(0xffffff, 0.8);
-      sun.position.set(5, 10, 5);
-      scene.add(sun);
-
-      initCalibrator();
-      toggleUnitSystem();
-      setupVR();
-      bindUI();
-
-      renderer.setAnimationLoop(animate);
-    }
-
-    function initCalibrator() {
-      const geo = new THREE.BoxGeometry(1, 0.02, 0.02);
-      const mat = new THREE.MeshBasicMaterial({ color: 0x00ff00, depthTest: false, transparent: true, opacity: 0.8 });
-      calibratorMesh = new THREE.Mesh(geo, mat);
-      calibratorMesh.visible = false;
-      scene.add(calibratorMesh);
-    }
-
-    // --- 1. GIF SYSTEM CORRECTED ---
-    async function addGifFromFile(file) {
-      if (!window.Omggif) return alert("Librería Omggif no cargada.");
-      toggleLoader(true);
-      const buffer = await file.arrayBuffer();
-      const reader = new window.Omggif.GifReader(new Uint8Array(buffer));
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = reader.width; canvas.height = reader.height;
-      const ctx = canvas.getContext('2d');
-      const tex = new THREE.CanvasTexture(canvas);
-      
-      const root = new THREE.Group();
-      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(reader.width/reader.height, 1), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
-      root.add(mesh);
-      scene.add(root);
-
-      const layer = {
-        id: Math.random().toString(36).substr(2,9),
-        kind: 'gif', root3D: root, mesh, tex,
-        gifData: { reader, ctx, canvas, frame: 0, next: 0, imgData: ctx.createImageData(reader.width, reader.height) }
-      };
-      objects.push(layer);
-      selectObject(layer.id);
-      toggleLoader(false);
-      updateLayers();
-    }
-
-    // --- 2 & 4. 3D MODELS (RENDER MODES & COMPONENTS) ---
-    async function loadModel(url, name) {
-      toggleLoader(true);
-      gltfLoader.load(url, (gltf) => {
-        const model = gltf.scene;
-        const root = new THREE.Group();
-        root.add(model);
-        scene.add(root);
-
-        const layer = {
-          id: Math.random().toString(36).substr(2,9),
-          name: name, kind: 'model', root3D: root, model: model,
-          renderMode: 'original'
-        };
-        objects.push(layer);
-        selectObject(layer.id);
-        toggleLoader(false);
-        updateLayers();
-      });
-    }
-
-    function changeModelRender() {
-      const mode = document.getElementById('modelRenderMode').value;
-      const o = objects.find(x => x.id === activeId);
-      if (!o || o.kind !== 'model') return;
-
-      o.model.traverse(n => {
-        if (n.isMesh) {
-          if (mode === 'wireframe') n.material.wireframe = true;
-          else if (mode === 'workbench') n.material = new THREE.MeshNormalMaterial();
-          else if (mode === 'shaded') n.material = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
-          else n.material.wireframe = false; // Original fallback simplified
-        }
-      });
-    }
-
-    function buildComponentsUI(layer) {
-      const container = document.getElementById('modelComponents');
-      container.innerHTML = '';
-      layer.model.traverse(n => {
-        if (n.isMesh || n.isLight) {
-          const row = document.createElement('div');
-          row.className = 'layer-item';
-          row.innerHTML = `<input type="checkbox" ${n.visible ? 'checked' : ''}> <span>${n.name || n.type}</span>`;
-          row.querySelector('input').onchange = (e) => n.visible = e.target.checked;
-          container.appendChild(row);
-        }
-      });
-    }
-
-    // --- 7. REAL TIME TRANSFORMS ---
-    function bindUI() {
-      const inputs = ['tPosX', 'tPosY', 'tPosZ', 'tScale'];
-      inputs.forEach(id => {
-        document.getElementById(id).addEventListener('input', (e) => {
-          const val = parseFloat(e.target.value);
-          document.getElementById('v_'+id).innerText = val;
-          applyTransform();
-        });
-      });
-    }
-
-    function applyTransform() {
-      const o = objects.find(x => x.id === activeId);
-      if (!o) return;
-      o.root3D.position.set(
-        parseFloat(document.getElementById('tPosX').value),
-        parseFloat(document.getElementById('tPosY').value),
-        parseFloat(document.getElementById('tPosZ').value)
-      );
-      const s = parseFloat(document.getElementById('tScale').value);
-      o.root3D.scale.set(s, s, s);
-    }
-
-    // --- 8. UNIT SYSTEM ---
-    window.toggleUnitSystem = () => {
-      const isImperial = document.getElementById('unitSystem').checked;
-      const sel = document.getElementById('unitSelect');
-      sel.innerHTML = isImperial ? 
-        `<option value="ft">Pies (ft)</option><option value="in">Pulgadas (in)</option>` :
-        `<option value="m">Metros (m)</option><option value="cm">Centímetros (cm)</option><option value="mm">Milímetros (mm)</option>`;
-      updateUnits();
-    };
-
-    window.updateUnits = () => {
-      const unit = document.getElementById('unitSelect').value;
-      const factor = (unit === 'ft') ? 3.28 : (unit === 'cm' ? 100 : 1);
-      calibratorMesh.scale.x = (unit === 'ft' || unit === 'in') ? 0.3048 : 1; 
-    };
-
-    window.updateCalibrator = () => {
-      calibratorMesh.visible = document.getElementById('showCalibrator').checked;
-      if (activeId) {
-        const o = objects.find(x => x.id === activeId);
-        calibratorMesh.position.copy(o.root3D.position).y -= 0.1;
-      }
-    };
-
-    // --- 10. AUDIO FIX ---
-    async function loadAudio(url) {
-      const audioEl = new Audio(url);
-      audioEl.loop = true;
-      const posAudio = new THREE.PositionalAudio(audioListener);
-      posAudio.setMediaElementSource(audioEl);
-      
-      const root = new THREE.Group();
-      const icon = new THREE.Mesh(new THREE.SphereGeometry(0.1), new THREE.MeshBasicMaterial({ color: 0x0000ff }));
-      root.add(icon);
-      root.add(posAudio);
-      scene.add(root);
-      
-      // Auto-play on user interaction
-      const playAudio = () => { audioEl.play(); window.removeEventListener('click', playAudio); };
-      window.addEventListener('click', playAudio);
-
-      objects.push({ id: Math.random(), kind: 'audio', root3D: root, audioEl });
-      updateLayers();
-    }
-
-    // --- 5. DYNAMIC OCCLUSION LOOP ---
-    function animate(time, frame) {
-      orbit.update();
-      
-      // Actualizar GIFs
-      objects.forEach(o => {
-        if (o.kind === 'gif' && time > o.gifData.next) {
-          const g = o.gifData;
-          g.reader.decodeAndBlitFrameRGBA(g.frame, g.imgData.data);
-          g.ctx.putImageData(g.imgData, 0, 0);
-          g.tex.needsUpdate = true;
-          g.frame = (g.frame + 1) % g.reader.numFrames();
-          g.next = time + g.reader.frameInfo(g.frame).delay * 10;
-        }
-      });
-
-      // Oclusión en tiempo real si el frame lo permite
-      if (frame && document.getElementById('checkOcclusion').checked) {
-        // Lógica de renderizado de profundidad simplificada para brevedad
-        // (Mantiene la estructura del v24 original del usuario)
-      }
-
-      renderer.render(scene, camera);
-      cssRenderer.render(scene, camera);
-    }
-
-    // --- BOOTSTRAP & HELPERS ---
-    function selectObject(id) {
-      activeId = id;
-      const o = objects.find(x => x.id === id);
-      transformCtrl.attach(o.root3D);
-      document.getElementById('editorUI').style.display = 'block';
-      document.getElementById('modelTools').style.display = (o.kind === 'model') ? 'block' : 'none';
-      if (o.kind === 'model') buildComponentsUI(o);
-      
-      // Sync UI
-      document.getElementById('tPosX').value = o.root3D.position.x;
-      document.getElementById('tPosY').value = o.root3D.position.y;
-      document.getElementById('tPosZ').value = o.root3D.position.z;
-      document.getElementById('tScale').value = o.root3D.scale.x;
-    }
-
-    function toggleUIPanel() { document.getElementById('ui').classList.toggle('minimized'); }
-    function toggleLoader(show) { document.getElementById('loader').style.display = show ? 'grid' : 'none'; }
-
-    function updateLayers() {
-      const list = document.getElementById('layerList');
-      list.innerHTML = '';
-      objects.forEach(o => {
-        const item = document.createElement('div');
-        item.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
-        item.innerHTML = `<span>📦</span><span>${o.kind}</span>`;
-        item.onclick = () => selectObject(o.id);
-        list.appendChild(item);
-      });
-    }
-
-    document.getElementById('fileInput').onchange = (e) => {
-      const file = e.target.files[0];
-      if (file.name.endsWith('.gif')) addGifFromFile(file);
-      else if (file.name.endsWith('.glb')) loadModel(URL.createObjectURL(file), file.name);
-      else if (file.type.startsWith('audio')) loadAudio(URL.createObjectURL(file));
-    };
-
-    function setupVR() {
-      if (navigator.xr) {
-        navigator.xr.isSessionSupported('immersive-ar').then(supported => {
-          if (supported) {
-            const btn = document.getElementById('vrBtn');
-            btn.style.display = 'block';
-            btn.onclick = () => {
-              renderer.xr.setSession(navigator.xr.requestSession('immersive-ar', {
-                requiredFeatures: ['local-floor', 'depth-sensing'],
-                optionalFeatures: ['dom-overlay'],
-                domOverlay: { root: document.body }
-              }));
+            const gifData = { 
+                reader, ctx, texture, 
+                frame: 0, nextTime: 0, 
+                pixelData: ctx.createImageData(reader.width, reader.height) 
             };
-          }
-        });
-      }
+
+            const aspect = reader.width / reader.height;
+            createMediaLayer(texture, aspect, 'gif', file.name, { gifData });
+        } catch (e) {
+            console.error("Error en GIF:", e);
+            alert("No se pudo iniciar Omggif. Verifique conexión.");
+        } finally {
+            toggleLoader(false);
+        }
     }
 
+    // =========================================
+    // 2. COMPONENTES Y RENDER MODES (Puntos 2, 4)
+    // =========================================
+    window.applyRenderMode = function() {
+        const mode = document.getElementById('renderMode').value;
+        const obj = objects.find(o => o.id === activeId);
+        if (!obj || obj.kind !== 'model') return;
+
+        obj.model.traverse(child => {
+            if (child.isMesh) {
+                // Preservar material original si no existe
+                if (!child.userData.origMat) child.userData.origMat = child.material.clone();
+                
+                child.material.wireframe = (mode === 'wireframe');
+                
+                if (mode === 'workbench') {
+                    child.material = new THREE.MeshNormalMaterial();
+                } else if (mode === 'shaded') {
+                    child.material = new THREE.MeshStandardMaterial({ color: 0x888888, flatShading: true });
+                } else {
+                    child.material = child.userData.origMat.clone();
+                }
+            }
+        });
+    };
+
+    function updateModelComponentsUI(model) {
+        const container = document.getElementById('modelComponents');
+        container.innerHTML = '';
+        model.traverse(node => {
+            if (node.isMesh || node.isLight) {
+                const row = document.createElement('div');
+                row.className = 'comp-row';
+                row.innerHTML = `
+                    <span>${node.isLight ? '💡' : '🧩'} ${node.name || node.type}</span>
+                    <input type="checkbox" ${node.visible ? 'checked' : ''} onchange="toggleNode('${node.uuid}')">
+                `;
+                container.appendChild(row);
+                // Guardar referencia global para el onchange
+                window[`node_${node.uuid.replace(/-/g,'')}`] = node;
+            }
+        });
+    }
+
+    window.toggleNode = function(uuid) {
+        const node = window[`node_${uuid.replace(/-/g,'')}`];
+        if (node) node.visible = !node.visible;
+    };
+
+    // =========================================
+    // 3. UNIDADES Y CALIBRACIÓN (Puntos 8, 9)
+    // =========================================
+    window.setupUnitOptions = function() {
+        const system = document.getElementById('unitSystem').value;
+        const select = document.getElementById('unitSelect');
+        select.innerHTML = '';
+        const options = system === 'mks' 
+            ? [['Metros', 'm'], ['Centímetros', 'cm'], ['Milímetros', 'mm']]
+            : [['Pies', 'ft'], ['Pulgadas', 'in'], ['Millas', 'mi']];
+        
+        options.forEach(opt => select.add(new Option(opt[0], opt[1])));
+        updateUnits();
+    };
+
+    window.spawnCalibrator = function() {
+        if (calibratorLine) scene.remove(calibratorLine);
+        const geometry = new THREE.BoxGeometry(1, 0.01, 0.05); // 1 metro exacto
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.7 });
+        calibratorLine = new THREE.Mesh(geometry, material);
+        calibratorLine.position.set(0, 0.01, -1);
+        scene.add(calibratorLine);
+        alert("Se ha generado una barra verde de exactamente 1 metro para calibrar tu entorno real.");
+    };
+
+    // =========================================
+    // 4. AUDIO FIX (Punto 10)
+    // =========================================
+    async function addAudio(file) {
+        if (THREE.AudioContext.getContext().state === 'suspended') {
+            await THREE.AudioContext.getContext().resume();
+        }
+        const url = URL.createObjectURL(file);
+        const audioEl = document.createElement('audio');
+        audioEl.src = url;
+        audioEl.loop = true;
+        
+        const audio = new THREE.PositionalAudio(audioListener);
+        audio.setMediaElementSource(audioEl);
+        
+        const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(0.1),
+            new THREE.MeshBasicMaterial({ color: 0xffaa00 })
+        );
+        
+        const root = new THREE.Group();
+        root.add(mesh);
+        root.add(audio);
+        scene.add(root);
+        
+        const layer = { id: uid(), kind: 'audio', root3D: root, audioEl, visible: true };
+        objects.push(layer);
+        audioEl.play();
+        updateLayers();
+    }
+
+    // =========================================
+    // 5. TRANSFORM REAL-TIME (Punto 7)
+    // =========================================
+    window.applyTransformLive = function() {
+        const obj = objects.find(o => o.id === activeId);
+        if (!obj || obj.locked) return;
+
+        const px = parseFloat(document.getElementById('tPosX').value);
+        const py = parseFloat(document.getElementById('tPosY').value);
+        const s = parseFloat(document.getElementById('tScale').value);
+
+        obj.root3D.position.x = px;
+        obj.root3D.position.y = py;
+        obj.root3D.scale.setScalar(s);
+
+        if (obj.kind === 'youtube' && obj.cssObj) {
+            obj.cssObj.position.copy(obj.root3D.position);
+            obj.cssObj.scale.copy(obj.root3D.scale).multiplyScalar(1/960);
+        }
+        
+        // Actualizar valores visuales
+        document.getElementById('v_tPosX').textContent = px.toFixed(2);
+        document.getElementById('v_tPosY').textContent = py.toFixed(2);
+        document.getElementById('v_tScale').textContent = s.toFixed(2);
+        
+        updateEngineeringVisuals();
+    };
+    // =========================================
+    // 6. YOUTUBE EN MR & OCLUSIÓN (Puntos 5, 6)
+    // =========================================
+    function handleXRYouTube() {
+        const isPresenting = renderer.xr.isPresenting;
+        objects.forEach(o => {
+            if (o.kind === 'youtube' && o.cssObj) {
+                const el = o.cssObj.element;
+                if (isPresenting) {
+                    // En modo MR, forzamos el iframe al DOM Overlay para que sea visible
+                    el.style.position = 'fixed';
+                    el.style.top = '10%';
+                    el.style.left = '10%';
+                    el.style.width = '80vw';
+                    el.style.height = '45vw';
+                    el.style.zIndex = '10000';
+                    el.style.pointerEvents = 'auto';
+                } else {
+                    el.style.position = '';
+                    el.style.top = '';
+                    el.style.width = '960px';
+                    el.style.height = '540px';
+                }
+            }
+        });
+    }
+
+    // =========================================
+    // 7. LOOP DE RENDERIZADO & ANIMACIÓN
+    // =========================================
+    function animate(time, frame) {
+        orbit.update();
+        
+        // Manejo de YouTube en sesión XR
+        handleXRYouTube();
+
+        // Oclusión Dinámica (Punto 5)
+        // Se verifica el estado del checkbox en cada frame de la sesión XR
+        if (frame && renderer.xr.isPresenting) {
+            const session = renderer.xr.getSession();
+            const isOcclusionEnabled = document.getElementById('checkOcclusion').checked;
+            
+            // Si el checkbox está desactivado, el shader de profundidad se ignora
+            if (isOcclusionEnabled) {
+                renderDepthOcclusion(frame);
+            }
+        }
+
+        // Animación de Capas
+        for (const o of objects) {
+            if (!o.visible) continue;
+
+            // Billboard: Mirar a cámara
+            if (o.billboard && o.root3D) {
+                o.root3D.lookAt(camera.position.x, o.root3D.position.y, camera.position.z);
+            }
+
+            // Actualización de GIF (Punto 1)
+            if (o.kind === 'gif' && o.gifData) {
+                const g = o.gifData;
+                if (performance.now() > g.nextTime) {
+                    g.reader.decodeAndBlitFrameRGBA(g.frame, g.pixelData.data);
+                    g.ctx.putImageData(g.pixelData, 0, 0);
+                    g.texture.needsUpdate = true;
+                    
+                    const delay = g.reader.frameInfo(g.frame).delay * 10;
+                    g.nextTime = performance.now() + (delay || 100);
+                    g.frame = (g.frame + 1) % g.reader.numFrames();
+                }
+            }
+
+            // Sincronización YouTube/CSS3D con el objeto 3D
+            if (o.kind === 'youtube' && o.cssObj && o.root3D) {
+                o.cssObj.position.copy(o.root3D.position);
+                o.cssObj.quaternion.copy(o.root3D.quaternion);
+            }
+        }
+
+        renderer.render(scene, camera);
+        cssRenderer.render(scene, camera);
+        updateEngineeringVisuals();
+    }
+
+    // =========================================
+    // 8. FUNCIONES DE APOYO E INICIALIZACIÓN
+    // =========================================
+    function init() {
+        // Escena y Cámara
+        scene = new THREE.Scene();
+        camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 1000);
+        camera.position.set(0, 1.6, 2);
+
+        // Audio
+        audioListener = new THREE.AudioListener();
+        camera.add(audioListener);
+
+        // Renderers
+        renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.xr.enabled = true;
+
+        cssRenderer = new CSS3DRenderer();
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('css3d').appendChild(cssRenderer.domElement);
+
+        // Controles
+        orbit = new OrbitControls(camera, renderer.domElement);
+        transformCtrl = new TransformControls(camera, renderer.domElement);
+        scene.add(transformCtrl);
+        
+        // Listener de transformaciones para sincronizar la UI
+        transformCtrl.addEventListener('change', () => {
+            if (transformCtrl.object) syncTransformToUI();
+        });
+
+        setupXRControllers();
+        setupVR();
+        setupUnitOptions(); // Inicializar sistema métrico
+        
+        renderer.setAnimationLoop(animate);
+        window.addEventListener('resize', onResize);
+        toggleLoader(false);
+    }
+
+    function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function toggleLoader(show, msg) {
+        const l = document.getElementById('loader');
+        if (msg) l.textContent = msg;
+        l.style.display = show ? 'grid' : 'none';
+    }
+
+    function uid() { return Math.random().toString(36).substr(2, 9); }
+
+    // Ejecución inicial
     init();
+
   </script>
 </body>
 </html>
+    
