@@ -1,220 +1,400 @@
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <title>MR Studio Diamond v24.x | Fusion Projections + 3D + 360</title>
+  <title>MR Studio Diamond | iOS Edition</title>
 
-  <!-- omggif (para GIF). Mantengo tu script, pero además en JS agrego fallback robusto si no carga -->
   <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
   <script src="https://apis.google.com/js/api.js"></script>
 
   <style>
-    /* =========================================
-       ESTILO "AMBER GLASS" (base v24)
-    ========================================= */
+    /* iOS / iPadOS DESIGN SYSTEM */
     :root {
-      --main-color: #ffaa00;
-      --bg-glass: rgba(20, 20, 25, 0.85);
-      --border-glass: rgba(255, 170, 0, 0.3);
-      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
+      --ios-blue: #007AFF;
+      --ios-yellow: #FFD60A;
+      --ios-red: #FF453A;
+      --ios-green: #32D74B;
+      
+      --gray-1: #1C1C1E;
+      --gray-2: #2C2C2E;
+      --gray-5: #636366;
+      --gray-6: #8E8E93;
+      
+      --bg-light: rgba(255, 255, 255, 0.95);
+      --bg-dark: rgba(28, 28, 30, 0.95);
+      
+      --shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
-    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body { 
+      margin: 0; 
+      overflow: hidden; 
+      background: #F2F2F7; 
+      color: var(--gray-1);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    /* WebGL canvas */
     #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
-
-    /* CSS3D canvas (para YouTube iframe) */
-    #css3d {
-      position: fixed; inset: 0; width: 100%; height: 100%;
-      pointer-events: none; z-index: 1;
-    }
+    #css3d { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
     #css3d.interactive { pointer-events: auto; }
 
+    /* Panel Principal - iOS Style */
     .ui-panel {
-      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
-      background: var(--bg-glass);
-      backdrop-filter: blur(30px) saturate(150%);
-      -webkit-backdrop-filter: blur(30px) saturate(150%);
-      border: 1px solid var(--border-glass);
-      border-radius: 24px;
-      padding: 20px; overflow-y: auto; z-index: 100;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
-      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+      position: fixed; 
+      left: 16px; 
+      top: 80px; 
+      width: 340px; 
+      max-height: calc(100vh - 96px);
+      background: var(--bg-light);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 20px;
+      padding: 0;
+      overflow: hidden;
+      z-index: 100;
+      box-shadow: var(--shadow);
+      transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    .ui-panel.minimized { transform: translateX(-460px); }
+    .ui-panel.minimized { transform: translateX(-380px); opacity: 0; }
 
+    /* Header del Panel */
     h2 {
-      margin: 0 0 18px 0; font-size: 15px; color: var(--main-color); font-weight: 900;
-      text-transform: uppercase; letter-spacing: 2px;
-      border-bottom: 2px solid var(--border-glass); padding-bottom: 12px;
-      display: flex; justify-content: space-between; align-items: center;
-      text-shadow: var(--text-glow);
+      margin: 0;
+      padding: 16px 20px;
+      font-size: 17px;
+      color: var(--gray-1);
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.5);
     }
+
+    h2 span:first-child { display: flex; align-items: center; gap: 8px; }
+    h2 span:last-child { 
+      cursor: pointer; 
+      font-size: 24px; 
+      font-weight: 300; 
+      width: 32px; 
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      transition: background 0.15s;
+    }
+    h2 span:last-child:hover { background: rgba(0, 0, 0, 0.05); }
+    h2 span:last-child:active { background: rgba(0, 0, 0, 0.1); }
+
+    /* Contenido del Panel */
+    .ui-panel > div:not(h2) {
+      padding: 20px;
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+
+    /* Sección */
     .sec-head {
-      font-size: 11px; font-weight: 900; color: #aaa; margin: 18px 0 8px 0;
-      text-transform: uppercase; letter-spacing: 1.5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-1);
+      margin: 20px 0 12px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .sec-head:first-child { margin-top: 0; }
+
+    /* Filas de Control */
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 13px;
     }
 
-    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
-    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 600; }
+    label {
+      flex: 1;
+      color: var(--gray-2);
+      cursor: pointer;
+      font-weight: 500;
+      white-space: nowrap;
+    }
 
+    /* Range Slider - iOS Style */
     input[type=range] {
-      flex: 2; height: 4px; accent-color: var(--main-color);
-      background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none;
+      flex: 2;
+      height: 4px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 2px;
+      appearance: none;
+      cursor: pointer;
     }
     input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 14px; height: 14px;
-      background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      background: white;
+      border: 2px solid var(--ios-blue);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
-    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
-    .val { width: 64px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+    input[type=range]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: white;
+      border: 2px solid var(--ios-blue);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
 
+    /* Checkbox - iOS Toggle */
+    input[type=checkbox] {
+      appearance: none;
+      width: 51px;
+      height: 31px;
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 31px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    input[type=checkbox]::before {
+      content: '';
+      position: absolute;
+      width: 27px;
+      height: 27px;
+      border-radius: 50%;
+      background: white;
+      left: 2px;
+      top: 2px;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    input[type=checkbox]:checked {
+      background: var(--ios-yellow);
+    }
+    input[type=checkbox]:checked::before {
+      transform: translateX(20px);
+    }
+
+    /* Valor */
+    .val {
+      min-width: 50px;
+      text-align: right;
+      font-size: 13px;
+      color: var(--gray-5);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Select e Inputs */
     select, input[type=url], input[type=text], input[type=number] {
-      width: 100%; background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border-glass); color: #fff;
-      padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
+      width: 100%;
+      background: white;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      color: var(--gray-1);
+      padding: 10px 12px;
+      border-radius: 10px;
+      outline: none;
+      font-size: 13px;
+      transition: border 0.15s;
+    }
+    select:focus, input:focus {
+      border-color: var(--ios-blue);
     }
 
+    /* Botones - iOS Style */
     button {
-      flex: 1; padding: 10px; border-radius: 10px; border: none;
-      font-weight: 900; cursor: pointer;
-      color: #000; background: var(--main-color);
-      transition: 0.25s; font-size: 11px;
-      text-transform: uppercase; box-shadow: var(--text-glow);
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.15s;
+      background: var(--ios-blue);
+      color: white;
     }
+    button:hover { opacity: 0.8; }
     button:active { transform: scale(0.97); }
-    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
-    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
-    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
-    button.small { padding: 8px; font-size: 10px; letter-spacing: 1px; }
+    
+    button.secondary {
+      background: white;
+      color: var(--gray-1);
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    button.secondary:hover { background: rgba(0, 0, 0, 0.02); }
+    
+    button.danger {
+      background: var(--ios-red);
+      color: white;
+    }
+    
+    button.drive {
+      background: var(--ios-green);
+      color: white;
+    }
+    
+    button.small { padding: 8px 12px; font-size: 12px; }
 
+    /* Toggle UI Button */
     #toggleUI {
-      position: fixed; left: 20px; top: 20px; z-index: 101;
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--bg-glass); backdrop-filter: blur(20px);
-      border: 2px solid var(--main-color); color: var(--main-color);
-      font-weight: 900; cursor: pointer; display: none;
-      box-shadow: var(--text-glow); font-size: 20px;
-      align-items: center; justify-content: center;
+      position: fixed;
+      left: 16px;
+      top: 16px;
+      z-index: 101;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--bg-light);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      color: var(--gray-1);
+      font-weight: 300;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow);
+      font-size: 20px;
+      transition: all 0.15s;
     }
+    #toggleUI:hover { transform: scale(1.05); }
+    #toggleUI.active { display: flex; }
 
+    /* VR Button */
     #vrBtn {
-      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
-      padding: 16px 50px; background: var(--main-color); color: #000;
-      border-radius: 50px; font-weight: 1000; z-index: 1000; display: none;
-      box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff;
-      font-size: 14px; letter-spacing: 2px;
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--ios-blue);
+      color: white;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
     }
+    #vrBtn:hover { transform: scale(1.05); }
+    #vrBtn:active { transform: scale(0.95); }
 
+    /* Loader */
     .loader {
-      position: fixed; inset: 0; background: #000; z-index: 5000;
-      display: none; place-items: center; color: var(--main-color);
-      font-weight: 1000; letter-spacing: 4px; font-size: 22px;
-      text-shadow: var(--text-glow);
+      position: fixed;
+      inset: 0;
+      background: #F2F2F7;
+      z-index: 5000;
+      display: none;
+      place-items: center;
     }
+    .loader::after {
+      content: '';
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(0, 0, 0, 0.1);
+      border-top-color: var(--ios-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* Layer List */
     .layer-list {
-      max-height: 180px; overflow-y: auto;
-      background: rgba(0,0,0,0.2);
-      border-radius: 12px; padding: 8px; margin-bottom: 12px;
-      border: 1px solid var(--border-glass);
+      max-height: 240px;
+      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 12px;
+      padding: 8px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
     }
 
     .layer-item {
-      padding: 8px 10px; font-size: 11px; border-radius: 10px;
-      cursor: pointer; display: grid;
-      grid-template-columns: 18px 1fr auto auto;
-      align-items: center; gap: 8px;
-      margin-bottom: 6px; transition: 0.2s; font-weight: 800;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: rgba(0,0,0,0.12);
+      padding: 10px 12px;
+      font-size: 13px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 20px 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+      transition: all 0.15s;
+      background: white;
+      font-weight: 500;
+    }
+    .layer-item:hover {
+      background: rgba(0, 122, 255, 0.05);
     }
     .layer-item.active {
-      background: rgba(255, 170, 0, 0.2);
-      border-left: 3px solid var(--main-color);
-      color: #fff;
-    }
-    .layer-item.dragging {
-      opacity: 0.55;
-      outline: 2px dashed rgba(255,170,0,0.45);
-    }
-    .layer-item.drop-target {
-      outline: 2px solid rgba(255,170,0,0.45);
-      background: rgba(255,170,0,0.12);
+      background: var(--ios-blue);
+      color: white;
     }
 
     .layer-item .tag {
-      font-weight: 900; color: rgba(255,255,255,0.75);
-      font-size: 10px; padding: 3px 6px; border-radius: 999px;
-      border: 1px solid rgba(255,255,255,0.08);
+      font-weight: 600;
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 0, 0, 0.06);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
+    .layer-item.active .tag {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
     .layer-item .mini {
-      display:flex; gap:6px; align-items:center;
+      display: flex;
+      gap: 6px;
+      align-items: center;
     }
-    .layer-item .mini input { width: 16px; height: 16px; }
+    .layer-item .mini input {
+      width: 20px;
+      height: 20px;
+    }
 
+    /* Note */
     .note {
-      font-size: 11px; line-height: 1.35;
-      color: rgba(255,255,255,0.75);
-      border: 1px dashed rgba(255,170,0,0.35);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(0,0,0,0.18);
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--gray-5);
+      border: 1px dashed rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.02);
+      margin-bottom: 12px;
     }
 
-    .two { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
-    .tiny { font-size: 10px; opacity: 0.8; }
+    /* Utility */
+    .two { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .tiny { font-size: 11px; opacity: 0.8; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.2); border-radius: 2px; }
   </style>
 </head>
-  <body>
-
-  <canvas id="c"></canvas>
-  <div id="css3d"></div>
-
-  <div class="loader" id="loader">CARGANDO...</div>
-  <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
-
-  <div class="ui-panel" id="ui">
-    <h2>
-      <span>DIAMOND v24.x FUSION</span>
-      <span style="cursor:pointer; font-size:18px;" onclick="toggleUIPanel()">×</span>
-    </h2>
-
-    <div class="sec-head">📐 Arquitectura</div>
-    <div class="row">
-      <label><input type="checkbox" id="sysImperial" onchange="updateUnitOptions()"> Imperial</label>
-      <span class="tiny">MKS por defecto (m/cm/mm). Imperial: pulg/pies/millas.</span>
-    </div>
-    <div class="row">
-      <select id="unitSystem" onchange="updateUnits()"></select>
-    </div>
-    <div class="sec-head">🗂️ Capas de dibujo</div>
-    <div class="row" style="flex-wrap:wrap; gap:8px;">
-      <button class="secondary" onclick="newDrawLayer()">➕ Nueva capa</button>
-      <button class="secondary" onclick="toggleSelectedDrawLayer()">👁️ Mostrar/Ocultar</button>
-      <button class="secondary" onclick="deleteSelectedDrawLayer()">🗑️ Eliminar capa</button>
-      <button class="secondary" onclick="mergeSelectedDrawLayerDown()">🧩 Unir con abajo</button>
-    </div>
-    <div id="drawLayerList" class="layer-list" style="max-height:200px;"></div>
-    <div class="row" style="flex-wrap:wrap; gap:8px;">
-      <button onclick="createCalibrator()" class="secondary">📏 Crear calibrador (1 m)</button>
-      <button onclick="applyScaleFromCalibrator()" class="secondary">🧷 Aplicar escala desde calibrador</button>
-    </div>
-    <div class="note" style="margin-bottom:10px;">
-      1) Crea el calibrador. 2) Ajusta su longitud con TransformControls para que coincida con 1 metro real. 3) Pulsa “Aplicar escala…” para escalar la escena.
-    </div>
-
-
-    <div class="sec-head">📏 Huincha (Medidor)</div>
-    <div class="row" style="flex-wrap:wrap; gap:8px;">
-      <button class="secondary" onclick="startNewMeasure()">➕ Nueva medida</button>
-      <button class="secondary" onclick="stopMeasureMode()">⏹️ Terminar</button>
-      <button class="secondary" onclick="clearAllMeasures()">🧹 Borrar</button>
-    </div>
+<body>
     <div class="note" style="margin-bottom:10px;">
       En MR/VR: pulsa <b>Nueva medida</b> y coloca <b>dos puntos</b> con el gatillo (se colocan al final del rayo). Pulsa <b>A</b> para deshacer el último punto.
       Puedes renombrar cada medida en la lista.
@@ -251,8 +431,21 @@
         <option value="pencil">Trazo a mano</option>
         <option value="brush">Pintura pincel</option>
         <option value="spray">Spray</option>
+        <option value="spline">Spline 3D (preciso)</option>
       </select>
     </div>
+    <div class="row" style="flex-wrap:wrap; gap:8px;">
+      <button class="secondary" onclick="exportDrawGLB()">⬇️ Export GLB (dibujo)</button>
+      <button class="secondary" onclick="exportDrawFBX()">⬇️ Export FBX (dibujo)</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="snapGrid" checked> Snap grilla</label>
+      <label><input type="checkbox" id="snapLocal"> Local</label>
+    </div>
+    <div class="row">
+      <label>Tamaño grilla</label><input type="range" id="snapGridSize" min="0.005" max="0.5" step="0.005" value="0.05"><span class="val" id="v_snapGridSize">0.05</span>
+    </div>
+
 
 <div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
     <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
@@ -479,9 +672,9 @@
     import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
     import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
     import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
-
     import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
     import { FBXExporter } from 'three/addons/exporters/FBXExporter.js';
+
     // =========================
     // Google Drive placeholders
     // =========================
@@ -1721,44 +1914,297 @@ function getPlacementPoint(controller) {
   return p;
 }
 
+
 function getDrawTipPoint(controller) {
-  // Punto de dibujo: usa exactamente la punta del lápiz (apex) en el espacio del controlador
   if (!controller) return null;
+
+  // Si existe un "tip" explícito, úsalo
+  if (controller.userData && controller.userData.pencilTip && controller.userData.pencilTip.isObject3D) {
+    const w = new THREE.Vector3();
+    controller.userData.pencilTip.getWorldPosition(w);
+    return _applyDrawSnap(w);
+  }
+
+  // Fallback: origen + forward * offset (punta)
+  const PENCIL_TIP_OFFSET = 0.155; // metros aprox (ajústalo si tu lápiz visual cambia)
   _tmpRot.identity().extractRotation(controller.matrixWorld);
   _tmpOrigin.setFromMatrixPosition(controller.matrixWorld);
   _tmpDir.set(0,0,-1).applyMatrix4(_tmpRot).normalize();
   if (!Number.isFinite(_tmpOrigin.x) || !Number.isFinite(_tmpDir.x)) return null;
-  return _tmpOrigin.clone().addScaledVector(_tmpDir, PENCIL_TIP_OFFSET);
+
+  const p = _tmpOrigin.clone().addScaledVector(_tmpDir, PENCIL_TIP_OFFSET);
+  return _applyDrawSnap(p);
 }
 
+// ===== Snap (base: grilla world/local) =====
+function _snapToGrid(v, grid) {
+  v.x = Math.round(v.x / grid) * grid;
+  v.y = Math.round(v.y / grid) * grid;
+  v.z = Math.round(v.z / grid) * grid;
+  return v;
+}
+
+function _applyDrawSnap(pWorld) {
+  const gridOn = document.getElementById('snapGrid')?.checked;
+  if (!gridOn) return pWorld;
+
+  const gEl = document.getElementById('snapGridSize');
+  const grid = gEl ? parseFloat(gEl.value) : 0.05;
+  if (!Number.isFinite(grid) || grid <= 0) return pWorld;
+
+  const localOn = document.getElementById('snapLocal')?.checked;
+  if (localOn) {
+    const layer = _getLayerById(currentDrawLayerId)?.group;
+    if (layer) {
+      const lp = layer.worldToLocal(pWorld.clone());
+      _snapToGrid(lp, grid);
+      return layer.localToWorld(lp);
+    }
+  }
+  return _snapToGrid(pWorld.clone(), grid);
+}
+
+// ===== Export dibujo (GLB/FBX) =====
+function _downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 1000);
+}
+
+function _getExportTargetGroup() {
+  _ensureDrawingsGroup();
+  const layer = _getLayerById(selectedDrawLayerId)?.group;
+  return layer || drawingsGroup;
+}
+
+function exportDrawGLB() {
+  try {
+    const exporter = new GLTFExporter();
+    const target = _getExportTargetGroup();
+    exporter.parse(
+      target,
+      (res) => {
+        const blob = new Blob([res], { type: 'model/gltf-binary' });
+        _downloadBlob(blob, 'dibujo.glb');
+      },
+      (err) => { console.error(err); alert('Export GLB falló (ver consola).'); },
+      { binary: true, trs: true, onlyVisible: false }
+    );
+  } catch (e) {
+    console.error(e);
+    alert('Export GLB no disponible (ver consola).');
+  }
+}
+
+function exportDrawFBX() {
+  try {
+    const exporter = new FBXExporter();
+    const target = _getExportTargetGroup();
+    const out = exporter.parse(target); // string
+    const blob = new Blob([out], { type: 'text/plain' });
+    _downloadBlob(blob, 'dibujo.fbx');
+  } catch (e) {
+    console.error(e);
+    alert('Export FBX falló (ver consola). Si no funciona en tu build, usa GLB.');
+  }
+}
+
+// ===== Stroke + Spline =====
+let _strokePoints = [];          // puntos en WORLD
+let _splinePreviewLine = null;   // THREE.Line para preview
 
 function startStroke(controller) {
-  if (_getBrushType() === 'spline') { _beginSplineStroke(); }
-
   ensureDrawingsGroup();
   _ensureDrawingsGroup(); // asegura capas
+
   drawIsDrawing = true;
   drawController = controller;
 
-  currentStrokeGroup = new THREE.Group();
-  currentStrokeGroup.name = "stroke";
-
-  // ✅ IMPORTANTE: el stroke se agrega a la capa activa (no al root),
-  // para que al mover/rotar la capa o el root, el trazo mantenga coherencia.
   const layer = _getCurrentLayer();
-  (layer ? layer.group : drawingsGroup).add(currentStrokeGroup);
+  const parent = layer ? layer.group : drawingsGroup;
+
+  currentStrokeGroup = new THREE.Group();
+  currentStrokeGroup.userData.isStroke = true;
+  currentStrokeGroup.userData.brush = _getBrushType();
+  parent.add(currentStrokeGroup);
 
   currentStrokeLastPoint = null;
+  _strokePoints = [];
+  _splinePreviewLine = null;
+
+  if (_getBrushType() === 'spline') {
+    // preview line
+    const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+    const mat = new THREE.LineBasicMaterial({ color: _getDrawRGBA().color.getHex(), transparent: true, opacity: _getDrawRGBA().opacity });
+    _splinePreviewLine = new THREE.Line(geo, mat);
+    _splinePreviewLine.frustumCulled = false;
+    currentStrokeGroup.add(_splinePreviewLine);
+  }
 }
 
 function endStroke() {
-  if (_getBrushType() === 'spline') { _endSplineStroke(); }
+  if (!drawIsDrawing) return;
+
+  // Si es spline: construir tubo suave al finalizar
+  if (currentStrokeGroup && currentStrokeGroup.userData.brush === 'spline') {
+    try {
+      if (_strokePoints.length >= 3) {
+        // Convertir WORLD -> LOCAL del grupo para que quede estable si mueves/rotas capa
+        const localPts = _strokePoints.map(p => currentStrokeGroup.worldToLocal(p.clone()));
+        const curve = new THREE.CatmullRomCurve3(localPts, false, 'centripetal', 0.5);
+        const tubularSegments = Math.max(24, localPts.length * 6);
+        const radius = _getDrawWidth() * 0.5;
+        const geo = new THREE.TubeGeometry(curve, tubularSegments, radius, 10, false);
+
+        const rgba = _getDrawRGBA();
+        const mat = _getDrawMaterialFor(rgba.color, rgba.opacity);
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.castShadow = false; mesh.receiveShadow = false;
+        mesh.frustumCulled = false;
+
+        if (_splinePreviewLine) currentStrokeGroup.remove(_splinePreviewLine);
+        currentStrokeGroup.add(mesh);
+      }
+    } catch (e) {
+      console.error("Spline build error", e);
+    }
+  }
 
   drawIsDrawing = false;
   drawController = null;
   currentStrokeGroup = null;
   currentStrokeLastPoint = null;
+  _strokePoints = [];
+  _splinePreviewLine = null;
 }
+
+// Material cache (color+alpha)
+function _getDrawMaterialFor(color, opacity) {
+  const key = color.getHexString() + "_" + opacity.toFixed(2);
+  if (_drawMatCache.has(key)) return _drawMatCache.get(key);
+
+  // shader suave (homogeneiza el trazo) -> si falla, fallback básico
+  let mat;
+  try {
+    mat = new THREE.ShaderMaterial({
+      transparent: true,
+      depthWrite: false,
+      uniforms: {
+        uColor: { value: color.clone() },
+        uOpacity: { value: opacity },
+        uSoft: { value: 0.65 },
+        uGrain: { value: 0.18 },
+      },
+      vertexShader: `
+        varying vec3 vPos;
+        void main(){
+          vPos = position;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+        }`,
+      fragmentShader: `
+        precision highp float;
+        uniform vec3 uColor;
+        uniform float uOpacity;
+        uniform float uSoft;
+        uniform float uGrain;
+        varying vec3 vPos;
+        float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123); }
+        void main(){
+          // grano sutil
+          float n = hash(vPos.xy * 80.0) * uGrain;
+          vec3 col = uColor + n;
+          gl_FragColor = vec4(col, uOpacity);
+        }`,
+    });
+  } catch {
+    mat = new THREE.MeshStandardMaterial({ color, transparent: opacity < 0.999, opacity, roughness: 0.65, metalness: 0.0 });
+  }
+  _drawMatCache.set(key, mat);
+  return mat;
+}
+
+function addStrokePoint(pWorld) {
+  if (!drawIsDrawing || !currentStrokeGroup) return;
+  if (!pWorld || !Number.isFinite(pWorld.x)) return;
+
+  // Convertir a LOCAL del grupo donde se guarda el stroke
+  const p = currentStrokeGroup.worldToLocal(pWorld.clone());
+
+  const brush = currentStrokeGroup.userData.brush || _getBrushType();
+  const baseWidth = _getDrawWidth();
+  const rgba = _getDrawRGBA();
+  const mat = _getDrawMaterialFor(rgba.color, rgba.opacity);
+
+  // Guardar puntos en WORLD para spline
+  if (brush === 'spline') {
+    _strokePoints.push(pWorld.clone());
+    // Actualizar preview
+    if (_splinePreviewLine) {
+      const localPts = _strokePoints.map(w => currentStrokeGroup.worldToLocal(w.clone()));
+      const geo = new THREE.BufferGeometry().setFromPoints(localPts);
+      _splinePreviewLine.geometry.dispose();
+      _splinePreviewLine.geometry = geo;
+      _splinePreviewLine.material.color = rgba.color.clone();
+      _splinePreviewLine.material.opacity = rgba.opacity;
+      _splinePreviewLine.material.transparent = rgba.opacity < 0.999;
+    }
+    return;
+  }
+
+  if (!currentStrokeLastPoint) {
+    currentStrokeLastPoint = p.clone();
+    return;
+  }
+
+  const p0 = currentStrokeLastPoint;
+  const p1 = p;
+  const dist = p1.distanceTo(p0);
+  if (dist < Math.max(0.0025, baseWidth * 0.35)) return;
+
+  // estilos existentes
+  if (brush === 'spray') {
+    // spray: pequeñas esferas alrededor del punto
+    const count = Math.max(3, Math.floor(dist / 0.01) * 4);
+    for (let i=0;i<count;i++){
+      const t = i / count;
+      const pp = p0.clone().lerp(p1, t);
+      pp.x += (Math.random()-0.5)*baseWidth*2.0;
+      pp.y += (Math.random()-0.5)*baseWidth*2.0;
+      pp.z += (Math.random()-0.5)*baseWidth*2.0;
+      const geo = new THREE.SphereGeometry(baseWidth*0.25, 8, 6);
+      const m = new THREE.Mesh(geo, mat);
+      m.position.copy(pp);
+      currentStrokeGroup.add(m);
+    }
+  } else {
+    // solid/pencil/brush: segmento cilíndrico
+    let radius = baseWidth * 0.5;
+    if (brush === 'pencil') radius *= 0.7;
+    if (brush === 'brush') radius *= (0.85 + Math.min(0.35, dist * 2.0));
+    const seg = _addCylinderSegment(p0, p1, radius, mat);
+    currentStrokeGroup.add(seg);
+  }
+
+  currentStrokeLastPoint = p1.clone();
+}
+
+// UI extra (snap slider display)
+function _bindDrawExtrasUIOnce() {
+  const g = document.getElementById('snapGridSize');
+  const vg = document.getElementById('v_snapGridSize');
+  if (g && vg) {
+    const upd = () => vg.textContent = parseFloat(g.value).toFixed(3).replace(/0+$/,'').replace(/\.$/,'');
+    g.addEventListener('input', upd);
+    upd();
+  }
+}
+
 
 function _addCylinderSegment(p0, p1, radius, mat) {
   const d = _tmpV3.subVectors(p1, p0);
@@ -1795,15 +2241,8 @@ function _addSpray(p, radius, mat) {
 }
 
 function addStrokePoint(p) {
-  // Spline: acumula puntos y no crea segmentos inmediatos
-  if (_getBrushType() === 'spline') {
-    const pw = _snapPointWorld(p.clone());
-    _pushSplinePoint(pw);
-    return;
-  }
   if (!drawIsDrawing || !currentStrokeGroup) return;
   if (!p || !Number.isFinite(p.x)) return;
-  p = _snapPointWorld(p);
 
   const brush = _getBrushType();
   const baseW = _getDrawWidth();
@@ -4714,291 +5153,10 @@ if (o.kind === 'model') {
           }
         }
       }
-      // Dibujo: stick derecho (grosor / paleta)
-      if (typeof _handleRightStickForDrawing === 'function') _handleRightStickForDrawing(dt);
-
 
       renderer.render(scene, camera);
       cssRenderer.render(scene, camera);
     }
-
-
-    // ============================================================
-    // DIBUJO: Spline + Export + Snap básico (solo afecta Dibujo)
-    // ============================================================
-
-    // ---- UI helpers (no rompe MR) ----
-    function _ensureDrawAdvancedUI(){
-      const brushSel = document.getElementById('drawBrush');
-      if (!brushSel) return;
-
-      // Agrega opción spline si no existe
-      if (![...brushSel.options].some(o=>o.value==='spline')) {
-        const opt = document.createElement('option');
-        opt.value = 'spline';
-        opt.textContent = 'Spline 3D (preciso)';
-        brushSel.appendChild(opt);
-      }
-
-      // Inserta fila de export y snap después del selector de pincel
-      const row = brushSel.closest('.row') || brushSel.parentElement;
-      if (!row) return;
-
-      // Evita duplicados
-      if (document.getElementById('drawExportGLB')) return;
-
-      const wrap = document.createElement('div');
-      wrap.style.display = 'grid';
-      wrap.style.gridTemplateColumns = '1fr';
-      wrap.style.gap = '8px';
-      wrap.style.marginTop = '6px';
-
-      // Export buttons
-      const expRow = document.createElement('div');
-      expRow.className = 'row';
-      expRow.style.gap = '8px';
-      expRow.innerHTML = `
-        <label>Export</label>
-        <button id="drawExportGLB" class="secondary" style="padding:6px 10px;">⬇️ GLB</button>
-        <button id="drawExportFBX" class="secondary" style="padding:6px 10px;">⬇️ FBX</button>
-      `;
-
-      // Snap controls (básico)
-      const snapRow = document.createElement('div');
-      snapRow.className = 'row';
-      snapRow.style.flexWrap = 'wrap';
-      snapRow.style.gap = '10px';
-      snapRow.innerHTML = `
-        <label style="min-width:64px;">Snap</label>
-        <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="snapGrid" checked>Grilla</label>
-        <label style="display:flex; gap:6px; align-items:center;"><input type="checkbox" id="snapLocal">Local</label>
-      `;
-
-      const gridRow = document.createElement('div');
-      gridRow.className = 'row';
-      gridRow.style.gap = '8px';
-      gridRow.innerHTML = `
-        <label>Grid</label>
-        <input type="range" id="snapGridSize" min="0.005" max="0.2" step="0.005" value="0.02">
-        <span class="val" id="v_snapGridSize">0.02</span>
-      `;
-
-      wrap.appendChild(expRow);
-      wrap.appendChild(snapRow);
-      wrap.appendChild(gridRow);
-
-      row.insertAdjacentElement('afterend', wrap);
-
-      const gridSize = document.getElementById('snapGridSize');
-      const gridVal  = document.getElementById('v_snapGridSize');
-      const syncGrid = ()=>{ if(gridVal) gridVal.textContent = (parseFloat(gridSize.value)||0.02).toFixed(3); };
-      gridSize.addEventListener('input', syncGrid);
-      syncGrid();
-
-      document.getElementById('drawExportGLB').addEventListener('click', ()=>exportDrawing('glb'));
-      document.getElementById('drawExportFBX').addEventListener('click', ()=>exportDrawing('fbx'));
-    }
-
-    // ---- Snap básico (grilla world/local) ----
-    const _tmpSnapV = new THREE.Vector3();
-    function _snapPointWorld(pWorld){
-      const useGrid = document.getElementById('snapGrid')?.checked;
-      if (!useGrid) return pWorld;
-
-      const size = parseFloat(document.getElementById('snapGridSize')?.value || "0.02") || 0.02;
-      const useLocal = document.getElementById('snapLocal')?.checked;
-
-      // Si local: grilla relativa a la capa seleccionada (o grupo de dibujos)
-      let baseObj = _drawSelectedObject || drawingsGroup;
-      if (!baseObj) baseObj = drawingsGroup;
-
-      if (useLocal && baseObj){
-        // world -> local, snap, local -> world
-        _tmpSnapV.copy(pWorld);
-        baseObj.worldToLocal(_tmpSnapV);
-        _tmpSnapV.set(
-          Math.round(_tmpSnapV.x/size)*size,
-          Math.round(_tmpSnapV.y/size)*size,
-          Math.round(_tmpSnapV.z/size)*size
-        );
-        baseObj.localToWorld(_tmpSnapV);
-        return _tmpSnapV.clone();
-      } else {
-        return new THREE.Vector3(
-          Math.round(pWorld.x/size)*size,
-          Math.round(pWorld.y/size)*size,
-          Math.round(pWorld.z/size)*size
-        );
-      }
-    }
-
-    // ---- Export (GLB/FBX) del dibujo ----
-    function _getExportRoot(){
-      // Exporta capa seleccionada si existe; si no, exporta todo drawingsGroup
-      return (_drawSelectedObject && _drawSelectedObject.isObject3D) ? _drawSelectedObject : drawingsGroup;
-    }
-
-    function _downloadBlob(blob, filename){
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
-    }
-
-    function exportDrawing(fmt='glb'){
-      const root = _getExportRoot();
-      if (!root) return;
-
-      if (fmt === 'glb'){
-        try{
-          const exporter = new GLTFExporter();
-          exporter.parse(root, (gltf)=>{
-            const bin = gltf instanceof ArrayBuffer ? gltf : JSON.stringify(gltf);
-            const blob = new Blob([bin], { type: 'model/gltf-binary' });
-            _downloadBlob(blob, 'dibujo.glb');
-          }, { binary:true });
-        }catch(e){
-          console.warn("GLB export failed", e);
-          alert("No se pudo exportar GLB (revisa consola).");
-        }
-        return;
-      }
-
-      // FBX
-      try{
-        const exporter = new FBXExporter();
-        const out = exporter.parse(root);
-        const blob = new Blob([out], { type: 'application/octet-stream' });
-        _downloadBlob(blob, 'dibujo.fbx');
-      }catch(e){
-        console.warn("FBX export failed, fallback GLB", e);
-        // fallback GLB
-        exportDrawing('glb');
-      }
-    }
-
-    // ---- Spline 3D (Tube) ----
-    // Guardamos strokes spline como puntos world->local y al soltar los convertimos a tubo suave.
-    let _splinePtsLocal = null;
-    function _beginSplineStroke(){
-      _splinePtsLocal = [];
-    }
-    function _pushSplinePoint(pWorld){
-      const target = _drawSelectedObject || drawingsGroup;
-      if (!target) return;
-      const p = pWorld.clone();
-      target.worldToLocal(p); // guardamos en local para que mover/escalar capas no rompa
-      const last = _splinePtsLocal.length ? _splinePtsLocal[_splinePtsLocal.length-1] : null;
-      if (!last || last.distanceToSquared(p) > 1e-6) _splinePtsLocal.push(p);
-    }
-    function _endSplineStroke(){
-      if (!_splinePtsLocal || _splinePtsLocal.length < 2) { _splinePtsLocal = null; return; }
-
-      const target = _drawSelectedObject || drawingsGroup;
-      const width = _getDrawWidth();
-      const { r,g,b,a, key } = _getDrawRGBA();
-      const col = new THREE.Color(r/255, g/255, b/255);
-
-      // Suavizado: duplicamos extremos
-      const pts = _splinePtsLocal.slice();
-      pts.unshift(pts[0].clone());
-      pts.push(pts[pts.length-1].clone());
-
-      const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.35);
-      const tubularSegments = Math.min(400, Math.max(40, pts.length*12));
-      const radius = Math.max(0.001, width * 0.5);
-      const geom = new THREE.TubeGeometry(curve, tubularSegments, radius, 10, false);
-
-      const mat = new THREE.MeshStandardMaterial({
-        color: col,
-        roughness: 0.6,
-        metalness: 0.0,
-        transparent: (a < 0.999),
-        opacity: a
-      });
-
-      const mesh = new THREE.Mesh(geom, mat);
-      mesh.name = "draw_spline_tube";
-      mesh.userData.isDrawStroke = true;
-      mesh.userData.drawColorKey = key;
-
-      target.add(mesh);
-
-      _splinePtsLocal = null;
-    }
-
-    // ---- Integración mínima con el motor de dibujo existente ----
-    // Hookeamos el punto "world" antes de convertirlo a segmentos, aplicando Snap y Spline.
-    // Para no romper tu lógica existente, interceptamos getDrawPoint si existe.
-    const __origGetDrawPoint = (typeof getDrawPoint === 'function') ? getDrawPoint : null;
-    function _getDrawPointWorld(controller){
-      // Si tu código ya tiene un método, úsalo; si no, usa el tip del lápiz si existe.
-      if (__origGetDrawPoint) return __origGetDrawPoint(controller);
-
-      // Fallback: punta del controlador
-      const p = new THREE.Vector3();
-      const q = new THREE.Quaternion();
-      controller.getWorldPosition(p);
-      controller.getWorldQuaternion(q);
-      const fwd = new THREE.Vector3(0,0,-1).applyQuaternion(q);
-      // offset punta (0.155m)
-      p.addScaledVector(fwd, 0.155);
-      return p;
-    }
-
-    // ---- Stick derecho: vertical grosor, horizontal toggle paleta ----
-    // Solo si ya existe tu loop de XR: añadimos un pequeño handler que lee gamepads.
-    let _drawPaletteVisible = false;
-    function _toggleDrawPalette(vis){
-      _drawPaletteVisible = (vis !== undefined) ? !!vis : !_drawPaletteVisible;
-      if (typeof setDrawPaletteVisible === 'function') {
-        setDrawPaletteVisible(_drawPaletteVisible);
-      } else if (typeof drawPaletteGroup !== 'undefined' && drawPaletteGroup) {
-        drawPaletteGroup.visible = _drawPaletteVisible;
-      }
-    }
-
-    function _handleRightStickForDrawing(dt){
-      if (!drawModeActive) return;
-      const s = renderer.xr.getSession?.();
-      if (!s) return;
-      for (const src of s.inputSources){
-        if (!src.gamepad) continue;
-        if (src.handedness !== 'right') continue;
-
-        const ax = src.gamepad.axes || [];
-        const x = ax[2] ?? ax[0] ?? 0; // depende del runtime
-        const y = ax[3] ?? ax[1] ?? 0;
-
-        // Vertical -> width
-        if (Math.abs(y) > 0.15){
-          const el = document.getElementById('drawWidth');
-          if (el){
-            const v = parseFloat(el.value||"0.01") || 0.01;
-            const nv = Math.min(parseFloat(el.max||"0.06"), Math.max(parseFloat(el.min||"0.002"), v + (-y) * 0.04 * dt));
-            el.value = nv.toFixed(4);
-            const vv = document.getElementById('v_drawWidth');
-            if (vv) vv.textContent = String(el.value);
-          }
-        }
-
-        // Horizontal -> palette toggle (edge via deadzone crossing)
-        if (!_handleRightStickForDrawing._wasRight) _handleRightStickForDrawing._wasRight = false;
-        const rightNow = (x > 0.85);
-        if (rightNow && !_handleRightStickForDrawing._wasRight){
-          _toggleDrawPalette();
-        }
-        _handleRightStickForDrawing._wasRight = rightNow;
-      }
-    }
-
-    // Llamar una vez tras init UI
-    const __origInit = (typeof init === 'function') ? init : null;
-    // No reemplazamos init; inyectamos UI al primer frame post-load.
-    window.addEventListener('load', ()=>{ try{ _ensureDrawAdvancedUI(); }catch(e){ console.warn(e); } });
-
 
     // =========================
     // Boot
