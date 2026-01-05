@@ -1,0 +1,4964 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>MR Studio Diamond v24.x | Fusion Projections + 3D + 360</title>
+
+  <!-- omggif (para GIF). Mantengo tu script, pero además en JS agrego fallback robusto si no carga -->
+  <script src="https://unpkg.com/omggif@1.0.10/omggif.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+
+  <style>
+    /* =========================================
+       ESTILO "AMBER GLASS" (base v24)
+    ========================================= */
+    :root {
+      --main-color: #ffaa00;
+      --bg-glass: rgba(20, 20, 25, 0.85);
+      --border-glass: rgba(255, 170, 0, 0.3);
+      --text-glow: 0 0 8px rgba(255, 170, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; user-select: none; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body { margin: 0; overflow: hidden; background: transparent; color: #eee; }
+
+    /* WebGL canvas */
+    #c { position: fixed; inset: 0; width: 100%; height: 100%; touch-action: none; z-index: 0; }
+
+    /* CSS3D canvas (para YouTube iframe) */
+    #css3d {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 1;
+    }
+    #css3d.interactive { pointer-events: auto; }
+
+    .ui-panel {
+      position: fixed; left: 20px; top: 20px; width: 380px; max-height: 95vh;
+      background: var(--bg-glass);
+      backdrop-filter: blur(30px) saturate(150%);
+      -webkit-backdrop-filter: blur(30px) saturate(150%);
+      border: 1px solid var(--border-glass);
+      border-radius: 24px;
+      padding: 20px; overflow-y: auto; z-index: 100;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      scrollbar-width: thin; scrollbar-color: var(--main-color) transparent;
+      transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+    }
+    .ui-panel.minimized { transform: translateX(-460px); }
+
+    h2 {
+      margin: 0 0 18px 0; font-size: 15px; color: var(--main-color); font-weight: 900;
+      text-transform: uppercase; letter-spacing: 2px;
+      border-bottom: 2px solid var(--border-glass); padding-bottom: 12px;
+      display: flex; justify-content: space-between; align-items: center;
+      text-shadow: var(--text-glow);
+    }
+    .sec-head {
+      font-size: 11px; font-weight: 900; color: #aaa; margin: 18px 0 8px 0;
+      text-transform: uppercase; letter-spacing: 1.5px;
+    }
+
+    .row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 12px; }
+    label { flex: 1; color: #ddd; cursor: pointer; white-space: nowrap; font-weight: 600; }
+
+    input[type=range] {
+      flex: 2; height: 4px; accent-color: var(--main-color);
+      background: rgba(255,255,255,0.1); border-radius: 2px; appearance: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px;
+      background: var(--main-color); border-radius: 50%; box-shadow: var(--text-glow);
+    }
+    input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--main-color); cursor: pointer; }
+    .val { width: 64px; text-align: right; font-size: 11px; color: var(--main-color); font-family: 'Fira Code', monospace; font-weight: 800; }
+
+    select, input[type=url], input[type=text], input[type=number] {
+      width: 100%; background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-glass); color: #fff;
+      padding: 8px 12px; border-radius: 10px; outline: none; transition: 0.3s;
+    }
+
+    button {
+      flex: 1; padding: 10px; border-radius: 10px; border: none;
+      font-weight: 900; cursor: pointer;
+      color: #000; background: var(--main-color);
+      transition: 0.25s; font-size: 11px;
+      text-transform: uppercase; box-shadow: var(--text-glow);
+    }
+    button:active { transform: scale(0.97); }
+    button.danger { background: #ff3333; color: white; box-shadow: 0 0 8px rgba(255, 51, 51, 0.6); }
+    button.drive { background: #00C853; color: white; box-shadow: 0 0 8px rgba(0, 200, 83, 0.6); }
+    button.secondary { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid var(--border-glass); box-shadow: none; }
+    button.small { padding: 8px; font-size: 10px; letter-spacing: 1px; }
+
+    #toggleUI {
+      position: fixed; left: 20px; top: 20px; z-index: 101;
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--bg-glass); backdrop-filter: blur(20px);
+      border: 2px solid var(--main-color); color: var(--main-color);
+      font-weight: 900; cursor: pointer; display: none;
+      box-shadow: var(--text-glow); font-size: 20px;
+      align-items: center; justify-content: center;
+    }
+
+    #vrBtn {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
+      padding: 16px 50px; background: var(--main-color); color: #000;
+      border-radius: 50px; font-weight: 1000; z-index: 1000; display: none;
+      box-shadow: 0 0 30px rgba(255, 170, 0, 0.7); border: 3px solid #fff;
+      font-size: 14px; letter-spacing: 2px;
+    }
+
+    .loader {
+      position: fixed; inset: 0; background: #000; z-index: 5000;
+      display: none; place-items: center; color: var(--main-color);
+      font-weight: 1000; letter-spacing: 4px; font-size: 22px;
+      text-shadow: var(--text-glow);
+    }
+
+    .layer-list {
+      max-height: 180px; overflow-y: auto;
+      background: rgba(0,0,0,0.2);
+      border-radius: 12px; padding: 8px; margin-bottom: 12px;
+      border: 1px solid var(--border-glass);
+    }
+
+    .layer-item {
+      padding: 8px 10px; font-size: 11px; border-radius: 10px;
+      cursor: pointer; display: grid;
+      grid-template-columns: 18px 1fr auto auto;
+      align-items: center; gap: 8px;
+      margin-bottom: 6px; transition: 0.2s; font-weight: 800;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.12);
+    }
+    .layer-item.active {
+      background: rgba(255, 170, 0, 0.2);
+      border-left: 3px solid var(--main-color);
+      color: #fff;
+    }
+    .layer-item.dragging {
+      opacity: 0.55;
+      outline: 2px dashed rgba(255,170,0,0.45);
+    }
+    .layer-item.drop-target {
+      outline: 2px solid rgba(255,170,0,0.45);
+      background: rgba(255,170,0,0.12);
+    }
+
+    .layer-item .tag {
+      font-weight: 900; color: rgba(255,255,255,0.75);
+      font-size: 10px; padding: 3px 6px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .layer-item .mini {
+      display:flex; gap:6px; align-items:center;
+    }
+    .layer-item .mini input { width: 16px; height: 16px; }
+
+    .note {
+      font-size: 11px; line-height: 1.35;
+      color: rgba(255,255,255,0.75);
+      border: 1px dashed rgba(255,170,0,0.35);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(0,0,0,0.18);
+    }
+
+    .two { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    .tiny { font-size: 10px; opacity: 0.8; }
+  </style>
+</head>
+  <body>
+
+  <canvas id="c"></canvas>
+  <div id="css3d"></div>
+
+  <div class="loader" id="loader">CARGANDO...</div>
+  <button id="toggleUI" onclick="toggleUIPanel()">☰</button>
+
+  <div class="ui-panel" id="ui">
+    <h2>
+      <span>DIAMOND v24.x FUSION</span>
+      <span style="cursor:pointer; font-size:18px;" onclick="toggleUIPanel()">×</span>
+    </h2>
+
+    <div class="sec-head">📐 Arquitectura</div>
+    <div class="row">
+      <label><input type="checkbox" id="sysImperial" onchange="updateUnitOptions()"> Imperial</label>
+      <span class="tiny">MKS por defecto (m/cm/mm). Imperial: pulg/pies/millas.</span>
+    </div>
+    <div class="row">
+      <select id="unitSystem" onchange="updateUnits()"></select>
+    </div>
+    <div class="sec-head">🗂️ Capas de dibujo</div>
+    <div class="row" style="flex-wrap:wrap; gap:8px;">
+      <button class="secondary" onclick="newDrawLayer()">➕ Nueva capa</button>
+      <button class="secondary" onclick="toggleSelectedDrawLayer()">👁️ Mostrar/Ocultar</button>
+      <button class="secondary" onclick="deleteSelectedDrawLayer()">🗑️ Eliminar capa</button>
+      <button class="secondary" onclick="mergeSelectedDrawLayerDown()">🧩 Unir con abajo</button>
+    </div>
+    <div id="drawLayerList" class="layer-list" style="max-height:200px;"></div>
+    <div class="row" style="flex-wrap:wrap; gap:8px;">
+      <button onclick="createCalibrator()" class="secondary">📏 Crear calibrador (1 m)</button>
+      <button onclick="applyScaleFromCalibrator()" class="secondary">🧷 Aplicar escala desde calibrador</button>
+    </div>
+    <div class="note" style="margin-bottom:10px;">
+      1) Crea el calibrador. 2) Ajusta su longitud con TransformControls para que coincida con 1 metro real. 3) Pulsa “Aplicar escala…” para escalar la escena.
+    </div>
+
+
+    <div class="sec-head">📏 Huincha (Medidor)</div>
+    <div class="row" style="flex-wrap:wrap; gap:8px;">
+      <button class="secondary" onclick="startNewMeasure()">➕ Nueva medida</button>
+      <button class="secondary" onclick="stopMeasureMode()">⏹️ Terminar</button>
+      <button class="secondary" onclick="clearAllMeasures()">🧹 Borrar</button>
+    </div>
+    <div class="note" style="margin-bottom:10px;">
+      En MR/VR: pulsa <b>Nueva medida</b> y coloca <b>dos puntos</b> con el gatillo (se colocan al final del rayo). Pulsa <b>A</b> para deshacer el último punto.
+      Puedes renombrar cada medida en la lista.
+    </div>
+    <div id="measureList" class="layer-list" style="max-height:220px;"></div>
+
+    <div class="sec-head">✍️ Dibujo (XR)</div>
+    <div class="row" style="flex-wrap:wrap; gap:8px;">
+      <button class="secondary" onclick="toggleDrawMode()">🖊️ Dibujar</button>
+      <button class="secondary" onclick="clearDrawings()">🧽 Borrar dibujos</button>
+    </div>
+    <div class="row">
+      <label>Color</label><input type="color" id="drawColor" value="#ffaa00" style="width:64px; height:28px;">
+    </div>
+    <div class="row">
+      <label>R</label><input type="range" id="drawR" min="0" max="255" step="1" value="255"><span class="val" id="v_drawR">255</span>
+    </div>
+    <div class="row">
+      <label>G</label><input type="range" id="drawG" min="0" max="255" step="1" value="170"><span class="val" id="v_drawG">170</span>
+    </div>
+    <div class="row">
+      <label>B</label><input type="range" id="drawB" min="0" max="255" step="1" value="0"><span class="val" id="v_drawB">0</span>
+    </div>
+    <div class="row">
+      <label>Alpha</label><input type="range" id="drawA" min="0" max="1" step="0.01" value="1"><span class="val" id="v_drawA">1</span>
+    </div>
+    <div class="row">
+      <label>Grosor</label><input type="range" id="drawWidth" min="0.001" max="0.05" step="0.001" value="0.01"><span class="val" id="v_drawWidth">0.01</span>
+    </div>
+    <div class="row">
+      <label>Pincel</label>
+      <select id="drawBrush" style="width:160px; height:28px;">
+        <option value="solid" selected>Continua</option>
+        <option value="pencil">Trazo a mano</option>
+        <option value="brush">Pintura pincel</option>
+        <option value="spray">Spray</option>
+        <option value="spline">Spline 3D (preciso)</option>
+      </select>
+    </div>
+    <div class="row" style="flex-wrap:wrap; gap:8px; margin-top:6px;">
+      <button class="secondary" onclick="exportDrawGLB()">⬇️ Export GLB (dibujo)</button>
+      <button class="secondary" onclick="exportDrawFBX()">⬇️ Export FBX (dibujo)</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="snapGridDraw"> Snap grilla</label>
+      <label><input type="checkbox" id="snapLocalDraw"> Local</label>
+    </div>
+    <div class="row">
+      <label>Grid</label><input type="range" id="snapGridSizeDraw" min="0.01" max="1" step="0.01" value="0.05"><span class="val" id="v_snapGridSizeDraw">0.05</span>
+    </div>
+
+
+<div class="row"><label><input type="checkbox" id="showDims" checked> Cotas Dinámicas</label></div>
+    <div class="row"><label><input type="checkbox" id="showCoords" checked> Coordenadas X/Y/Z</label></div>
+    <div class="row"><label><input type="checkbox" id="showGrid" checked onchange="updateGrid()"> Suelo Holográfico</label></div>
+
+    <div class="sec-head">☁️ Proyecto</div>
+    <div class="row" id="authPanel"><button onclick="handleAuthClick()" class="drive">Conectar Drive</button></div>
+    <div class="row" id="driveActions" style="display:none; gap:8px;">
+      <button onclick="saveSceneToDrive()" class="secondary">Guardar</button>
+      <button onclick="loadSceneFromDrive()" class="secondary">Cargar</button>
+    </div>
+
+    <!-- ✅ JSON Save/Load UI (solo UI; lógica ya existe en el script) -->
+    <div class="sec-head">💾 Guardar / Abrir (JSON)</div>
+    <div class="row" style="gap:8px; flex-wrap:wrap;">
+      <button class="secondary" onclick="exportSceneJSON()">⬇️ Guardar JSON</button>
+      <button class="secondary" onclick="document.getElementById('jsonInput').click()">⬆️ Abrir JSON</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="jsonReplace" checked> Reemplazar escena</label>
+    </div>
+    <input id="jsonInput" type="file" accept="application/json,.json" style="display:none;">
+
+    <div class="sec-head">📥 Importar</div>
+    <div class="row">
+      <input type="url" id="webUrl" placeholder="URL .mp4/.webm/.mp3/.wav/.png/.jpg/.gif/.glb/.gltf/.fbx/.obj o 360 equirect">
+      <button onclick="loadFromWeb()" style="flex:0 0 44px;">+</button>
+    </div>
+    <button onclick="document.getElementById('fileInput').click()" class="secondary" style="margin-top:8px; width:100%;">
+      📁 Abrir local (img/video/gif/audio/glb/gltf/fbx/obj/mtl)
+    </button>
+    <input
+      type="file"
+      id="fileInput"
+      multiple
+      style="display:none;"
+      accept=".png,.jpg,.jpeg,.webp,.gif,.mp4,.webm,.glb,.gltf,.fbx,.obj,.mtl,.mp3,.wav"
+    >
+
+    <div class="note" style="margin-top:10px;">
+      Si abres el HTML con <b>file://</b> (doble click), algunos navegadores bloquean <b>fetch</b> y assets remotos por CORS.
+      Usa <b>Abrir local</b> o un servidor local (ej: <span class="tiny">python -m http.server</span>).
+    </div>
+
+    <div class="sec-head">▶ YouTube (3D DOM)</div>
+    <div class="row">
+      <input type="text" id="ytUrl" placeholder="Pega URL de YouTube (iframe 3D)">
+      <button onclick="addYouTube()" class="small" style="flex:0 0 70px;">ADD</button>
+    </div>
+    <div class="row">
+      <label><input type="checkbox" id="css3dInteractive"> Interactuar (click)</label>
+    </div>
+    <div class="note">
+      Nota técnica: YouTube como <b>textura WebGL</b> suele fallar por CORS/DRM. Aquí se muestra como <b>plano 3D DOM</b> (CSS3D). En modo AR inmersivo puede no verse.
+    </div>
+
+    <div class="sec-head">Capas (arrastra para reordenar)</div>
+    <div id="layerList" class="layer-list"></div>
+
+    <div id="editorUI" style="display:none;">
+      <div class="sec-head">🎛 Capa Activa</div>
+      <div class="row"><label><input type="checkbox" id="layerVisible"> Visible</label></div>
+      <div class="row"><label><input type="checkbox" id="layerLocked"> Bloquear</label></div>
+      <div class="row"><label><input type="checkbox" id="checkBillboard"> Billboard (mirar cámara)</label></div>
+
+      <!-- ✅ NUEVO: Transform sliders -->
+      <div class="sec-head">🧩 Transform (PC / iPad / móvil)</div>
+      <div class="row"><label>Pos X</label><input type="range" id="tPosX" min="-20" max="20" step="0.01" value="0"><span class="val" id="v_tPosX">0</span></div>
+      <div class="row"><label>Pos Y</label><input type="range" id="tPosY" min="0" max="20" step="0.01" value="1.6"><span class="val" id="v_tPosY">1.6</span></div>
+      <div class="row"><label>Pos Z</label><input type="range" id="tPosZ" min="-50" max="50" step="0.01" value="-2"><span class="val" id="v_tPosZ">-2</span></div>
+
+      <div class="row"><label>Rot X</label><input type="range" id="tRotX" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotX">0</span></div>
+      <div class="row"><label>Rot Y</label><input type="range" id="tRotY" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotY">0</span></div>
+      <div class="row"><label>Rot Z</label><input type="range" id="tRotZ" min="-180" max="180" step="0.5" value="0"><span class="val" id="v_tRotZ">0</span></div>
+
+      <div class="row"><label>Escala</label><input type="range" id="tScale" min="0.001" max="20" step="0.01" value="1"><span class="val" id="v_tScale">1</span></div>
+
+      <div class="row" style="gap:8px;">
+        <button onclick="applyTransformFromUI()" class="secondary">Aplicar</button>
+        <button onclick="syncTransformToUI()" class="secondary">Leer</button>
+        <button onclick="resetTransformUI()" class="secondary">Reset</button>
+      </div>
+
+      
+<!-- ✅ NUEVO: 3D Model tools (render + componentes/lights) -->
+<div id="modelTools" style="display:none;">
+  <div class="sec-head">🎨 Render 3D</div>
+  <div class="row">
+    <select id="modelRenderMode">
+      <option value="original">Original</option>
+      <option value="wireframe">Wireframe</option>
+      <option value="shaded">Shaded</option>
+      <option value="workbench">Workbench</option>
+    </select>
+  </div>
+
+  <div class="sec-head">🧵 Texturas (UV / UVW)</div>
+  <div class="row" style="flex-wrap:wrap; gap:8px;">
+    <button id="btnModelTex" class="secondary" onclick="document.getElementById('modelTexInput').click()">Cargar textura</button>
+    <button id="btnModelTexClear" class="secondary" onclick="clearModelTexture()">Quitar</button>
+  </div>
+  <input id="modelTexInput" type="file" accept=".png,.jpg,.jpeg,.webp" style="display:none;">
+  <div class="note" style="margin-bottom:10px;">
+    Aplica la textura como <b>BaseColor/map</b> a meshes del modelo (si tienen UV). Compatible con texturas ya preparadas (UVW/UV).
+  </div>
+
+
+  <div class="sec-head">🧩 Componentes del 3D</div>
+  <div id="modelComponents" class="layer-list" style="max-height:220px;"></div>
+
+  <div class="note" style="margin-bottom:10px;">
+    Tip: puedes apagar meshes/grupos/luces del modelo. Si el modelo trae luces, también aparecen aquí.
+  </div>
+</div>
+
+<div class="sec-head">🌐 Superficie / Proyección</div>
+      <div class="row">
+        <select id="projSelect" onchange="updateProjection()">
+          <option value="plane">Plano 2D</option>
+          <option value="curved">Pantalla Curva</option>
+          <option value="orb">Orbe</option>
+          <option value="360">Entorno 360°</option>
+        </select>
+      </div>
+
+      <div class="sec-head">🎨 Imagen/Video (shader)</div>
+      <div class="row"><label>Brillo</label><input type="range" id="brightness" min="-1" max="1" step="0.05" value="0"><span class="val" id="v_brightness">0</span></div>
+      <div class="row"><label>Contraste</label><input type="range" id="contrast" min="0" max="3" step="0.1" value="1"><span class="val" id="v_contrast">1</span></div>
+      <div class="row"><label>Saturación</label><input type="range" id="saturation" min="0" max="3" step="0.1" value="1"><span class="val" id="v_saturation">1</span></div>
+      <div class="row"><label>Gamma</label><input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1"><span class="val" id="v_gamma">1</span></div>
+      <div class="row"><label>Opacidad</label><input type="range" id="opacity" min="0" max="1" step="0.01" value="1"><span class="val" id="v_opacity">1</span></div>
+      <div class="row"><label>Emisión</label><input type="range" id="emissive" min="0" max="2" step="0.01" value="0"><span class="val" id="v_emissive">0</span></div>
+
+      <div class="sec-head">🧪 Chroma Key</div>
+      <div class="row">
+        <label><input type="checkbox" id="chromaToggle"> Activar</label>
+        <label><input type="checkbox" id="chromaInvert"> Invertir</label>
+      </div>
+      <div id="chromaPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.2); border-radius:12px; border:1px solid var(--border-glass);">
+        <div class="row"><label>Rango</label><input type="range" id="k1sim" min="0" max="0.8" step="0.001" value="0.4"><span class="val" id="v_k1sim">0.400</span></div>
+        <div class="row"><label>Suave</label><input type="range" id="k1smooth" min="0" max="0.4" step="0.001" value="0.08"><span class="val" id="v_k1smooth">0.080</span></div>
+        <div class="row"><label>Despill</label><input type="range" id="despill" min="0" max="1" step="0.01" value="0.5"><span class="val" id="v_despill">0.500</span></div>
+
+        <div style="margin-top:10px; border-top:1px solid var(--border-glass); padding-top:10px;">
+          <div class="row"><label style="color:#f66">Key R</label><input type="range" id="keyR" min="0" max="1" step="0.01" value="0"></div>
+          <div class="row"><label style="color:#6f6">Key G</label><input type="range" id="keyG" min="0" max="1" step="0.01" value="1"></div>
+          <div class="row"><label style="color:#66f">Key B</label><input type="range" id="keyB" min="0" max="1" step="0.01" value="0"></div>
+        </div>
+      </div>
+
+      <!-- ✅ NUEVO: Video UI completa -->
+      <div class="sec-head">🎧 Video (audio + avance + recorte)</div>
+      <div id="videoPanel" style="display:none; padding:12px; background:rgba(0,0,0,0.18); border-radius:12px; border:1px solid var(--border-glass);">
+
+        <div class="row" style="gap:8px;">
+          <button onclick="videoUIAction('play')" class="secondary">▶ Play</button>
+          <button onclick="videoUIAction('pause')" class="secondary">⏸ Pause</button>
+          <button onclick="videoUIAction('mute')" class="secondary">🔇 Mute</button>
+        </div>
+
+        <div class="row"><label>Volumen</label><input type="range" id="vidVol" min="0" max="1" step="0.01" value="0.8"><span class="val" id="v_vidVol">0.80</span></div>
+
+        <div class="row"><label>Avance</label><input type="range" id="vidSeek" min="0" max="1" step="0.001" value="0"><span class="val" id="v_vidSeek">0%</span></div>
+        <div class="row" style="justify-content:space-between;">
+          <div class="tiny" id="vidTime">0:00 / 0:00</div>
+          <label style="flex:0; display:flex; gap:8px; align-items:center;">
+            <input type="checkbox" id="vidLoop" checked> Loop
+          </label>
+        </div>
+
+        <div class="row">
+          <label style="flex:0 0 auto; display:flex; gap:8px; align-items:center;">
+            <input type="checkbox" id="vidTrim"> Recortar
+          </label>
+          <div class="two" style="flex:1;">
+            <input type="number" id="vidStart" min="0" step="0.1" value="0" placeholder="Inicio (s)">
+            <input type="number" id="vidEnd" min="0" step="0.1" value="0" placeholder="Fin (s)">
+          </div>
+        </div>
+
+        <div class="row" style="gap:8px;">
+          <button onclick="applyVideoTrim()" class="secondary">Aplicar recorte</button>
+          <button onclick="clearVideoTrim()" class="secondary">Quitar recorte</button>
+        </div>
+
+        <div class="note" style="margin-top:8px;">
+          Nota: algunos móviles bloquean audio autoplay. Toca Play o ajusta volumen para habilitar sonido.
+        </div>
+      </div>
+
+      <div class="sec-head">🎮 Media</div>
+      <div class="row" style="gap:8px;">
+        <button onclick="mediaAction('play')" class="secondary">▶ Play</button>
+        <button onclick="mediaAction('pause')" class="secondary">⏸ Pause</button>
+        <button onclick="mediaAction('mute')" class="secondary">🔇 Mute</button>
+      </div>
+
+      <div class="sec-head">🧭 Acciones</div>
+      <div class="row" style="gap:8px;">
+        <button onclick="centerActive()" class="secondary">🎯 Re-centrar</button>
+        <button onclick="deleteActive()" class="danger">🗑 Eliminar</button>
+      </div>
+    </div>
+
+    <div class="sec-head">⚙️ Realidad Mixta</div>
+    <div class="row"><label><input type="checkbox" id="checkOcclusion"> Oclusión Depth API</label></div>
+  </div>
+
+  <button id="vrBtn">INICIAR MR</button>
+
+  <script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+  </script>
+     <script type="module">
+    import * as THREE from 'three';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+    import { TransformControls } from 'three/addons/controls/TransformControls.js';
+    import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+    import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+    import { CSS3DRenderer, CSS3DObject } from 'three/addons/renderers/CSS3DRenderer.js';
+    import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+    import { FBXExporter } from 'three/addons/exporters/FBXExporter.js';
+
+
+    // =========================
+    // Google Drive placeholders
+    // =========================
+    const CLIENT_ID = '';
+    const API_KEY = '';
+    const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+    // =========================
+    // Helpers robustos (CORS / file:// / scripts)
+    // =========================
+    const isFileProtocol = () => location.protocol === 'file:';
+
+    function showCorsHint(extra="") {
+      alert(
+        "Error cargando media. Revisa URL / CORS.\n\n" +
+        "Si estás en file:// (doble click al HTML), usa un servidor local o 'Abrir local'.\n" +
+        (extra ? ("\n" + extra) : "")
+      );
+    }
+
+    function isFileUrl(u="") {
+      return /^file:\/\//i.test((u||"").trim());
+    }
+
+    // ✅ Asegura que Omggif exista (soluciona 'librería no cargada')
+    function ensureOmggifLoaded() {
+      return new Promise((resolve, reject) => {
+        if (window.GifReader || (window.Omggif && window.Omggif.GifReader)) return resolve(true);
+
+        // Intento fallback: inyecta script si no está cargado
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/npm/omggif@1.0.10/omggif.js';
+        s.onload = () => {
+          if (window.GifReader || (window.Omggif && window.Omggif.GifReader)) resolve(true);
+          else reject(new Error("Omggif no disponible"));
+        };
+        s.onerror = () => reject(new Error("No se pudo cargar omggif (bloqueo de red/CSP)"));
+        document.head.appendChild(s);
+      });
+    }
+
+    
+
+    // ✅ Crea un GifReader compatible (omggif puede exponer GifReader directo o bajo window.Omggif)
+    function makeGifReader(u8) {
+      const Ctor = window.GifReader || (window.Omggif && window.Omggif.GifReader);
+      if (!Ctor) throw new Error("Omggif/GifReader no disponible");
+      return new Ctor(u8);
+    }
+// =========================
+    // Shaders (v24 HSV + extras)
+    // =========================
+    const vShader = `
+      varying vec2 vUv;
+      void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+    `;
+
+    const fShader = `
+      uniform sampler2D map;
+      uniform float uBrightness, uContrast, uSaturation, uGamma, uOpacity, uEmissive;
+
+      uniform bool chromaOn, chromaInvert;
+      uniform vec3 k1;
+      uniform float sim1, smooth1, despill;
+
+      varying vec2 vUv;
+
+      vec3 rgb2hsv(vec3 c) {
+        vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);
+        vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+        vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+        float d = q.x - min(q.w, q.y);
+        float e = 1.0e-10;
+        return vec3(abs(q.z + (q.w - q.y)/(6.0*d + e)), d/(q.x + e), q.x);
+      }
+
+      void main() {
+        vec4 tex = texture2D(map, vUv);
+        vec3 col = tex.rgb;
+        float alpha = tex.a * uOpacity;
+
+        if (chromaOn) {
+          vec3 hsv = rgb2hsv(col);
+          vec3 kHsv = rgb2hsv(k1);
+
+          float hueDist = abs(hsv.x - kHsv.x);
+          if (hueDist > 0.5) hueDist = 1.0 - hueDist;
+
+          float dist = sqrt(
+            pow(hueDist * 2.0, 2.0) +
+            pow(abs(hsv.y - kHsv.y), 2.0) +
+            pow(abs(hsv.z - kHsv.z) * 0.5, 2.0)
+          );
+
+          float mask = smoothstep(sim1, sim1 + smooth1, dist);
+
+          if (!chromaInvert) {
+            alpha *= mask;
+
+            if (mask < 0.95 && despill > 0.0) {
+              if (k1.g > k1.r && k1.g > k1.b) col.g = mix(col.g, max(col.r, col.b), (1.0 - mask) * despill);
+              else if (k1.b > k1.r && k1.b > k1.g) col.b = mix(col.b, max(col.r, col.g), (1.0 - mask) * despill);
+            }
+          } else {
+            alpha = (1.0 - mask) * uOpacity;
+            col = vec3(1.0);
+          }
+        }
+
+        col += uBrightness;
+        col = (col - 0.5) * uContrast + 0.5;
+
+        float gray = dot(col, vec3(0.299, 0.587, 0.114));
+        col = mix(vec3(gray), col, uSaturation);
+
+        col = pow(max(col, 0.0), vec3(1.0 / uGamma));
+
+        col = col * (1.0 + uEmissive);
+
+        gl_FragColor = vec4(col, alpha);
+        if (alpha < 0.01) discard;
+      }
+    `;
+
+    // =========================
+    // Oclusión Depth (v24)
+    // =========================
+    const depthVS = `#version 300 es
+      in vec2 aPos; out vec2 vUv;
+      void main(){ vUv = aPos * 0.5 + 0.5; gl_Position = vec4(aPos, 0.0, 1.0); }
+    `;
+    const depthFS = `#version 300 es
+      precision highp float; precision highp sampler2D;
+      in vec2 vUv; uniform sampler2D uDepth; uniform float uRawToMeters; uniform mat4 uProj;
+      out vec4 outColor;
+      float decode(vec4 la){ return (la.r * 255.0 * 256.0 + la.a * 255.0); }
+      void main(){
+        float zMeters = decode(texture(uDepth, vUv)) * uRawToMeters;
+        if(zMeters <= 0.0) discard;
+        float z = -zMeters;
+        float clipZ = uProj[2][2] * z + uProj[3][2];
+        float clipW = uProj[2][3] * z + uProj[3][3];
+        gl_FragDepth = clamp((clipZ / clipW) * 0.5 + 0.5, 0.0, 1.0);
+        outColor = vec4(0.0);
+      }
+    `;
+
+    // =========================
+    // Estado global
+    // =========================
+    let scene, camera, renderer, orbit, transformCtrl;
+    let audioListener;
+    let xrSession, xrRefSpace;
+    let xrGlBinding=null, depthProgram=null, depthVao=null, depthTex=null, occlusionEnabled=false;
+
+    let cssRenderer;
+    const cssRoot = document.getElementById('css3d');
+
+    let controller1, controller2, controllerGrip1, controllerGrip2, raycaster;
+    const tempMatrix = new THREE.Matrix4();
+
+    let engGroup, coordLabels = { x:null, y:null, z:null }, dimLabels = { w:null, h:null, d:null };
+    let currentUnit = 'm';
+
+    const UNIT_TO_METERS = {
+      m: 1,
+      cm: 0.01,
+      mm: 0.001,
+      in: 0.0254,
+      ft: 0.3048,
+      mi: 1609.344
+    };
+
+    const objects = []; // capas
+    let activeId = null;
+
+    const gltfLoader = new GLTFLoader();
+    const fbxLoader = new FBXLoader();
+    const objLoader = new OBJLoader();
+    const mtlLoader = new MTLLoader();
+
+    // Video UI state
+    let uiVideoRAF = null;
+    let suppressSeekUI = false;
+
+    // =========================
+    // Utilidades
+    // =========================
+    function uid(){ return Math.random().toString(36).slice(2, 10); }
+
+    function toggleLoader(on, msg="CARGANDO...") {
+      const l = document.getElementById('loader');
+      l.textContent = msg;
+      l.style.display = on ? 'grid' : 'none';
+    }
+
+    function isYouTubeUrl(u="") {
+      return /youtube\.com\/watch\?v=|youtu\.be\//i.test(u);
+    }
+
+    function parseYouTubeId(url) {
+      try {
+        const u = new URL(url);
+        if (u.hostname.includes('youtu.be')) return u.pathname.replace('/','');
+        if (u.searchParams.get('v')) return u.searchParams.get('v');
+        return null;
+      } catch { return null; }
+    }
+
+    function iconFor(o) {
+      if (o.kind === 'model') return '🧊';
+      if (o.kind === 'youtube') return '▶';
+      if (o.kind === 'video') return o.projection === '360' ? '🌐' : '🎬';
+      if (o.kind === 'gif') return '👾';
+      return o.projection === '360' ? '🌐' : '🖼️';
+    }
+
+    function isMediaLayer(o){ return o && (o.kind === 'image' || o.kind === 'video' || o.kind === 'gif'); }
+
+    // Aplica orden de capas al render (y a CSS3D)
+    function applyLayerOrderToRender() {
+      objects.forEach((o, i) => {
+        const order = i + 1;
+        if (o.root3D) {
+          o.root3D.traverse(n => { if (n.isMesh) n.renderOrder = order; });
+        }
+        if (o.pickMesh) o.pickMesh.renderOrder = order;
+        if (o.mesh) o.mesh.renderOrder = order;
+        if (o.kind === 'youtube' && o.cssObj?.element) {
+          o.cssObj.element.style.zIndex = String(1000 + order);
+        }
+      });
+    }
+
+    // =========================
+    // Init
+    // =========================
+    function init() {
+      scene = new THREE.Scene();
+      scene.add(new THREE.AmbientLight(0xffedd5, 1.1));
+      const dir = new THREE.DirectionalLight(0xffffff, 0.7);
+      dir.position.set(2,3,2);
+      scene.add(dir);
+
+      camera = new THREE.PerspectiveCamera(70, window.innerWidth/window.innerHeight, 0.01, 800);
+      camera.position.set(0, 1.6, 2);
+
+      // Audio (mp3/wav)
+      audioListener = new THREE.AudioListener();
+      camera.add(audioListener);
+
+      renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      renderer.xr.enabled = true;
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      orbit = new OrbitControls(camera, renderer.domElement);
+      orbit.enableDamping = true;
+
+      transformCtrl = new TransformControls(camera, renderer.domElement);
+      transformCtrl.addEventListener('dragging-changed', e => orbit.enabled = !e.value);
+      scene.add(transformCtrl);
+
+      // CSS3D (YouTube)
+      cssRenderer = new CSS3DRenderer();
+      cssRenderer.setSize(window.innerWidth, window.innerHeight);
+      cssRenderer.domElement.style.position = 'absolute';
+      cssRenderer.domElement.style.top = '0';
+      cssRenderer.domElement.style.left = '0';
+      cssRenderer.domElement.style.width = '100%';
+      cssRenderer.domElement.style.height = '100%';
+      cssRoot.appendChild(cssRenderer.domElement);
+
+      initEngineeringUI();
+      updateGrid();
+      setupXRControllers();
+      setupVR();
+
+      bindUI();
+
+      renderer.setAnimationLoop(animate);
+      window.addEventListener('resize', onResize);
+      updateLayers();
+    }
+
+    function onResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      cssRenderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // =========================
+    // Ingeniería (grid + labels)
+    // =========================
+    function updateGrid() {
+      const old = scene.getObjectByName("grid");
+      if (old) scene.remove(old);
+      if (!document.getElementById('showGrid').checked) return;
+
+      let gridSize = 15, divisions = 15;
+      const k = UNIT_TO_METERS[currentUnit] || 1;
+      gridSize = 15 * k;
+      divisions = 15;
+
+      const colorGrid = new THREE.Color(0xffaa00);
+      const geometry = new THREE.PlaneGeometry(gridSize, gridSize);
+      const material = new THREE.ShaderMaterial({
+        transparent: true, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending,
+        uniforms: { uColor: { value: colorGrid }, uDivisions: { value: divisions } },
+        vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+        fragmentShader: `
+          varying vec2 vUv; uniform vec3 uColor; uniform float uDivisions;
+          void main(){
+            vec2 grid = abs(fract(vUv * uDivisions - 0.5) - 0.5) / fwidth(vUv * uDivisions);
+            float line = min(grid.x, grid.y);
+            float alpha = 1.0 - min(line, 1.0);
+            alpha = pow(alpha, 0.3);
+            float dist = distance(vUv, vec2(0.5));
+            float mask = 1.0 - smoothstep(0.2, 0.5, dist);
+            gl_FragColor = vec4(uColor, alpha * mask * 0.6);
+          }`
+      });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.rotation.x = -Math.PI / 2;
+      mesh.position.y = 0.001;
+      mesh.name = "grid";
+      scene.add(mesh);
+    }
+
+    function initEngineeringUI() {
+      engGroup = new THREE.Group(); scene.add(engGroup);
+
+      const lineMat = new THREE.LineDashedMaterial({ color: 0xffaa00, dashSize: 0.1, gapSize: 0.05, opacity:0.8, transparent:true });
+      const lineY = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]), lineMat);
+      lineY.name = 'lineY'; engGroup.add(lineY);
+
+      const frameGeo = new THREE.RingGeometry(0.48, 0.5, 4); frameGeo.rotateZ(Math.PI/4);
+      const frameMat = new THREE.MeshBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.8, side:THREE.DoubleSide, depthWrite:false });
+      const shadow = new THREE.Mesh(frameGeo, frameMat);
+      shadow.rotation.x = -Math.PI/2; shadow.name = 'shadowPlane'; engGroup.add(shadow);
+
+      coordLabels.x = createLabel("X"); coordLabels.y = createLabel("Y"); coordLabels.z = createLabel("Z");
+      engGroup.add(coordLabels.x); engGroup.add(coordLabels.y); engGroup.add(coordLabels.z);
+
+      dimLabels.w = createLabel("W"); dimLabels.h = createLabel("H"); dimLabels.d = createLabel("D");
+      engGroup.add(dimLabels.w); engGroup.add(dimLabels.h); engGroup.add(dimLabels.d);
+
+      engGroup.visible = false;
+    }
+
+    function createLabel() {
+      const cvs = document.createElement('canvas'); cvs.width = 256; cvs.height = 64;
+      const tex = new THREE.CanvasTexture(cvs);
+      const mat = new THREE.SpriteMaterial({ map:tex, transparent:true, depthTest:false });
+      const s = new THREE.Sprite(mat);
+      s.scale.set(0.3, 0.075, 1);
+      s.userData = { cvs, ctx: cvs.getContext('2d'), tex };
+      return s;
+    }
+
+    function updateLabelText(sprite, text, isDim=false) {
+      const { ctx, tex } = sprite.userData;
+      ctx.clearRect(0,0,256,64);
+      const rr = (ctx.roundRect ? true : false);
+
+      ctx.fillStyle = "rgba(20, 15, 0, 0.85)";
+      if (rr) { ctx.beginPath(); ctx.roundRect(5,5,246,54,12); ctx.fill(); }
+      else { ctx.fillRect(5,5,246,54); }
+
+      ctx.strokeStyle = isDim ? "#ffff00" : "#ffaa00";
+      ctx.lineWidth = 3;
+      if (rr) { ctx.beginPath(); ctx.roundRect(5,5,246,54,12); ctx.stroke(); }
+      else { ctx.strokeRect(5,5,246,54); }
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 30px 'Fira Code', monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.shadowColor = isDim ? "#ffff00" : "#ffaa00";
+      ctx.shadowBlur = 10;
+      ctx.fillText(text, 128, 32);
+
+      tex.needsUpdate = true;
+    }
+
+    
+
+    function formatUnit(valMeters) {
+      const u = currentUnit || 'm';
+      const k = UNIT_TO_METERS[u] || 1;
+      const v = valMeters / k;
+      if (u === 'mm') return v.toFixed(0) + 'mm';
+      if (u === 'cm') return v.toFixed(1) + 'cm';
+      if (u === 'm') return v.toFixed(2) + 'm';
+      if (u === 'in') return v.toFixed(2) + 'in';
+      if (u === 'ft') return v.toFixed(2) + 'ft';
+      if (u === 'mi') return v.toFixed(4) + 'mi';
+      return v.toFixed(2) + u;
+    }
+
+    function updateEngineeringVisuals() {
+      if (!activeId || !document.getElementById('showDims').checked) { engGroup.visible = false; return; }
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D) { engGroup.visible = false; return; }
+
+      engGroup.visible = true;
+
+      const P = o.root3D.position;
+      const S = o.root3D.scale;
+      const R = o.root3D.rotation;
+
+      const baseW = (o.originalAspect || 1);
+      const realW = baseW * S.x;
+      const realH = 1 * S.y;
+
+      const lineY = engGroup.getObjectByName('lineY');
+      lineY.geometry.setFromPoints([P, new THREE.Vector3(P.x, 0, P.z)]);
+      lineY.computeLineDistances();
+
+      const shadow = engGroup.getObjectByName('shadowPlane');
+      shadow.position.set(P.x, 0.005, P.z);
+      shadow.rotation.set(-Math.PI/2, 0, R.y);
+      const frameScale = Math.max(realW, 0.5) * 1.1;
+      shadow.scale.set(frameScale, frameScale, 1);
+
+      if (document.getElementById('showCoords').checked) {
+        coordLabels.x.visible = coordLabels.y.visible = coordLabels.z.visible = true;
+        coordLabels.y.position.set(P.x + 0.3, P.y/2, P.z);
+        updateLabelText(coordLabels.y, "Y: " + formatUnit(P.y));
+        coordLabels.x.position.set(P.x, 0.1, P.z + 0.3);
+        updateLabelText(coordLabels.x, "X: " + formatUnit(P.x));
+        coordLabels.z.position.set(P.x + 0.3, 0.1, P.z);
+        updateLabelText(coordLabels.z, "Z: " + formatUnit(P.z));
+      } else {
+        coordLabels.x.visible = coordLabels.y.visible = coordLabels.z.visible = false;
+      }
+
+      dimLabels.w.visible = true; dimLabels.h.visible = true;
+      dimLabels.w.position.copy(P).add(new THREE.Vector3(0, realH/2 + 0.2, 0));
+      updateLabelText(dimLabels.w, "W: " + formatUnit(realW), true);
+
+      dimLabels.h.position.copy(P).add(new THREE.Vector3(realW/2 + 0.2, 0, 0));
+      updateLabelText(dimLabels.h, "H: " + formatUnit(realH), true);
+    }
+
+    // =========================
+    // XR Controllers (estable v24)
+    // =========================
+    
+// =========================
+// Huincha (Medidor) + Dibujo XR
+// =========================
+
+// ===== FIX ESCALA DIBUJO (hornear y evitar doble transform) =====
+function bakeDrawingsScale(scaleFactor){
+  if (!drawingsGroup || !Number.isFinite(scaleFactor)) return;
+  drawingsGroup.traverse(obj => {
+    if (obj.isMesh || obj.isLine) {
+      obj.position.multiplyScalar(scaleFactor);
+      if (obj.geometry && obj.geometry.attributes && obj.geometry.attributes.position) {
+        const pos = obj.geometry.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          pos.setXYZ(i, pos.getX(i)*scaleFactor, pos.getY(i)*scaleFactor, pos.getZ(i)*scaleFactor);
+        }
+        pos.needsUpdate = true;
+      }
+    }
+  });
+  drawingsGroup.scale.set(1,1,1);
+}
+
+// ---------- Medición (con ajuste fino) ----------
+let measureModeActive = false;
+let measureStep = 0;               // 0=espera P1 (trigger), 1=espera P2 (trigger), 2=ajuste fino
+let currentMeasure = null;
+const measures = [];
+let _undoPressedPrev = false;
+
+// Ajuste fino
+let _measureEditPoint = 1;         // 1 o 2 (qué punto se está moviendo)
+let _measureConfirmState = 0;      // 0=edit P1, 1=edit P2, 2=listo (espera B para nueva)
+let _measureBPrev = false;
+
+// ---------- Dibujo XR ----------
+let drawingsGroup = null;
+let drawModeActive = false;
+let drawPaletteVisible = false;
+let drawPaletteGroup = null;
+let _drawPaletteTogglePrev = false;
+
+let _drawTwoHandScaleActive = false;
+let _drawTwoHandScaleStartDist = 0;
+let _drawTwoHandScaleStartScale = new THREE.Vector3(1,1,1);
+let _drawTwoHandScaleStartPivotWorld = new THREE.Vector3();
+let _drawTwoHandScaleTarget = null;
+
+let drawIsDrawing = false;
+let drawController = null;
+
+// Trazo actual como grupo de “piezas” (cilindros/partículas)
+let currentStrokeGroup = null;
+let currentStrokeLastPoint = null;
+let currentStrokePoints = null; // para modo spline
+let _drawMatCache = new Map();
+
+
+// Capas de dibujo (cada capa es un grupo dentro de drawingsGroup)
+let drawLayers = [];              // [{id,name,group,visible}]
+let selectedDrawLayerId = null;   // id de la capa seleccionada (para recolor/mover)
+let currentDrawLayerId = null;    // id de la capa activa para nuevos trazos
+let _drawLayerIdSeq = 1;
+
+// Selección por rayo (para mover/recolor)
+let _drawSelectedObject = null;
+
+// Grab con pivote (centro bbox) para evitar "saltos"
+let _drawGrabTarget = null;             // grupo a mover (capa o drawingsGroup)
+let _drawGrabPivotLocal = new THREE.Vector3(); // pivote local en el target
+let _drawGrabOffset = new THREE.Matrix4();     // inv(controller) * pivotWorldMat al inicio
+
+function _ensureDrawingsGroup() {
+  if (!drawingsGroup) {
+    drawingsGroup = new THREE.Group();
+    drawingsGroup.name = "DrawingsRoot";
+    drawingsGroup.renderOrder = 10;
+    scene.add(drawingsGroup);
+  }
+  if (drawLayers.length === 0) {
+    _createDrawLayerInternal("Capa 1");
+  }
+}
+
+function _createDrawLayerInternal(name) {
+  const g = new THREE.Group();
+  g.name = "DrawLayer";
+  g.userData.isDrawLayer = true;
+  g.userData.layerId = _drawLayerIdSeq++;
+  drawingsGroup.add(g);
+
+  const layer = { id: g.userData.layerId, name: name || ("Capa " + g.userData.layerId), group: g, visible: true };
+  drawLayers.push(layer);
+
+  selectedDrawLayerId = layer.id;
+  currentDrawLayerId = layer.id;
+  rebuildDrawLayerListUI();
+  return layer;
+}
+
+function newDrawLayer() {
+  _ensureDrawingsGroup();
+  _createDrawLayerInternal("Capa " + (_drawLayerIdSeq));
+}
+
+function _getLayerById(id) {
+  return drawLayers.find(l => l.id === id) || null;
+}
+
+function _getCurrentLayer() {
+  return _getLayerById(currentDrawLayerId) || drawLayers[0] || null;
+}
+
+function rebuildDrawLayerListUI() {
+  const box = document.getElementById('drawLayerList');
+  if (!box) return;
+  box.innerHTML = "";
+  for (const l of drawLayers) {
+    const row = document.createElement('div');
+    row.className = 'layer-item';
+    row.style.gridTemplateColumns = '18px 1fr auto';
+    const isSel = l.id === selectedDrawLayerId;
+    row.innerHTML = `
+      <div class="tag">${l.visible ? "🗂️" : "🙈"}</div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <input value="${(l.name||'').replace(/"/g,'&quot;')}" style="width:100%; padding:6px 8px; border-radius:10px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.15); color:#fff;" />
+        <div class="tiny">${isSel ? "Seleccionada" : ""}${l.id===currentDrawLayerId ? (isSel?" • ":"") + "Activa" : ""}</div>
+      </div>
+      <button class="secondary" style="padding:6px 10px;" title="Seleccionar">${isSel?"✓":"•"}</button>
+    `;
+    const inp = row.querySelector('input');
+    const btn = row.querySelector('button');
+    inp.addEventListener('input', ()=>{ l.name = inp.value; });
+    btn.addEventListener('click', ()=>{
+      selectedDrawLayerId = l.id;
+      currentDrawLayerId = l.id;
+      _drawSelectedObject = l.group;
+      rebuildDrawLayerListUI();
+    });
+    row.style.outline = isSel ? "2px solid rgba(255,255,255,0.25)" : "none";
+    row.style.borderRadius = "14px";
+    box.appendChild(row);
+  }
+}
+
+function toggleSelectedDrawLayer() {
+  const l = _getLayerById(selectedDrawLayerId);
+  if (!l) return;
+  l.visible = !l.visible;
+  l.group.visible = l.visible;
+  rebuildDrawLayerListUI();
+}
+
+function deleteSelectedDrawLayer() {
+  const l = _getLayerById(selectedDrawLayerId);
+  if (!l) return;
+  drawingsGroup.remove(l.group);
+  drawLayers = drawLayers.filter(x => x.id !== l.id);
+
+  if (drawLayers.length === 0) {
+    _createDrawLayerInternal("Capa 1");
+  } else {
+    selectedDrawLayerId = drawLayers[0].id;
+    currentDrawLayerId = drawLayers[0].id;
+  }
+  _drawSelectedObject = _getLayerById(selectedDrawLayerId)?.group || null;
+  rebuildDrawLayerListUI();
+}
+
+function mergeSelectedDrawLayerDown() {
+  const idx = drawLayers.findIndex(l => l.id === selectedDrawLayerId);
+  if (idx < 0 || idx === drawLayers.length - 1) return; // no hay abajo
+  const top = drawLayers[idx];
+  const down = drawLayers[idx+1];
+  // mover hijos de top a down
+  while (top.group.children.length) {
+    down.group.add(top.group.children[0]);
+  }
+  // borrar top
+  drawingsGroup.remove(top.group);
+  drawLayers.splice(idx, 1);
+  selectedDrawLayerId = down.id;
+  currentDrawLayerId = down.id;
+  _drawSelectedObject = down.group;
+  rebuildDrawLayerListUI();
+}
+
+// Transform del dibujo (grip izquierdo)
+let _drawGrabActive = false;
+let _drawGrabStartCtrlPos = new THREE.Vector3();
+let _drawGrabStartCtrlQuat = new THREE.Quaternion();
+let _drawGrabStartGroupPos = new THREE.Vector3();
+let _drawGrabStartGroupQuat = new THREE.Quaternion();
+let _drawGrabPrev = false;
+
+// Reutilizables
+const _tmpV1 = new THREE.Vector3();
+const _tmpV2 = new THREE.Vector3();
+const _tmpV3 = new THREE.Vector3();
+const _tmpQuat = new THREE.Quaternion();
+const _tmpMat4 = new THREE.Matrix4();
+const _tmpOrigin = new THREE.Vector3();
+const _tmpDir = new THREE.Vector3();
+const _tmpRot = new THREE.Matrix4();
+
+function ensureDrawingsGroup() {
+  if (!drawingsGroup) {
+    drawingsGroup = new THREE.Group();
+    drawingsGroup.name = "drawingsGroup";
+    scene.add(drawingsGroup);
+  }
+}
+
+function makeEndMarker() {
+  const g = new THREE.SphereGeometry(0.015, 16, 12);
+  const m = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const s = new THREE.Mesh(g, m);
+  s.renderOrder = 10;
+  return s;
+}
+
+function createMeasure() {
+  const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+  const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.95 });
+  const line = new THREE.Line(lineGeo, lineMat);
+
+  const a = makeEndMarker();
+  const b = makeEndMarker();
+  const label = createLabel();
+  updateLabelText(label, "0", true);
+  const arrow = new THREE.ArrowHelper(new THREE.Vector3(0,0,-1), new THREE.Vector3(), 0.01, 0xffaa00, 0.04, 0.02);
+
+  const grp = new THREE.Group();
+  grp.name = "measure";
+  grp.add(line); grp.add(arrow); grp.add(a); grp.add(b); grp.add(label);
+
+  const item = {
+    id: "m_" + Math.random().toString(36).slice(2,9),
+    name: "Medida",
+    group: grp,
+    line, a, b, label, arrow,
+    p1: new THREE.Vector3(),
+    p2: new THREE.Vector3(),
+  };
+
+  scene.add(grp);
+  measures.push(item);
+  rebuildMeasureListUI();
+  return item;
+}
+
+function rebuildMeasureListUI() {
+  const box = document.getElementById('measureList');
+  if (!box) return;
+  box.innerHTML = "";
+  for (const m of measures) {
+    const row = document.createElement('div');
+    row.className = 'layer-item';
+    row.style.gridTemplateColumns = '18px 1fr auto';
+    row.innerHTML = `
+      <div class="tag">📏</div>
+      <div style="display:flex; flex-direction:column; gap:4px;">
+        <input value="${(m.name||'').replace(/"/g,'&quot;')}" style="width:100%; padding:6px 8px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); background:rgba(0,0,0,0.15); color:#fff;" />
+        <div class="tiny" id="len_${m.id}">—</div>
+      </div>
+      <button class="secondary" style="padding:6px 10px;" title="Eliminar">✕</button>
+    `;
+    const inp = row.querySelector('input');
+    const btn = row.querySelector('button');
+    inp.addEventListener('input', ()=>{ m.name = inp.value; });
+    btn.addEventListener('click', ()=>{
+      scene.remove(m.group);
+      const i = measures.indexOf(m);
+      if (i>=0) measures.splice(i,1);
+      rebuildMeasureListUI();
+    });
+    box.appendChild(row);
+    updateMeasureVisual(m);
+  }
+}
+
+function updateMeasureVisual(m) {
+  // Seguridad: evita NaN propagando
+  if (!m || !m.p1 || !m.p2) return;
+  if (!Number.isFinite(m.p1.x) || !Number.isFinite(m.p2.x)) return;
+
+  m.a.position.copy(m.p1);
+  m.b.position.copy(m.p2);
+  m.line.geometry.setFromPoints([m.p1.clone(), m.p2.clone()]);
+
+  const dir = m.p2.clone().sub(m.p1);
+  const len = dir.length();
+
+  if (Number.isFinite(len) && len > 1e-6) {
+    m.arrow.position.copy(m.p1);
+    m.arrow.setDirection(dir.clone().normalize());
+    m.arrow.setLength(len, Math.min(0.06, len*0.15), Math.min(0.03, len*0.08));
+
+    const mid = m.p1.clone().add(m.p2).multiplyScalar(0.5);
+    m.label.position.copy(mid);
+    updateLabelText(m.label, formatUnit(len), true);
+
+    const lenEl = document.getElementById("len_" + m.id);
+    if (lenEl) lenEl.textContent = formatUnit(len);
+  }
+}
+
+function stopMeasureMode() {
+  measureModeActive = false;
+  measureStep = 0;
+  currentMeasure = null;
+  _measureEditPoint = 1;
+  _measureConfirmState = 0;
+}
+
+function startNewMeasure() {
+  measureModeActive = true;
+  measureStep = 0;
+  currentMeasure = createMeasure();
+  _measureEditPoint = 1;
+  _measureConfirmState = 0;
+}
+
+function clearAllMeasures() {
+  for (const m of measures) scene.remove(m.group);
+  measures.length = 0;
+  rebuildMeasureListUI();
+  stopMeasureMode();
+}
+
+// Resguarda el botón MR (se mantiene): A (right) / X (left) => buttons[4]
+function isUndoPressed() {
+  const pads = [];
+  const ses = renderer && renderer.xr ? renderer.xr.getSession?.() : null;
+  if (ses && ses.inputSources) {
+    for (const src of ses.inputSources) if (src.gamepad) pads.push(src.gamepad);
+  }
+  for (const gp of pads) {
+    if (gp.buttons && gp.buttons[4] && gp.buttons[4].pressed) return true;
+  }
+  return false;
+}
+
+function undoMeasurePoint() {
+  if (!measureModeActive || !currentMeasure) return;
+  // volver atrás de forma estable
+  if (measureStep === 0) return;
+  if (measureStep === 1) {
+    // borrar P1
+    currentMeasure.p1.set(0,0,0);
+    currentMeasure.p2.set(0,0,0);
+    measureStep = 0;
+    _measureEditPoint = 1;
+    _measureConfirmState = 0;
+    updateMeasureVisual(currentMeasure);
+    return;
+  }
+  if (measureStep === 2) {
+    // volver a espera de P2 (manteniendo P1)
+    currentMeasure.p2.copy(currentMeasure.p1);
+    measureStep = 1;
+    _measureEditPoint = 1;
+    _measureConfirmState = 0;
+    updateMeasureVisual(currentMeasure);
+    return;
+  }
+}
+
+// Punto “puntero” para medidas (más estable y sin hits raros)
+function getXRPointerPoint(controller, forward = 2.0) {
+  if (!controller) return null;
+  _tmpRot.identity().extractRotation(controller.matrixWorld);
+  _tmpOrigin.setFromMatrixPosition(controller.matrixWorld);
+  _tmpDir.set(0,0,-1).applyMatrix4(_tmpRot).normalize();
+  if (!Number.isFinite(_tmpOrigin.x) || !Number.isFinite(_tmpDir.x)) return null;
+  return _tmpOrigin.clone().addScaledVector(_tmpDir, forward);
+}
+
+// Botón B/Y (buttons[5]) se usa SOLO para confirmar/continuar medición (sin tocar MR)
+function _isBPressedRight() {
+  const ses = renderer && renderer.xr ? renderer.xr.getSession?.() : null;
+  if (!ses || !ses.inputSources) return false;
+  for (const src of ses.inputSources) {
+    if (src.handedness === 'right' && src.gamepad && src.gamepad.buttons && src.gamepad.buttons[5]) {
+      return !!src.gamepad.buttons[5].pressed;
+    }
+  }
+  return false;
+}
+
+function handleMeasureSelect(controller) {
+  if (!measureModeActive || !currentMeasure) return false;
+
+  const p = getXRPointerPoint(controller, 2.0);
+  if (!p || !Number.isFinite(p.x)) return false;
+
+  if (measureStep === 0) {
+    // Coloca P1 y entra en ajuste fino de P1
+    currentMeasure.p1.copy(p);
+    currentMeasure.p2.copy(p);
+    measureStep = 1;
+    _measureEditPoint = 1;
+    _measureConfirmState = 0;
+    updateMeasureVisual(currentMeasure);
+    return true;
+  }
+
+  if (measureStep === 1) {
+    // Coloca P2 y entra en ajuste fino (P2 por defecto)
+    currentMeasure.p2.copy(p);
+    measureStep = 2;
+    _measureEditPoint = 2;
+    _measureConfirmState = 1;
+    updateMeasureVisual(currentMeasure);
+    return true;
+  }
+
+  // En ajuste fino, el trigger no hace nada
+  return true;
+}
+
+// Aplicar ajuste fino con sticks
+function _applyMeasureFineAdjust(dt) {
+  if (!measureModeActive || !currentMeasure) return;
+
+  const ses = renderer && renderer.xr ? renderer.xr.getSession?.() : null;
+  if (!ses || !ses.inputSources) return;
+
+  // Edge detect para B (confirmar / cambiar punto)
+  const bNow = _isBPressedRight();
+  if (bNow && !_measureBPrev) {
+    if (measureStep === 1) {
+      // Si aún no puso P2, B solo “cambia a P2” (queda esperando trigger)
+      _measureEditPoint = 2;
+      _measureConfirmState = 1;
+    } else if (measureStep === 2) {
+      if (_measureConfirmState === 0) {
+        _measureConfirmState = 1;
+        _measureEditPoint = 2;
+      } else if (_measureConfirmState === 1) {
+        _measureConfirmState = 2; // listo
+      } else if (_measureConfirmState === 2) {
+        // continuar midiendo
+        startNewMeasure();
+      }
+    }
+  }
+  _measureBPrev = bNow;
+
+  if (measureStep < 1) return;
+
+  // Selección de punto editable
+  const target = (_measureEditPoint === 1) ? currentMeasure.p1 : currentMeasure.p2;
+  if (!target) return;
+
+  // Lectura sticks: right => XZ, left => Y
+  let rx = 0, ry = 0, ly = 0;
+  for (const src of ses.inputSources) {
+    if (!src.gamepad) continue;
+    const ax = src.gamepad.axes || [];
+    // mapping típico: axes[2]=x, axes[3]=y (thumbstick)
+    if (src.handedness === 'right') {
+      rx = (ax.length >= 2) ? ax[2] ?? ax[0] : 0;
+      ry = (ax.length >= 2) ? ax[3] ?? ax[1] : 0;
+    } else if (src.handedness === 'left') {
+      ly = (ax.length >= 2) ? ax[3] ?? ax[1] : 0;
+    }
+  }
+
+  // Movimiento relativo al yaw de la cámara (más intuitivo)
+  const speedXZ = 0.25; // m/s
+  const speedY  = 0.18; // m/s
+  const dead = 0.12;
+
+  if (Math.abs(rx) < dead) rx = 0;
+  if (Math.abs(ry) < dead) ry = 0;
+  if (Math.abs(ly) < dead) ly = 0;
+
+  if (rx === 0 && ry === 0 && ly === 0) return;
+
+  // base directions from camera yaw
+  _tmpV1.set(0,0,-1).applyQuaternion(camera.quaternion); _tmpV1.y = 0; _tmpV1.normalize(); // forward
+  _tmpV2.set(1,0,0).applyQuaternion(camera.quaternion);  _tmpV2.y = 0; _tmpV2.normalize(); // right
+
+  // stick y: arriba => avanzar (z-), por eso invertimos
+  const dx = rx * speedXZ * dt;
+  const dz = (-ry) * speedXZ * dt;
+  target.addScaledVector(_tmpV2, dx);
+  target.addScaledVector(_tmpV1, dz);
+  target.y += (-ly) * speedY * dt;
+
+  // Si editas P1 y todavía estás en step=1, arrastra P2 junto para no romper
+  if (measureStep === 1 && _measureEditPoint === 1) {
+    currentMeasure.p2.copy(currentMeasure.p1);
+  }
+
+  updateMeasureVisual(currentMeasure);
+}
+
+// ------------------------------
+// Dibujo XR (3D) con estilos
+// ------------------------------
+
+function _getBrushType() {
+  const sel = document.getElementById('drawBrush');
+  return sel ? (sel.value || 'solid') : 'solid';
+}
+
+function _getDrawWidth() {
+  const w = document.getElementById('drawWidth');
+  const v = w ? parseFloat(w.value) : 0.01;
+  return (Number.isFinite(v) && v > 0) ? v : 0.01;
+}
+
+
+function _applyDrawSnap(pWorld, parentGroup) {
+  const snapEl = document.getElementById('snapGridDraw');
+  if (!snapEl || !snapEl.checked) return pWorld;
+
+  const sEl = document.getElementById('snapGridSizeDraw');
+  let step = sEl ? parseFloat(sEl.value) : 0.05;
+  if (!Number.isFinite(step) || step <= 0) step = 0.05;
+
+  const localEl = document.getElementById('snapLocalDraw');
+  const useLocal = !!(localEl && localEl.checked);
+
+  if (useLocal && parentGroup) {
+    const pl = parentGroup.worldToLocal(pWorld.clone());
+    pl.x = Math.round(pl.x / step) * step;
+    pl.y = Math.round(pl.y / step) * step;
+    pl.z = Math.round(pl.z / step) * step;
+    return parentGroup.localToWorld(pl);
+  } else {
+    pWorld.x = Math.round(pWorld.x / step) * step;
+    pWorld.y = Math.round(pWorld.y / step) * step;
+    pWorld.z = Math.round(pWorld.z / step) * step;
+    return pWorld;
+  }
+}
+
+
+function _hex2rgb(hex){
+  const h = (hex||"#000000").replace("#","");
+  const n = parseInt(h.length===3 ? h.split("").map(ch=>ch+ch).join("") : h, 16);
+  return { r:(n>>16)&255, g:(n>>8)&255, b:n&255 };
+}
+function _rgb2hex(r,g,b){
+  const to = (v)=>{ const s = Math.max(0,Math.min(255, v|0)).toString(16).padStart(2,'0'); return s; };
+  return "#" + to(r) + to(g) + to(b);
+}
+
+/** Devuelve el color actual de dibujo como RGBA (y hex + key para cache). */
+function _getDrawRGBA() {
+  const rEl = document.getElementById('drawR');
+  const gEl = document.getElementById('drawG');
+  const bEl = document.getElementById('drawB');
+  const aEl = document.getElementById('drawA');
+  const cEl = document.getElementById('drawColor');
+
+  let r=null,g=null,b=null,a=1;
+
+  if (rEl && gEl && bEl) {
+    r = parseInt(rEl.value,10); g = parseInt(gEl.value,10); b = parseInt(bEl.value,10);
+  }
+  if (aEl) a = parseFloat(aEl.value);
+
+  if (r==null || g==null || b==null) {
+    const rgb = _hex2rgb(cEl ? cEl.value : "#ffaa00");
+    r = rgb.r; g = rgb.g; b = rgb.b;
+  }
+  const hex = _rgb2hex(r,g,b);
+  const key = hex + "|" + (Math.round(a*1000)/1000);
+  return { r,g,b,a,hex,key };
+}
+
+function _getDrawColor() {
+  return _getDrawRGBA().hex;
+}
+
+
+function _getMat(rgba) {
+  const k = (rgba && rgba.key) ? rgba.key : String(rgba||"#ffaa00");
+  if (_drawMatCache.has(k)) return _drawMatCache.get(k);
+
+  const col = new THREE.Color((rgba && rgba.hex) ? rgba.hex : (typeof rgba==='string'? rgba : "#ffaa00"));
+  const alpha = (rgba && typeof rgba.a==='number') ? rgba.a : 1;
+
+  // Shader simple para borde suave (más "natural" que cilindro duro)
+  const m = new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: col },
+      uOpacity: { value: alpha }
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vN;
+      void main(){
+        vUv = uv;
+        vN = normalMatrix * normal;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 uColor;
+      uniform float uOpacity;
+      varying vec2 vUv;
+      varying vec3 vN;
+
+      float hash(vec2 p){
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      void main(){
+        // vUv.x recorre el contorno del cilindro [0..1]
+        float d = abs(vUv.x - 0.5) * 2.0;         // 0 centro, 1 borde
+        float edge = 1.0 - smoothstep(0.72, 1.0, d);
+        // ligero grano para simular pincel
+        float g = mix(0.92, 1.0, hash(vUv * 60.0));
+        float a = uOpacity * edge;
+
+        if (a < 0.01) discard;
+        gl_FragColor = vec4(uColor * g, a);
+      }
+    `,
+    transparent: alpha < 1,
+    depthWrite: alpha >= 1
+  });
+
+  _drawMatCache.set(k, m);
+  return m;
+}
+
+
+function toggleDrawMode() {
+  drawModeActive = !drawModeActive;
+  if (!drawModeActive && drawIsDrawing) endStroke();
+  ensureDrawingsGroup();
+  _ensureDrawingsGroup();
+  _setPencilsVisible(drawModeActive);
+  if (drawModeActive) _updatePencilTipColorFromUI();
+  if (drawModeActive) _attachPaletteToRightController();
+  if (!drawModeActive) _setPaletteVisible(false);
+}
+
+function clearDrawings() {
+  if (!drawingsGroup) return;
+  while (drawingsGroup.children.length) {
+    const c = drawingsGroup.children.pop();
+    c.traverse?.(o=>{ if (o.geometry) o.geometry.dispose?.(); });
+  }
+}
+
+
+// ---------- Lápiz visual (para ver siempre la punta) ----------
+const PENCIL_TIP_OFFSET = 0.155; // m desde el origen del controlador hacia -Z (apex de la punta)
+
+function _makePencilMesh() {
+  const g = new THREE.Group();
+  // cuerpo
+  const bodyGeo = new THREE.CylinderGeometry(0.006, 0.006, 0.14, 18);
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.6, metalness: 0.1 });
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.z = -0.07; // hacia adelante del controlador
+  body.rotation.x = Math.PI / 2;
+  g.add(body);
+
+  // punta
+  const tipGeo = new THREE.ConeGeometry(0.008, 0.03, 18);
+  const tipMat = new THREE.MeshStandardMaterial({ color: 0xffaa00, roughness: 0.4, metalness: 0.0 });
+  const tip = new THREE.Mesh(tipGeo, tipMat);
+  tip.name = "XR_PENCIL_TIP";
+  tip.position.z = -PENCIL_TIP_OFFSET;
+  tip.rotation.x = Math.PI / 2;
+  g.add(tip);
+  g.userData._tip = tip;
+
+  g.name = "XR_PENCIL";
+  g.visible = false;
+  return g;
+}
+
+
+function _getExportDrawRoot() {
+  _ensureDrawingsGroup();
+  const layer = _getLayerById(selectedDrawLayerId);
+  return (layer && layer.group) ? layer.group : drawingsGroup;
+}
+
+function _downloadBlob(blob, filename) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
+
+async function exportDrawGLB() {
+  try {
+    const root = _getExportDrawRoot();
+    if (!root) return;
+    const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
+    const exporter = new GLTFExporter();
+    // export solo lo visible
+    exporter.parse(
+      root,
+      (res) => {
+        const blob = new Blob([res], { type: 'model/gltf-binary' });
+        _downloadBlob(blob, 'dibujo.glb');
+      },
+      (err) => { console.error(err); alert('Export GLB falló.'); },
+      { binary: true, onlyVisible: true }
+    );
+  } catch (e) {
+    console.error(e);
+    alert('Export GLB falló.');
+  }
+}
+
+async function exportDrawFBX() {
+  // FBX puede fallar en algunos runtimes; si falla, usa GLB
+  try {
+    const root = _getExportDrawRoot();
+    if (!root) return;
+    const { FBXExporter } = await import('three/addons/exporters/FBXExporter.js');
+    const exporter = new FBXExporter();
+    const res = exporter.parse(root);
+    const blob = new Blob([res], { type: 'application/octet-stream' });
+    _downloadBlob(blob, 'dibujo.fbx');
+  } catch (e) {
+    console.warn('FBX export falló, fallback a GLB', e);
+    await exportDrawGLB();
+  }
+}
+
+
+function _ensurePencils() {
+  if (!controller1 || !controller2) return;
+  if (!controller1.userData._pencil) { controller1.userData._pencil = _makePencilMesh(); controller1.add(controller1.userData._pencil); }
+  if (!controller2.userData._pencil) { controller2.userData._pencil = _makePencilMesh(); controller2.add(controller2.userData._pencil); }
+}
+
+function _setPencilsVisible(on) {
+  _ensurePencils();
+  if (controller1 && controller1.userData._pencil) controller1.userData._pencil.visible = !!on;
+  if (controller2 && controller2.userData._pencil) controller2.userData._pencil.visible = !!on;
+}
+function _updatePencilTipColorFromUI() {
+  // sincroniza el color visual de la punta con el color actual del dibujo
+  try {
+    const rgba = _getDrawRGBA();
+    const col = new THREE.Color(rgba.hex || "#ffaa00");
+    _ensurePencils();
+    [controller1, controller2].forEach(c=>{
+      const p = c && c.userData ? c.userData._pencil : null;
+      const tip = p && p.userData ? p.userData._tip : null;
+      if (tip && tip.material && tip.material.color) {
+        tip.material.color.copy(col);
+        tip.material.needsUpdate = true;
+      }
+    });
+  } catch(_) {}
+}
+
+
+function _ensureDrawPalette() {
+  if (drawPaletteGroup) return drawPaletteGroup;
+  const g = new THREE.Group();
+  g.name = "XR_DRAW_PALETTE";
+
+  const panel = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.16, 0.10),
+    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.35 })
+  );
+  panel.position.set(0.05, 0.03, -0.11);
+  panel.rotation.y = Math.PI;
+  g.add(panel);
+
+  const colors = [
+    {c:0xffffff, r:255,g:255,b:255},
+    {c:0x000000, r:0,g:0,b:0},
+    {c:0xff0000, r:255,g:0,b:0},
+    {c:0x00ff00, r:0,g:255,b:0},
+    {c:0x0000ff, r:0,g:0,b:255},
+    {c:0xffff00, r:255,g:255,b:0},
+    {c:0xff00ff, r:255,g:0,b:255},
+    {c:0x00ffff, r:0,g:255,b:255},
+  ];
+  const cols = 4;
+  const startX = -0.055, startY = 0.025;
+  const dx = 0.035, dy = 0.035;
+
+  for (let i=0;i<colors.length;i++){
+    const it = colors[i];
+    const btn = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.028, 0.028),
+      new THREE.MeshBasicMaterial({ color: it.c })
+    );
+    btn.position.set(0.05 + startX + (i%cols)*dx, 0.03 + startY - Math.floor(i/cols)*dy, -0.105);
+    btn.rotation.y = Math.PI;
+    btn.userData.isColorSwatch = true;
+    btn.userData.rgb = { r: it.r, g: it.g, b: it.b };
+    g.add(btn);
+  }
+
+  g.visible = false;
+  drawPaletteGroup = g;
+  return g;
+}
+
+function _attachPaletteToRightController() {
+  _ensureDrawPalette();
+  const rightCtrl = controller2 || null; // mapping actual
+  if (!rightCtrl) return;
+  if (!rightCtrl.userData._palette) {
+    rightCtrl.userData._palette = drawPaletteGroup;
+    rightCtrl.add(drawPaletteGroup);
+  }
+}
+
+function _setPaletteVisible(on) {
+  drawPaletteVisible = !!on;
+  _attachPaletteToRightController();
+  if (drawPaletteGroup) drawPaletteGroup.visible = drawPaletteVisible;
+}
+
+function _pickPaletteColorFromRightController() {
+  if (!drawPaletteGroup || !drawPaletteGroup.visible) return false;
+  const rightCtrl = controller2 || null;
+  if (!rightCtrl) return false;
+
+  _tmpMat4.identity().extractRotation(rightCtrl.matrixWorld);
+  _tmpOrigin.setFromMatrixPosition(rightCtrl.matrixWorld);
+  _tmpDir.set(0,0,-1).applyMatrix4(_tmpMat4).normalize();
+
+  const ray = new THREE.Raycaster(_tmpOrigin, _tmpDir, 0.02, 1.5);
+  const meshes = [];
+  drawPaletteGroup.traverse(o => { if (o.isMesh && o.userData && o.userData.isColorSwatch) meshes.push(o); });
+  const hits = ray.intersectObjects(meshes, true);
+  if (!hits.length) return false;
+
+  const obj = hits[0].object;
+  const rgb = obj.userData.rgb;
+
+  const rEl = document.getElementById('drawR');
+  const gEl = document.getElementById('drawG');
+  const bEl = document.getElementById('drawB');
+  const cEl = document.getElementById('drawColor');
+  if (rEl && gEl && bEl) {
+    rEl.value = rgb.r; gEl.value = rgb.g; bEl.value = rgb.b;
+    if (cEl) cEl.value = _rgb2hex(rgb.r, rgb.g, rgb.b);
+    rEl.dispatchEvent(new Event('input'));
+    gEl.dispatchEvent(new Event('input'));
+    bEl.dispatchEvent(new Event('input'));
+  }
+  _setPaletteVisible(false);
+  return true;
+}
+
+function _updateDrawRightStick(dt) {
+  if (!drawModeActive) return;
+  const ses = renderer && renderer.xr ? renderer.xr.getSession?.() : null;
+  if (!ses || !ses.inputSources) return;
+
+  let rx = 0, ry = 0;
+  for (const src of Array.from(ses.inputSources)) {
+    if (src.handedness === 'right' && src.gamepad && src.gamepad.axes) {
+      const ax = src.gamepad.axes;
+      rx = (ax.length >= 4) ? (ax[2] ?? ax[0]) : (ax[0] ?? 0);
+      ry = (ax.length >= 4) ? (ax[3] ?? ax[1]) : (ax[1] ?? 0);
+    }
+  }
+
+  const dead = 0.18;
+  if (Math.abs(rx) < dead) rx = 0;
+  if (Math.abs(ry) < dead) ry = 0;
+
+  // Vertical: tamaño de pincel
+  const wEl = document.getElementById('drawWidth');
+  if (wEl && ry !== 0) {
+    const min = parseFloat(wEl.min || "0.003");
+    const max = parseFloat(wEl.max || "0.06");
+    const v = parseFloat(wEl.value || "0.015");
+    const step = (max - min) * 0.8;
+    const nv = Math.max(min, Math.min(max, v + (-ry) * step * dt));
+    wEl.value = nv.toFixed(4);
+    wEl.dispatchEvent(new Event('input'));
+  }
+
+  // Horizontal: togglear paleta
+  const toggleNow = Math.abs(rx) > 0.82;
+  if (toggleNow && !_drawPaletteTogglePrev) {
+    _setPaletteVisible(!drawPaletteVisible);
+  }
+  _drawPaletteTogglePrev = toggleNow;
+}
+
+
+function getPlacementPoint(controller) {
+  // Dibujo 3D real: usa la punta del controlador (no proyecta a un plano)
+  if (!controller) return null;
+  _tmpMat4.copy(controller.matrixWorld);
+  const p = new THREE.Vector3().setFromMatrixPosition(_tmpMat4);
+
+  // offset hacia adelante para “punta” del control
+  _tmpRot.identity().extractRotation(controller.matrixWorld);
+  _tmpDir.set(0,0,-1).applyMatrix4(_tmpRot).normalize();
+  p.addScaledVector(_tmpDir, 0.06);
+  return p;
+}
+
+function getDrawTipPoint(controller) {
+  // Punto de dibujo: usa exactamente la punta del lápiz (apex) en el espacio del controlador
+  if (!controller) return null;
+  _tmpRot.identity().extractRotation(controller.matrixWorld);
+  _tmpOrigin.setFromMatrixPosition(controller.matrixWorld);
+  _tmpDir.set(0,0,-1).applyMatrix4(_tmpRot).normalize();
+  if (!Number.isFinite(_tmpOrigin.x) || !Number.isFinite(_tmpDir.x)) return null;
+  return _tmpOrigin.clone().addScaledVector(_tmpDir, PENCIL_TIP_OFFSET);
+}
+
+
+function startStroke(controller) {
+  ensureDrawingsGroup();
+  _ensureDrawingsGroup(); // asegura capas
+  drawIsDrawing = true;
+  drawController = controller;
+
+  currentStrokeGroup = new THREE.Group();
+  currentStrokeGroup.name = "stroke";
+  // guarda parámetros de inicio del trazo para export / spline
+  currentStrokeGroup.userData.brush = _getBrushType();
+  currentStrokeGroup.userData.rgba = _getDrawRGBA();
+  currentStrokeGroup.userData.baseW = _getDrawWidth();
+
+  // ✅ IMPORTANTE: el stroke se agrega a la capa activa (no al root),
+  // para que al mover/rotar la capa o el root, el trazo mantenga coherencia.
+  const layer = _getCurrentLayer();
+  (layer ? layer.group : drawingsGroup).add(currentStrokeGroup);
+
+  currentStrokeLastPoint = null;
+  currentStrokePoints = []; // para modo spline
+}
+
+function endStroke() {
+  // Finaliza spline: reconstruye un tubo suave al soltar el gatillo
+  if (currentStrokeGroup && currentStrokeGroup.userData && currentStrokeGroup.userData.brush === 'spline') {
+    const pts = (currentStrokePoints || []).slice();
+    if (pts.length >= 2) {
+      // limpia preview (si lo hubiese)
+      while (currentStrokeGroup.children.length) currentStrokeGroup.remove(currentStrokeGroup.children[0]);
+
+      const curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal', 0.35);
+      const radius = Math.max(0.0005, Number(currentStrokeGroup.userData.baseW) || _getDrawWidth());
+      const tubular = Math.max(32, pts.length * 10);
+      const geom = new THREE.TubeGeometry(curve, tubular, radius, 10, false);
+      const mat = _getMat(currentStrokeGroup.userData.rgba || _getDrawRGBA());
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.renderOrder = 10;
+      currentStrokeGroup.add(mesh);
+      currentStrokeGroup.userData.isSpline = true;
+      currentStrokeGroup.userData.pointsCount = pts.length;
+    }
+  }
+
+  drawIsDrawing = false;
+  drawController = null;
+  currentStrokeGroup = null;
+  currentStrokeLastPoint = null;
+  currentStrokePoints = null;
+}
+function _addCylinderSegment(p0, p1, radius, mat) {
+  const d = _tmpV3.subVectors(p1, p0);
+  const len = d.length();
+  if (!Number.isFinite(len) || len < 1e-5) return;
+
+  const geom = new THREE.CylinderGeometry(radius, radius, len, 10, 1, true);
+  const mesh = new THREE.Mesh(geom, mat);
+  mesh.castShadow = false;
+  mesh.receiveShadow = false;
+
+  // position mid
+  const mid = _tmpV1.copy(p0).add(p1).multiplyScalar(0.5);
+  mesh.position.copy(mid);
+
+  // orient: cylinder up axis (0,1,0) -> direction
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), d.normalize());
+  currentStrokeGroup.add(mesh);
+}
+
+function _addSpray(p, radius, mat) {
+  // spray: partículas alrededor del punto
+  const count = 12;
+  for (let i=0;i<count;i++) {
+    const rr = radius * (0.3 + Math.random()*0.6);
+    const g = new THREE.SphereGeometry(rr*0.35, 6, 5);
+    const m = new THREE.Mesh(g, mat);
+    m.position.copy(p);
+    m.position.x += (Math.random()-0.5) * radius * 4.0;
+    m.position.y += (Math.random()-0.5) * radius * 4.0;
+    m.position.z += (Math.random()-0.5) * radius * 4.0;
+    currentStrokeGroup.add(m);
+  }
+}
+
+function addStrokePoint(p) {
+  if (!drawIsDrawing || !currentStrokeGroup) return;
+  if (!p || !Number.isFinite(p.x)) return;
+
+  const brush = _getBrushType();
+  const baseW = _getDrawWidth();
+  const rgbaNow = _getDrawRGBA();
+  const mat = _getMat(rgbaNow);
+  // para spline: actualiza color en vivo (al soltar usa el último color seleccionado)
+  if (currentStrokeGroup && currentStrokeGroup.userData) currentStrokeGroup.userData.rgba = rgbaNow;
+
+  // ✅ Convertir world->local según el parent actual del stroke.
+  // Esto evita que al mover/rotar el dibujo (grip izquierdo) la "punta" se descalce.
+  const parent = currentStrokeGroup.parent || drawingsGroup;
+  const pWorld = _applyDrawSnap(p.clone(), parent);
+  const pLocal = parent.worldToLocal(pWorld);
+
+  if (!currentStrokeLastPoint) {
+    currentStrokeLastPoint = pLocal.clone();
+    // primer punto para spline
+    if (brush === 'spline') {
+      if (!currentStrokePoints) currentStrokePoints = [];
+      currentStrokePoints.push(currentStrokeLastPoint.clone());
+      return;
+    }
+    // “tap” inicial
+    if (brush === 'spray') _addSpray(pLocal, baseW, mat);
+    return;
+  }
+
+  const p0 = currentStrokeLastPoint;
+  const p1 = pLocal.clone();
+
+  const dist = p1.distanceTo(p0);
+  if (dist < Math.max(0.003, baseW*0.35)) return;
+
+  // spline: acumula puntos y deja preview (se suaviza al soltar el gatillo)
+  if (brush === 'spline') {
+    if (!currentStrokePoints) currentStrokePoints = [];
+    currentStrokePoints.push(p1.clone());
+    _addCylinderSegment(p0, p1, baseW*0.75, mat);
+    currentStrokeLastPoint = p1;
+    return;
+  }
+
+
+  // estimar “velocidad” para variación de grosor
+  const speed = dist; // por frame aproximado
+
+  if (brush === 'solid') {
+    _addCylinderSegment(p0, p1, baseW, mat);
+  } else if (brush === 'pencil') {
+    // trazo a mano: leve jitter y grosor algo menor
+    _tmpV2.subVectors(p1, p0).normalize();
+    _tmpV1.set(0,1,0).cross(_tmpV2).normalize();
+    const j = baseW * 0.6 * (Math.random()-0.5);
+    const p1j = p1.clone().addScaledVector(_tmpV1, j);
+    _addCylinderSegment(p0, p1j, baseW*0.65, mat);
+  } else if (brush === 'brush') {
+    // pincel: grosor depende de velocidad (más rápido => más fino)
+    const t = Math.max(0, Math.min(1, 1.0 - speed*12.0));
+    const w = baseW * (0.6 + 0.9*t);
+    _addCylinderSegment(p0, p1, w, mat);
+  } else if (brush === 'spray') {
+    _addSpray(p1, baseW, mat);
+  }
+
+  currentStrokeLastPoint = p1;
+}
+
+
+// Borrador (trigger izquierdo): elimina strokes cercanos a la punta del control izquierdo
+function eraseAtController(ctrl) {
+  if (!drawModeActive || !ctrl || !drawingsGroup) return;
+  // Punto en mundo: punta del lápiz del control (misma convención que para dibujar)
+  const pWorld = getDrawTipPoint(ctrl);
+  if (!pWorld) return;
+
+  const radius = Math.max(0.03, _getDrawWidth() * 6.0); // radio de borrado
+  const r2 = radius * radius;
+
+  const toRemove = new Set();
+
+  drawingsGroup.traverse(o => {
+    // stroke group
+    if (o && o.isGroup && o.name === "stroke") {
+      // usa bounding sphere aproximada recorriendo hijos mesh
+      let hit = false;
+      for (const ch of o.children) {
+        if (!ch || !ch.position) continue;
+        // posiciones están en local del padre del stroke; convertimos a mundo
+        const w = ch.getWorldPosition(_tmpV1);
+        if (w.distanceToSquared(pWorld) <= r2) { hit = true; break; }
+      }
+      if (hit) toRemove.add(o);
+    }
+  });
+
+  if (toRemove.size) {
+    for (const g of toRemove) {
+      const parent = g.parent;
+      if (parent) parent.remove(g);
+      g.traverse?.(n => { if (n.geometry) n.geometry.dispose?.(); if (n.material) n.material.dispose?.(); });
+    }
+  }
+}
+
+
+// Grip izquierdo para mover/rotar el dibujo completo
+
+function _computeLocalPivotCenter(group) {
+  // bbox en local (considera hijos)
+  const box = new THREE.Box3().setFromObject(group);
+  if (!isFinite(box.min.x) || !isFinite(box.max.x)) return new THREE.Vector3(0,0,0);
+  const centerW = box.getCenter(new THREE.Vector3());
+  // convertir a local del group.parent
+  const parent = group.parent || scene;
+  parent.updateMatrixWorld(true);
+  group.updateMatrixWorld(true);
+  const centerLocalInParent = parent.worldToLocal(centerW.clone());
+  // center en coords del parent; queremos en local del group:
+  const centerLocal = group.worldToLocal(centerW.clone());
+  return centerLocal;
+}
+
+function _pickDrawTargetFromController(ctrl) {
+  if (!ctrl || !drawingsGroup) return null;
+
+  // Ray desde el controlador
+  _tmpMat4.identity().extractRotation(ctrl.matrixWorld);
+  _tmpOrigin.setFromMatrixPosition(ctrl.matrixWorld);
+  _tmpDir.set(0,0,-1).applyMatrix4(_tmpMat4).normalize();
+
+  const ray = new THREE.Raycaster(_tmpOrigin, _tmpDir, 0.02, 6);
+  const meshes = [];
+  drawingsGroup.traverse(o => { if (o.isMesh) meshes.push(o); });
+
+  const hits = ray.intersectObjects(meshes, true);
+  if (!hits.length) return null;
+
+  // subir hasta la capa
+  let obj = hits[0].object;
+  while (obj && obj !== drawingsGroup && !obj.userData.isDrawLayer) obj = obj.parent;
+  if (obj && obj.userData.isDrawLayer) return obj;
+  return null;
+}
+
+function _applyWorldTransformWithPivot(target, pivotLocal, worldPos, worldQuat) {
+  // queremos que el pivot (en local del target) termine en worldPos/worldQuat
+  const parent = target.parent || scene;
+  parent.updateMatrixWorld(true);
+
+  // convertir pos/quaternion world -> local del parent
+  const parentInv = _tmpMat4.copy(parent.matrixWorld).invert();
+  const pivotWorldMat = new THREE.Matrix4().compose(worldPos, worldQuat, new THREE.Vector3(1,1,1));
+  const pivotLocalMatInParent = _tmpMat4.copy(parentInv).multiply(pivotWorldMat);
+
+  const pivotPosInParent = new THREE.Vector3();
+  const pivotQuatInParent = new THREE.Quaternion();
+  const pivotScaleInParent = new THREE.Vector3();
+  pivotLocalMatInParent.decompose(pivotPosInParent, pivotQuatInParent, pivotScaleInParent);
+
+  // target transform en parent-space
+  // targetPos = pivotPos - (pivotLocal rotated by targetQuat)
+  const targetQuat = pivotQuatInParent;
+  const pivotOffset = pivotLocal.clone().applyQuaternion(targetQuat);
+  const targetPos = pivotPosInParent.sub(pivotOffset);
+
+  target.position.copy(targetPos);
+  target.quaternion.copy(targetQuat);
+}
+
+function _updateDrawGrab(dt) {
+  if (!drawModeActive) return;
+  _ensureDrawingsGroup();
+
+  const ses = renderer && renderer.xr ? renderer.xr.getSession?.() : null;
+  if (!ses || !ses.inputSources) return;
+
+  // detectar grips (squeeze button[1])
+  let leftGripPressed = false;
+  let rightGripPressed = false;
+
+  for (const src of Array.from(ses.inputSources)) {
+    if (src.handedness === 'left' && src.gamepad && src.gamepad.buttons && src.gamepad.buttons[1]) {
+      leftGripPressed = !!src.gamepad.buttons[1].pressed;
+    }
+    if (src.handedness === 'right' && src.gamepad && src.gamepad.buttons && src.gamepad.buttons[1]) {
+      rightGripPressed = !!src.gamepad.buttons[1].pressed;
+    }
+  }
+
+  const leftCtrl = controller1 || null; // mantiene tu mapping (no tocar resto)
+  const rightCtrl = controller2 || null;
+  if (!leftCtrl) return;
+
+  // Escalado a dos manos (ambos grips) - escala la capa seleccionada o el root
+  if (leftGripPressed && rightGripPressed && rightCtrl) {
+    const target = _drawGrabTarget || _getLayerById(selectedDrawLayerId)?.group || drawingsGroup;
+    if (!_drawTwoHandScaleActive) {
+      _drawTwoHandScaleActive = true;
+      _drawTwoHandScaleTarget = target;
+      const lp = new THREE.Vector3().setFromMatrixPosition(leftCtrl.matrixWorld);
+      const rp = new THREE.Vector3().setFromMatrixPosition(rightCtrl.matrixWorld);
+      _drawTwoHandScaleStartDist = Math.max(1e-4, lp.distanceTo(rp));
+      _drawTwoHandScaleStartScale.copy(target.scale);
+      {
+        const _box = new THREE.Box3().setFromObject(target);
+        if (Number.isFinite(_box.min.x) && Number.isFinite(_box.max.x)) {
+          _drawTwoHandScaleStartPivotWorld.copy(_box.getCenter(new THREE.Vector3()));
+        } else {
+          _drawTwoHandScaleStartPivotWorld.copy(lp).add(rp).multiplyScalar(0.5);
+        }
+      }
+    } else {
+      const lp = new THREE.Vector3().setFromMatrixPosition(leftCtrl.matrixWorld);
+      const rp = new THREE.Vector3().setFromMatrixPosition(rightCtrl.matrixWorld);
+      const d = Math.max(1e-4, lp.distanceTo(rp));
+      const s = d / _drawTwoHandScaleStartDist;
+      const pivotW = _drawTwoHandScaleStartPivotWorld;
+      const parent = target.parent || scene;
+      const invParent = new THREE.Matrix4().copy(parent.matrixWorld).invert();
+      const pivotP = pivotW.clone().applyMatrix4(invParent);
+      const pos = target.position.clone();
+      const newPos = pivotP.clone().sub(pivotP.clone().sub(pos).multiplyScalar(s));
+      target.position.copy(newPos);
+      target.scale.set(_drawTwoHandScaleStartScale.x*s, _drawTwoHandScaleStartScale.y*s, _drawTwoHandScaleStartScale.z*s);
+    }
+    _drawGrabPrev = leftGripPressed;
+    return;
+  } else {
+    _drawTwoHandScaleActive = false;
+    _drawTwoHandScaleTarget = null;
+  }
+
+
+  // Edge detect inicio/fin
+  if (leftGripPressed && !_drawGrabPrev) {
+    _drawGrabActive = true;
+
+    // target: si apuntas a una capa, mueve esa; si no, mueve el root drawingsGroup
+    const picked = _pickDrawTargetFromController(leftCtrl);
+    _drawGrabTarget = picked || drawingsGroup;
+    if (_drawGrabTarget.userData && _drawGrabTarget.userData.isDrawLayer) {
+      selectedDrawLayerId = _drawGrabTarget.userData.layerId;
+      currentDrawLayerId = selectedDrawLayerId;
+      _drawSelectedObject = _drawGrabTarget;
+      rebuildDrawLayerListUI();
+    }
+
+    _drawGrabPivotLocal.copy(_computeLocalPivotCenter(_drawGrabTarget));
+
+    // offset = inv(controllerWorld) * pivotWorldMat (pivotWorld uses target's current world rotation)
+    const ctrlWorld = new THREE.Matrix4().copy(leftCtrl.matrixWorld);
+    const ctrlInv = ctrlWorld.clone().invert();
+
+    _drawGrabTarget.updateMatrixWorld(true);
+    const targetWorldQuat = new THREE.Quaternion();
+    _drawGrabTarget.getWorldQuaternion(targetWorldQuat);
+
+    const pivotWorldPos = _drawGrabTarget.localToWorld(_drawGrabPivotLocal.clone());
+    const pivotWorldMat = new THREE.Matrix4().compose(pivotWorldPos, targetWorldQuat, new THREE.Vector3(1,1,1));
+    _drawGrabOffset.copy(ctrlInv).multiply(pivotWorldMat);
+  } else if (!leftGripPressed && _drawGrabPrev) {
+    _drawGrabActive = false;
+    _drawGrabTarget = null;
+  }
+  _drawGrabPrev = leftGripPressed;
+
+  if (!_drawGrabActive || !_drawGrabTarget) return;
+
+  // actualizar pose
+  const ctrlWorld = new THREE.Matrix4().copy(leftCtrl.matrixWorld);
+  const pivotWorldMat = new THREE.Matrix4().multiplyMatrices(ctrlWorld, _drawGrabOffset);
+
+  const wPos = new THREE.Vector3();
+  const wQuat = new THREE.Quaternion();
+  const wScale = new THREE.Vector3();
+  pivotWorldMat.decompose(wPos, wQuat, wScale);
+
+  _applyWorldTransformWithPivot(_drawGrabTarget, _drawGrabPivotLocal, wPos, wQuat);
+}
+
+
+// Llamado desde el loop (animate) existente
+function _updateXRMeasureAndDraw(dt) {
+  // Undo (A/X) edge detect
+  const undoNow = isUndoPressed();
+  if (undoNow && !_undoPressedPrev) undoMeasurePoint();
+  _undoPressedPrev = undoNow;
+
+  _applyMeasureFineAdjust(dt);
+
+  _updateDrawRightStick(dt);
+
+  // Huincha: previsualiza P2 cuando está esperando el segundo punto
+  if (measureModeActive && currentMeasure && measureStep === 1 && controller1) {
+    const pp = getXRPointerPoint(controller1, 2.0);
+    if (pp) { currentMeasure.p2.copy(pp); updateMeasureVisual(currentMeasure); }
+  }
+
+  // dibujo
+  if (drawModeActive && drawIsDrawing && drawController) {
+    const p = getDrawTipPoint(drawController);
+    addStrokePoint(p);
+  }
+
+  _updateDrawGrab(dt);
+}
+// UI: label for width
+(function(){
+  const w = document.getElementById('drawWidth');
+  const vw = document.getElementById('v_drawWidth');
+  if (w && vw) w.addEventListener('input', ()=>{ vw.textContent = w.value; });
+})();
+
+
+// UI: snap grid size label
+(function(){
+  const s = document.getElementById('snapGridSizeDraw');
+  const vs = document.getElementById('v_snapGridSizeDraw');
+  if (s && vs) {
+    const upd = ()=>{ vs.textContent = Number(s.value).toFixed(2); };
+    s.addEventListener('input', upd);
+    upd();
+  }
+})();
+
+// UI: RGBA sliders (para Meta/VR el <input type=color> suele ser incómodo)
+(function(){
+  const c = document.getElementById('drawColor');
+  const r = document.getElementById('drawR');
+  const g = document.getElementById('drawG');
+  const b = document.getElementById('drawB');
+  const a = document.getElementById('drawA');
+  const vr = document.getElementById('v_drawR');
+  const vg = document.getElementById('v_drawG');
+  const vb = document.getElementById('v_drawB');
+  const va = document.getElementById('v_drawA');
+
+  function syncLabels(){
+    if (r && vr) vr.textContent = r.value;
+    if (g && vg) vg.textContent = g.value;
+    if (b && vb) vb.textContent = b.value;
+    if (a && va) va.textContent = a.value;
+  }
+  function fromHex(){
+    if (!c || !r || !g || !b) return;
+    const rgb = _hex2rgb(c.value);
+    r.value = rgb.r; g.value = rgb.g; b.value = rgb.b;
+    syncLabels();
+  }
+  function toHex(){
+    if (!c || !r || !g || !b) return;
+    c.value = _rgb2hex(parseInt(r.value,10), parseInt(g.value,10), parseInt(b.value,10));
+    syncLabels();
+  }
+
+  // init: lee del input color y setea sliders
+  fromHex();
+  if (a && va) { va.textContent = a.value; }
+
+  if (c) c.addEventListener('input', ()=>{ fromHex(); _applyColorToSelected(); });
+  if (r) r.addEventListener('input', ()=>{ toHex(); _applyColorToSelected(); });
+  if (g) g.addEventListener('input', ()=>{ toHex(); _applyColorToSelected(); });
+  if (b) b.addEventListener('input', ()=>{ toHex(); _applyColorToSelected(); });
+  if (a) a.addEventListener('input', ()=>{ syncLabels(); _applyColorToSelected(); });
+
+  function _applyColorToSelected() {
+    const rgba = _getDrawRGBA();
+    _updatePencilTipColorFromUI();
+    const tgt = _drawSelectedObject || (_getLayerById(selectedDrawLayerId)?.group) || null;
+    if (!tgt) return;
+    _applyRGBAtoGroup(tgt, rgba);
+  }
+
+  function _applyRGBAtoGroup(group, rgba) {
+    if (!group) return;
+    const alpha = (rgba && typeof rgba.a==='number') ? rgba.a : 1;
+    const col = new THREE.Color(rgba.hex || "#ffaa00");
+    group.traverse(n=>{
+      if (n.isMesh && n.material) {
+        // ShaderMaterial
+        if (n.material.uniforms && n.material.uniforms.uColor) {
+          n.material.uniforms.uColor.value.copy(col);
+          n.material.uniforms.uOpacity.value = alpha;
+          n.material.transparent = alpha < 1;
+          n.material.depthWrite = alpha >= 1;
+          n.material.needsUpdate = true;
+        } else if (n.material.color) {
+          n.material.color.copy(col);
+          if ('opacity' in n.material) n.material.opacity = alpha;
+          n.material.transparent = alpha < 1;
+          n.material.depthWrite = alpha >= 1;
+          n.material.needsUpdate = true;
+        }
+      }
+    });
+  }
+})();
+
+// Exponer a window (UI onclick)
+window.startNewMeasure = startNewMeasure;
+window.stopMeasureMode = stopMeasureMode;
+window.clearAllMeasures = clearAllMeasures;
+window.toggleDrawMode = toggleDrawMode;
+window.clearDrawings = clearDrawings;
+
+function setupXRControllers() {
+      controller1 = renderer.xr.getController(0);
+      controller1.addEventListener('selectstart', onSelect);
+      controller1.addEventListener('selectend', onSelectEnd);
+      controller1.addEventListener('squeezestart', onGripStart);
+      controller1.addEventListener('squeezeend', onGripEnd);
+      scene.add(controller1);
+
+      controller2 = renderer.xr.getController(1);
+      controller2.addEventListener('selectstart', onSelect);
+      controller2.addEventListener('selectend', onSelectEnd);
+      scene.add(controller2);
+
+      const fac = new XRControllerModelFactory();
+      controllerGrip1 = renderer.xr.getControllerGrip(0); controllerGrip1.add(fac.createControllerModel(controllerGrip1)); scene.add(controllerGrip1);
+      controllerGrip2 = renderer.xr.getControllerGrip(1); controllerGrip2.add(fac.createControllerModel(controllerGrip2)); scene.add(controllerGrip2);
+
+      const geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-5)]);
+      const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, transparent:true, opacity:0.5 });
+      const line = new THREE.Line(geo, lineMat); line.scale.z = 5;
+      controller1.add(line.clone()); controller2.add(line.clone());
+
+      raycaster = new THREE.Raycaster();
+      _ensurePencils();
+    }
+
+    function getIntersections(c) {
+      tempMatrix.identity().extractRotation(c.matrixWorld);
+      raycaster.ray.origin.setFromMatrixPosition(c.matrixWorld);
+      raycaster.ray.direction.set(0,0,-1).applyMatrix4(tempMatrix);
+
+      const meshes = objects
+        .filter(o => !o.locked && o.visible && o.pickMesh)
+        .map(o => o.pickMesh);
+
+      return raycaster.intersectObjects(meshes, true);
+    }
+
+    function onSelect(e) {
+      // --- Tool modes (huincha/dibujo) ---
+      if (measureModeActive) { if (handleMeasureSelect(e.target)) return; }
+      if (drawModeActive) {
+        // Dibujo: si la paleta XR está visible, el trigger derecho selecciona color (no dibuja)
+        if (e.target === controller2 && drawPaletteVisible) {
+          if (_pickPaletteColorFromRightController()) return;
+          // si no le pegó a un swatch, cierra la paleta para evitar trazos accidentales
+          _setPaletteVisible(false);
+          return;
+        }
+
+        // Dibujo: trigger derecho dibuja, trigger izquierdo borra (no toca MR: A/X=buttons[4])
+        if (e.target === controller1) { eraseAtController(controller1); return; }
+        if (drawIsDrawing) endStroke();
+        startStroke(e.target);
+        return;
+      }
+
+      const hits = getIntersections(e.target);
+      if (hits.length > 0) {
+        const h = hits[0].object;
+        const id = (h.userData && h.userData.layerId) ? h.userData.layerId : null;
+        if (id) selectObject(id);
+      }
+    }
+
+    
+    function onSelectEnd(e) {
+      if (drawIsDrawing) endStroke();
+    }
+
+function onGripStart(e) {
+      const hits = getIntersections(e.target);
+      if (hits.length > 0) {
+        const h = hits[0].object;
+        const id = (h.userData && h.userData.layerId) ? h.userData.layerId : null;
+        if (id) selectObject(id);
+
+        const o = objects.find(x => x.id === id);
+        if (o && o.root3D) {
+          e.target.attach(o.root3D);
+          e.target.userData.selected = o.root3D;
+        }
+      }
+    }
+
+    function onGripEnd(e) {
+      if (e.target.userData.selected) {
+        scene.attach(e.target.userData.selected);
+        e.target.userData.selected = null;
+      }
+    }
+
+    function handleStableControls() {
+      const s = renderer.xr.getSession();
+      if (!s || !activeId) return;
+
+      const o = objects.find(x => x.id === activeId);
+      if (!o || !o.root3D || o.locked) return;
+
+      for (const src of s.inputSources) {
+        const gp = src.gamepad;
+        if (!gp) continue;
+
+        const grip = gp.buttons?.[1]?.pressed === true;
+        const axes = gp.axes || [];
+        let ax = (axes.length >= 4) ? axes[2] : (axes[0] ?? 0);
+        let ay = (axes.length >= 4) ? axes[3] : (axes[1] ?? 0);
+
+        if (!Number.isFinite(ax)) ax = 0;
+        if (!Number.isFinite(ay)) ay = 0;
+
+        if (src.handedness === 'left' && grip) {
+          if (Math.abs(ay) > 0.1) {
+            o.root3D.position.y -= ay * 0.02;
+            if (o.root3D.position.y < 0) o.root3D.position.y = 0;
+          }
+          if (Math.abs(ax) > 0.1) {
+            let scaleF = 1 + (ax * 0.02);
+            if (!Number.isFinite(scaleF) || scaleF <= 0) scaleF = 1;
+            o.root3D.scale.multiplyScalar(scaleF);
+            o.root3D.scale.clampScalar(0.05, 50.0);
+          }
+        }
+
+        if (src.handedness === 'right' && grip) {
+          if (Math.abs(ay) > 0.1) {
+            const dir = new THREE.Vector3().subVectors(o.root3D.position, camera.position).normalize();
+            dir.y = 0;
+            o.root3D.position.addScaledVector(dir, ay * -0.05);
+          }
+          if (Math.abs(ax) > 0.1) {
+            o.root3D.rotation.y -= ax * 0.05;
+          }
+        }
+      }
+    }
+
+    // =========================
+    // VR / AR session + Depth
+    // =========================
+    
+// =========================
+// YouTube in MR: fallback como DOM overlay 2D (CSS3D 3D no se compone en la mayoría de navegadores XR)
+// =========================
+function enterXRYoutubeOverlay() {
+  // muestra iframes como overlay fijo
+  objects.filter(o=>o.kind==='youtube' && o.cssObj?.element).forEach(o=>{
+    const el = o.cssObj.element;
+    el.dataset._prevPos = el.style.position || '';
+    el.dataset._prevInset = el.style.inset || '';
+    el.dataset._prevWidth = el.style.width || '';
+    el.dataset._prevHeight = el.style.height || '';
+    el.dataset._prevTransform = el.style.transform || '';
+    el.dataset._prevZ = el.style.zIndex || '';
+
+    el.style.position = 'fixed';
+    el.style.inset = '10% 10% auto 10%';
+    el.style.width = '80vw';
+    el.style.height = '45vw';
+    el.style.maxHeight = '45vh';
+    el.style.transform = 'none';
+    el.style.zIndex = '999999';
+  });
+}
+
+function exitXRYoutubeOverlay() {
+  objects.filter(o=>o.kind==='youtube' && o.cssObj?.element).forEach(o=>{
+    const el = o.cssObj.element;
+    el.style.position = el.dataset._prevPos || '';
+    el.style.inset = el.dataset._prevInset || '';
+    el.style.width = el.dataset._prevWidth || '';
+    el.style.height = el.dataset._prevHeight || '';
+    el.style.transform = el.dataset._prevTransform || '';
+    el.style.zIndex = el.dataset._prevZ || '';
+  });
+}
+
+function setupVR() {
+      if (!navigator.xr) return;
+      navigator.xr.isSessionSupported('immersive-ar').then(ok => {
+        if (!ok) return;
+        const btn = document.getElementById('vrBtn');
+        btn.style.display = 'block';
+        btn.onclick = async () => {
+          occlusionEnabled = document.getElementById('checkOcclusion').checked;
+          const req = ['local-floor'];
+          const opt = ['dom-overlay'];
+          const init = {
+            requiredFeatures: req,
+            optionalFeatures: opt,
+            domOverlay: { root: document.body }
+          };
+          if (occlusionEnabled) {
+            opt.push('depth-sensing');
+            init.depthSensing = { usagePreference: ['cpu-optimized'], dataFormatPreference: ['luminance-alpha'] };
+          }
+          xrSession = await navigator.xr.requestSession('immersive-ar', init);
+          // YouTube en MR depende de dom-overlay; si el dispositivo/navegador no lo soporta, no es solucionable como 3D.
+          if (!xrSession.domOverlayState) {
+            console.warn('dom-overlay no soportado en esta sesión XR');
+          }
+          renderer.xr.setSession(xrSession);
+          // YouTube: fallback overlay visible dentro de dom-overlay
+          if (xrSession.domOverlayState) {
+            enterXRYoutubeOverlay();
+            xrSession.addEventListener('end', () => { exitXRYoutubeOverlay(); });
+          } else {
+            // Sin dom-overlay: los iframes (YouTube) no se pueden componer dentro de XR en la mayoría de navegadores.
+          }
+          xrRefSpace = await xrSession.requestReferenceSpace('local-floor');
+          if (occlusionEnabled) initDepthOcclusion(xrSession);
+        };
+      });
+    }
+
+    function initDepthOcclusion(s) {
+      const gl = renderer.getContext();
+      xrGlBinding = new XRWebGLBinding(s, gl);
+
+      const vs = gl.createShader(gl.VERTEX_SHADER);
+      gl.shaderSource(vs, depthVS); gl.compileShader(vs);
+
+      const fs = gl.createShader(gl.FRAGMENT_SHADER);
+      gl.shaderSource(fs, depthFS); gl.compileShader(fs);
+
+      depthProgram = gl.createProgram();
+      gl.attachShader(depthProgram, vs);
+      gl.attachShader(depthProgram, fs);
+      gl.linkProgram(depthProgram);
+
+      depthVao = gl.createVertexArray();
+      gl.bindVertexArray(depthVao);
+
+      const vbo = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+        -1,-1,  1,-1, -1, 1,
+        -1, 1,  1,-1,  1, 1
+      ]), gl.STATIC_DRAW);
+
+      const loc = gl.getAttribLocation(depthProgram, 'aPos');
+      gl.enableVertexAttribArray(loc);
+      gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+      depthTex = gl.createTexture();
+    }
+
+    // =========================
+    // Asset loaders (img/video/gif/model/youtube)
+    // =========================
+    async function addAssetFromUrl(url, name="Web Asset") {
+      const lower = (url || "").toLowerCase();
+
+      if (isFileUrl(url)) {
+        showCorsHint("No se puede cargar file:// por URL web. Usa 'Abrir local'.");
+        return;
+      }
+
+      if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
+        return addModel(url, name);
+      }
+      if (lower.endsWith('.fbx')) {
+        return addFBX(url, name);
+      }
+      if (lower.endsWith('.obj')) {
+        return addOBJ(url, null, name);
+      }
+
+      const isGif = lower.endsWith('.gif');
+      const isVideo = /\.(mp4|webm)$/i.test(lower);
+      const kind = isGif ? 'gif' : (isVideo ? 'video' : 'image');
+
+      return addMedia(url, kind, name);
+    }
+
+    async function addMedia(url, kind, name, isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO MEDIA...");
+
+      let tex=null, video=null, gifData=null;
+      try {
+        if (kind === 'gif') {
+          await ensureOmggifLoaded();
+
+          const resp = await fetch(url, { mode: 'cors' });
+          if (!resp.ok) throw new Error("Fetch GIF falló");
+          const buf = await resp.arrayBuffer();
+
+          const r = makeGifReader(new Uint8Array(buf));
+          const cvs = document.createElement('canvas');
+          cvs.width = r.width; cvs.height = r.height;
+          const ctx = cvs.getContext('2d');
+          const dat = ctx.createImageData(r.width, r.height);
+
+          tex = new THREE.CanvasTexture(cvs);
+          tex.colorSpace = THREE.SRGBColorSpace;
+
+          gifData = { r, ctx, dat, tex, f:0, nextTime:0, playing:true };
+        }
+        else if (kind === 'video') {
+          video = document.createElement('video');
+          video.src = url;
+          video.crossOrigin = 'anonymous';
+          video.loop = true;
+          video.muted = true; // autoplay-friendly
+          video.volume = 0.8;
+          video.playsInline = true;
+          video.preload = 'auto';
+
+          // algunos navegadores requieren interacción: intentamos play pero no fallamos duro
+          try { await video.play(); } catch {}
+
+          tex = new THREE.VideoTexture(video);
+          tex.colorSpace = THREE.SRGBColorSpace;
+        }
+        else {
+          tex = await new THREE.TextureLoader().loadAsync(url);
+          tex.colorSpace = THREE.SRGBColorSpace;
+        }
+
+        const aspect = video
+          ? (video.videoWidth / Math.max(1, video.videoHeight) || 1.77)
+          : (tex.image ? (tex.image.width / Math.max(1, tex.image.height)) : 1.77);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.6, -2);
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            map: { value: tex },
+            uBrightness: { value: 0 },
+            uContrast: { value: 1 },
+            uSaturation: { value: 1 },
+            uGamma: { value: 1 },
+            uOpacity: { value: 1 },
+            uEmissive: { value: 0 },
+
+            chromaOn: { value: false },
+            chromaInvert: { value: false },
+            k1: { value: new THREE.Color(0,1,0) },
+            sim1: { value: 0.4 },
+            smooth1: { value: 0.08 },
+            despill: { value: 0.5 }
+          },
+          vertexShader: vShader,
+          fragmentShader: fShader,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+
+        const planeGeo = new THREE.PlaneGeometry(aspect, 1);
+        const mesh = new THREE.Mesh(planeGeo, mat);
+        mesh.userData.layerId = null;
+        root.add(mesh);
+        scene.add(root);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind,
+          projection: 'plane',
+          root3D: root,
+          pickMesh: mesh,
+          mesh,
+          mat,
+          tex,
+          video,
+          gifData,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: aspect,
+          sourceUrl: url,
+
+          // ✅ video extras
+          videoTrimEnabled: false,
+          videoTrimStart: 0,
+          videoTrimEnd: 0
+        };
+
+        mesh.userData.layerId = layer.id;
+        objects.push(layer);
+
+        applyLayerOrderToRender();
+
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        showCorsHint(kind === 'gif'
+          ? "GIF: si es URL remota, el servidor debe permitir CORS. Si es local, usa 'Abrir local'."
+          : ""
+        );
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    
+// =========================
+// Audio loader (mp3/wav) - local via blob URL, remoto sujeto a CORS
+// =========================
+async function addAudio(url, name="Audio", isRestore=false) {
+  if (!isRestore) toggleLoader(true, "CARGANDO AUDIO...");
+  try {
+    // HTMLAudioElement -> Three.Audio (no requiere fetch binario, evita CORS en local blob:)
+    const audioEl = document.createElement('audio');
+    audioEl.src = url;
+    audioEl.crossOrigin = 'anonymous';
+    audioEl.loop = true;
+    audioEl.preload = 'auto';
+    audioEl.playsInline = true;
+    audioEl.volume = 0.9;
+
+    // algunos navegadores requieren interacción para iniciar sonido
+    try { try { audioListener?.context?.resume(); } catch{}; await audioEl.play(); } catch {}
+
+    const audio = new THREE.PositionalAudio(audioListener);
+    audio.setMediaElementSource(audioEl);
+    audio.setRefDistance(1.0);
+    audio.setRolloffFactor(1.0);
+    audio.setDirectionalCone(230, 300, 0.2);
+
+    const root = new THREE.Group();
+    root.position.set(0, 1.6, -2);
+
+    const icon = new THREE.Mesh(
+      new THREE.SphereGeometry(0.12, 16, 16),
+      new THREE.MeshStandardMaterial({ color: 0x6c5ce7, emissive: 0x6c5ce7, emissiveIntensity: 0.6 })
+    );
+    icon.userData.layerId = null;
+    root.add(icon);
+
+    root.add(audio);
+    scene.add(root);
+
+    const layer = {
+      id: uid(),
+      name,
+      kind: 'audio',
+      projection: 'plane',
+      root3D: root,
+      pickMesh: icon,
+      audio,
+      audioEl,
+      billboard: false,
+      visible: true,
+      locked: false,
+      originalAspect: 1,
+      sourceUrl: url
+    };
+
+    icon.userData.layerId = layer.id;
+    objects.push(layer);
+    applyLayerOrderToRender();
+
+    if (!isRestore) selectObject(layer.id);
+    updateLayers();
+    return layer;
+  } catch (e) {
+    console.error(e);
+    showCorsHint("Audio mp3/wav: si es URL remota, el servidor debe permitir CORS. Para local usa 'Abrir local'.");
+  } finally {
+    if (!isRestore) toggleLoader(false);
+  }
+}
+
+async function addModel(url, name="Model 3D", isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO MODELO 3D...");
+      try {
+        const gltf = await gltfLoader.loadAsync(url);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.2, -2);
+
+        const model = gltf.scene || gltf.scenes?.[0];
+        if (!model) throw new Error("GLTF sin scene");
+
+        model.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = false;
+            n.receiveShadow = false;
+            n.userData.layerId = null;
+          }
+        });
+
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const s = 0.8 / maxDim;
+        model.scale.setScalar(s);
+
+        root.add(model);
+        scene.add(root);
+
+        const pick = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.6),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+        );
+        pick.position.set(0, 0.3, 0);
+        root.add(pick);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind: 'model',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: pick,
+          model,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: 1,
+          sourceUrl: url,
+          modelRenderMode: 'original'
+        };
+
+        model.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
+        pick.userData.layerId = layer.id;
+
+        cacheOriginalMaterials(layer.model);
+        applyModelRenderMode(layer, layer.modelRenderMode);
+
+        objects.push(layer);
+        applyLayerOrderToRender();
+
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        showCorsHint("Modelos GLB/GLTF: si es URL remota, el servidor debe permitir CORS. Para local usa 'Abrir local'.");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    async function addFBX(url, name="Model FBX", isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO FBX...");
+      try {
+        const obj = await fbxLoader.loadAsync(url);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.2, -2);
+
+        obj.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = false;
+            n.receiveShadow = false;
+            n.userData.layerId = null;
+          }
+        });
+
+        // auto-scale
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const s = 0.8 / maxDim;
+        obj.scale.setScalar(s);
+
+        root.add(obj);
+        scene.add(root);
+
+        const pick = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.6),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+        );
+        pick.position.set(0, 0.3, 0);
+        root.add(pick);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind: 'model',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: pick,
+          model: obj,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: 1,
+          sourceUrl: url,
+          modelRenderMode: 'original'
+        };
+
+        obj.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
+        pick.userData.layerId = layer.id;
+
+        cacheOriginalMaterials(layer.model);
+        applyModelRenderMode(layer, layer.modelRenderMode);
+
+        objects.push(layer);
+        applyLayerOrderToRender();
+
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        showCorsHint("FBX: si es URL remota, el servidor debe permitir CORS. Para local usa 'Abrir local'.");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    async function addOBJ(url, mtlUrl=null, name="Model OBJ", isRestore=false) {
+      if (!isRestore) toggleLoader(true, "CARGANDO OBJ...");
+      try {
+        if (mtlUrl) {
+          const mtl = await mtlLoader.loadAsync(mtlUrl);
+          mtl.preload();
+          objLoader.setMaterials(mtl);
+        }
+        const obj = await objLoader.loadAsync(url);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.2, -2);
+
+        obj.traverse(n => {
+          if (n.isMesh) {
+            n.castShadow = false;
+            n.receiveShadow = false;
+            n.userData.layerId = null;
+          }
+        });
+
+        const box = new THREE.Box3().setFromObject(obj);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z) || 1;
+        const s = 0.8 / maxDim;
+        obj.scale.setScalar(s);
+
+        root.add(obj);
+        scene.add(root);
+
+        const pick = new THREE.Mesh(
+          new THREE.BoxGeometry(0.6, 0.6, 0.6),
+          new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+        );
+        pick.position.set(0, 0.3, 0);
+        root.add(pick);
+
+        const layer = {
+          id: uid(),
+          name,
+          kind: 'model',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: pick,
+          model: obj,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: 1,
+          sourceUrl: url,
+          modelRenderMode: 'original'
+        };
+
+        obj.traverse(n => { if (n.isMesh) n.userData.layerId = layer.id; });
+        pick.userData.layerId = layer.id;
+
+        cacheOriginalMaterials(layer.model);
+        applyModelRenderMode(layer, layer.modelRenderMode);
+
+        objects.push(layer);
+        applyLayerOrderToRender();
+
+        if (!isRestore) selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        showCorsHint("OBJ/MTL: si es URL remota, el servidor debe permitir CORS. Para local usa 'Abrir local'.");
+      } finally {
+        if (!isRestore) toggleLoader(false);
+      }
+    }
+
+    async function addYouTube() {
+      const url = document.getElementById('ytUrl').value.trim();
+      if (!url) return;
+
+      const id = parseYouTubeId(url);
+      if (!id) { alert("No pude leer el ID de YouTube."); return; }
+
+      const iframe = document.createElement('iframe');
+      iframe.width = '960';
+      iframe.height = '540';
+      iframe.style.border = '0';
+      iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
+
+      const holder = document.createElement('div');
+      holder.style.width = '960px';
+      holder.style.height = '540px';
+      holder.style.borderRadius = '18px';
+      holder.style.overflow = 'hidden';
+      holder.style.boxShadow = '0 0 30px rgba(255,170,0,0.25)';
+      holder.style.border = '2px solid rgba(255,170,0,0.35)';
+      holder.appendChild(iframe);
+
+      const cssObj = new CSS3DObject(holder);
+
+      const root = new THREE.Group();
+      root.position.set(0, 1.6, -2);
+
+      const helper = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.0, 0.5625),
+        new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+      );
+      helper.userData.layerId = null;
+      root.add(helper);
+
+      cssObj.scale.set(1/960, 1/960, 1/960);
+      cssObj.position.copy(root.position);
+      cssObj.quaternion.copy(root.quaternion);
+
+      scene.add(root);
+      scene.add(cssObj);
+
+      const layer = {
+        id: uid(),
+        name: `YouTube ${id}`,
+        kind: 'youtube',
+        projection: 'plane',
+        root3D: root,
+        pickMesh: helper,
+        cssObj,
+        billboard: false,
+        visible: true,
+        locked: false,
+        originalAspect: 16/9,
+        sourceUrl: url
+      };
+      helper.userData.layerId = layer.id;
+
+      objects.push(layer);
+      applyLayerOrderToRender();
+
+      selectObject(layer.id);
+      updateLayers();
+    }
+
+    // =========================
+    // Proyecciones (v7.2 reintroducido)
+    // =========================
+    function applyProjection(layer, mode) {
+      layer.projection = mode;
+
+      if (layer.kind === 'youtube') {
+        layer.projection = 'plane';
+        document.getElementById('projSelect').value = 'plane';
+        return;
+      }
+
+      if (layer.kind === 'model') {
+        layer.projection = 'plane';
+        document.getElementById('projSelect').value = 'plane';
+        return;
+      }
+
+      const mesh = layer.mesh;
+      if (!mesh) return;
+
+      mesh.material.side = THREE.DoubleSide;
+      mesh.scale.set(1,1,1);
+
+      if (mode === '360') {
+        const geo = new THREE.SphereGeometry(50, 64, 32);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.material.side = THREE.BackSide;
+        mesh.position.set(0, 0, 0);
+        layer.root3D.position.set(0, 1.6, 0);
+      }
+      else if (mode === 'orb') {
+        const geo = new THREE.SphereGeometry(0.75, 64, 32);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.material.side = THREE.FrontSide;
+        mesh.position.set(0, 0, 0);
+      }
+      else if (mode === 'curved') {
+        const geo = new THREE.CylinderGeometry(2.5, 2.5, 1.2, 48, 1, true, 3.8, 1.8);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.scale.set(-1, 1, 1);
+        mesh.material.side = THREE.DoubleSide;
+        mesh.position.set(0, 0, 0);
+      }
+      else {
+        const geo = new THREE.PlaneGeometry(layer.originalAspect || 1.77, 1);
+        mesh.geometry.dispose();
+        mesh.geometry = geo;
+        mesh.position.set(0, 0, 0);
+      }
+    }
+
+    
+// =========================
+// 3D Model tools: render modes + components visibility
+// =========================
+function setModelToolsVisible(show) {
+  const box = document.getElementById('modelTools');
+  if (box) box.style.display = show ? 'block' : 'none';
+}
+
+function cacheOriginalMaterials(model) {
+  model.traverse(n => {
+    if (n.isMesh) {
+      if (!n.userData._origMat) n.userData._origMat = n.material;
+    }
+  });
+}
+
+function applyModelRenderMode(layer, mode) {
+  if (!layer || layer.kind !== 'model' || !layer.model) return;
+  const model = layer.model;
+  cacheOriginalMaterials(model);
+
+  model.traverse(n => {
+    if (!n.isMesh) return;
+
+    const orig = n.userData._origMat || n.material;
+    if (mode === 'original') {
+      n.material = orig;
+      n.material.needsUpdate = true;
+      return;
+    }
+
+    if (mode === 'wireframe') {
+      const m = orig.clone ? orig.clone() : new THREE.MeshStandardMaterial({ color: 0xffffff });
+      m.wireframe = true;
+      m.flatShading = false;
+      m.needsUpdate = true;
+      n.material = m;
+      return;
+    }
+
+    if (mode === 'shaded') {
+      const m = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        roughness: 0.7,
+        metalness: 0.0,
+        map: orig.map || null,
+        normalMap: orig.normalMap || null,
+        aoMap: orig.aoMap || null,
+        emissiveMap: orig.emissiveMap || null,
+        vertexColors: orig.vertexColors || false
+      });
+      m.flatShading = true;
+      m.needsUpdate = true;
+      n.material = m;
+      return;
+    }
+
+    if (mode === 'workbench') {
+      const m = new THREE.MeshNormalMaterial();
+      m.wireframe = false;
+      m.needsUpdate = true;
+      n.material = m;
+      return;
+    }
+  });
+}
+
+
+
+// ✅ Textura para modelo 3D (aplica a materiales con UV)
+function applyModelTexture(layer, texture) {
+  if (!layer || layer.kind !== 'model' || !layer.model) return;
+
+  // cache original maps para poder restaurar
+  if (!layer._origMaps) layer._origMaps = new Map();
+
+  layer.model.traverse(n => {
+    if (!n.isMesh) return;
+    const mats = Array.isArray(n.material) ? n.material : [n.material];
+    mats.forEach((mat, mi) => {
+      if (!mat) return;
+      const key = n.uuid + "::" + mi;
+      if (!layer._origMaps.has(key)) {
+        layer._origMaps.set(key, { map: mat.map || null });
+      }
+      mat.map = texture;
+      mat.needsUpdate = true;
+    });
+  });
+
+  layer.modelTexture = texture;
+}
+
+function clearModelTexture() {
+  const o = objects.find(x=>x.id===activeId);
+  if (!o || o.kind !== 'model' || !o.model) return;
+
+  if (o._origMaps) {
+    o.model.traverse(n => {
+      if (!n.isMesh) return;
+      const mats = Array.isArray(n.material) ? n.material : [n.material];
+      mats.forEach((mat, mi) => {
+        if (!mat) return;
+        const key = n.uuid + "::" + mi;
+        const orig = o._origMaps.get(key);
+        if (orig) {
+          mat.map = orig.map || null;
+          mat.needsUpdate = true;
+        }
+      });
+    });
+  }
+  if (o.modelTexture && o.modelTexture.dispose) o.modelTexture.dispose();
+  o.modelTexture = null;
+}
+
+function buildModelComponentsUI(layer) {
+  const wrap = document.getElementById('modelComponents');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (!layer || layer.kind !== 'model' || !layer.model) return;
+
+  const model = layer.model;
+  const nodes = [];
+  model.traverse(n => {
+    // incluimos grupos, meshes y luces; omitimos objetos muy internos anónimos
+    const isEligible = (n.isMesh || n.isLight || n.type === 'Group' || n.type === 'Object3D');
+    if (!isEligible) return;
+    if (n === model) return;
+
+    const name = (n.name && n.name.trim()) ? n.name.trim() : (n.isLight ? (n.type) : (n.isMesh ? "Mesh" : "Node"));
+    nodes.push({ n, name });
+  });
+
+  // orden: primero luces, luego grupos, luego meshes
+  nodes.sort((a,b) => {
+    const pa = a.n.isLight ? 0 : (a.n.isMesh ? 2 : 1);
+    const pb = b.n.isLight ? 0 : (b.n.isMesh ? 2 : 1);
+    if (pa !== pb) return pa - pb;
+    return a.name.localeCompare(b.name);
+  });
+
+  nodes.forEach((it, idx) => {
+    const row = document.createElement('div');
+    row.className = 'layer-item';
+    row.style.gridTemplateColumns = '18px 1fr auto';
+    row.innerHTML = `
+      <input type="checkbox" ${it.n.visible ? 'checked' : ''} />
+      <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+        ${it.n.isLight ? '💡' : (it.n.isMesh ? '🧩' : '🧱')} ${escapeHtml(it.name)}
+        <span class="tag">${escapeHtml(it.n.type)}</span>
+      </div>
+      <span class="tiny">${idx+1}</span>
+    `;
+    const cb = row.querySelector('input');
+    cb.addEventListener('change', (e) => {
+      it.n.visible = e.target.checked;
+    });
+    wrap.appendChild(row);
+  });
+}
+
+function escapeHtml(str="") {
+  return String(str)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#039;");
+}
+
+
+
+// =========================
+// Calibrador de escala (1 metro)
+// =========================
+let calibratorId = null;
+
+function createCalibrator() {
+  // si ya existe, selecciona
+  const existing = calibratorId ? objects.find(o=>o.id===calibratorId) : null;
+  if (existing) { selectObject(existing.id); return existing; }
+
+  const root = new THREE.Group();
+  root.position.set(0, 1.2, -1.5);
+
+  const baseLen = 1.0; // 1 metro en unidades del mundo
+  const pts = [new THREE.Vector3(-baseLen/2, 0, 0), new THREE.Vector3(baseLen/2, 0, 0)];
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineBasicMaterial({ color: 0xffff00 });
+  const line = new THREE.Line(geo, mat);
+  root.add(line);
+
+  const endMat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const endGeo = new THREE.SphereGeometry(0.03, 16, 16);
+  const a = new THREE.Mesh(endGeo, endMat); a.position.set(-baseLen/2, 0, 0);
+  const b = new THREE.Mesh(endGeo, endMat); b.position.set( baseLen/2, 0, 0);
+  root.add(a); root.add(b);
+
+  // pick mesh invisible
+  const pick = new THREE.Mesh(
+    new THREE.BoxGeometry(baseLen, 0.08, 0.08),
+    new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+  );
+  root.add(pick);
+
+  scene.add(root);
+
+  const layer = {
+    id: uid(),
+    name: "Calibrador 1m",
+    kind: 'calibrator',
+    projection: 'plane',
+    root3D: root,
+    pickMesh: pick,
+    mesh: null,
+    mat: null,
+    tex: null,
+    video: null,
+    gifData: null,
+    billboard: false,
+    visible: true,
+    locked: false,
+    originalAspect: 1,
+    sourceUrl: 'calibrator',
+    _calBaseLen: baseLen
+  };
+  pick.userData.layerId = layer.id;
+
+  objects.push(layer);
+  applyLayerOrderToRender();
+  calibratorId = layer.id;
+  selectObject(layer.id);
+  updateLayers();
+  return layer;
+}
+
+function applyScaleFromCalibrator() {
+  const cal = calibratorId ? objects.find(o=>o.id===calibratorId) : null;
+  if (!cal || !cal.root3D) { alert("Primero crea el calibrador."); return; }
+
+  // --- Medir longitud REAL del calibrador en mundo (más preciso que solo ws.x) ---
+  let currentLen = null;
+  try {
+    const ends = [];
+    cal.root3D.traverse(o=>{
+      // los extremos son esferas pequeñas en createCalibrator()
+      if (o && o.isMesh && o.geometry && (o.geometry.type === 'SphereGeometry' || o.geometry.type === 'IcosahedronGeometry')) {
+        const p = new THREE.Vector3();
+        o.getWorldPosition(p);
+        ends.push(p);
+      }
+    });
+    if (ends.length >= 2) {
+      // toma los 2 puntos más alejados
+      let bestD = -1, ai = 0, bi = 1;
+      for (let i=0;i<ends.length;i++){
+        for (let j=i+1;j<ends.length;j++){
+          const d = ends[i].distanceTo(ends[j]);
+          if (d > bestD) { bestD = d; ai = i; bi = j; }
+        }
+      }
+      if (bestD > 1e-6) currentLen = bestD;
+    }
+  } catch(_) {}
+
+  if (!currentLen) {
+    // fallback
+    const ws = new THREE.Vector3();
+    cal.root3D.getWorldScale(ws);
+    currentLen = (cal._calBaseLen || 1) * Math.max(1e-6, ws.x);
+  }
+
+  const factor = 1.0 / Math.max(1e-6, currentLen);
+
+  // aplica a todos excepto calibrador
+  objects.forEach(o=>{
+    if (!o.root3D) return;
+    if (o.id === cal.id) return;
+
+    o.root3D.position.multiplyScalar(factor);
+    o.root3D.scale.multiplyScalar(factor);
+  });
+
+  // --- DIBUJO: bake de escala + corrección de offsets de capas (evita que "se pierda") ---
+  try {
+    _ensureDrawingsGroup();
+    if (drawingsGroup) {
+      // escala el offset del root (si estaba movido)
+      drawingsGroup.position.multiplyScalar(factor);
+
+      // escala offsets de grupos (capas / strokes) sin dejar escalas "pegadas"
+      drawingsGroup.traverse(o=>{
+        if (!o || o === drawingsGroup) return;
+        if (o.type === 'Group') o.position.multiplyScalar(factor);
+      });
+
+      // bake real en vértices (y posiciones de meshes) + reset drawingsGroup.scale a 1
+      bakeDrawingsScale(factor);
+    }
+  } catch (e) { console.warn("scale drawings warning", e); }
+
+  // resetea calibrador a longitud 1m en mundo
+  cal.root3D.scale.set(1,1,1);
+
+  updateGrid();
+  syncTransformToUI();
+  alert("Escala aplicada. Factor: " + factor.toFixed(4));
+}
+
+// =========================
+    // UI bindings
+    // =========================
+    function bindUI() {
+      document.getElementById('css3dInteractive').addEventListener('change', (e) => {
+        cssRoot.classList.toggle('interactive', e.target.checked);
+      });
+
+      document.querySelectorAll('input[type=range]').forEach(i => {
+        i.addEventListener('input', (e) => {
+          const id = e.target.id;
+          const val = parseFloat(e.target.value);
+          const lbl = document.getElementById('v_' + id);
+          if (lbl) lbl.textContent = (Number.isFinite(val) ? val.toFixed(3) : '0');
+          updateActiveParam(id, val);
+
+          // video sliders
+          if (id === 'vidVol') onVideoVolume(val);
+          if (id === 'vidSeek') onVideoSeek(val);
+
+          // transform sliders (✅ live)
+          if (id.startsWith('tPos') || id.startsWith('tRot') || id === 'tScale') {
+            // aplicar en vivo con debounce para hacerlo fluido
+            scheduleLiveTransformApply();
+          }
+        });
+      });
+
+      document.getElementById('chromaToggle').addEventListener('change', () => updateActiveChroma());
+      document.getElementById('chromaInvert').addEventListener('change', () => updateActiveChroma());
+      ['keyR','keyG','keyB'].forEach(id => document.getElementById(id).addEventListener('input', () => updateActiveKeyRGB()));
+
+      document.getElementById('layerVisible').addEventListener('change', (e)=> {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        setLayerVisible(o, e.target.checked);
+        updateLayers();
+      });
+
+      document.getElementById('layerLocked').addEventListener('change', (e)=> {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        o.locked = e.target.checked;
+        updateLayers();
+      });
+
+      document.getElementById('checkBillboard').addEventListener('change', (e)=> {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        o.billboard = e.target.checked;
+        if (!o.billboard && o.root3D) o.root3D.rotation.set(0,0,0);
+      });
+
+      // ✅ Model render mode (fuera del handler de billboard)
+      const mm = document.getElementById('modelRenderMode');
+      if (mm && !mm.dataset._bound) {
+        mm.dataset._bound = '1';
+        mm.addEventListener('change', (e)=>{
+          const o = objects.find(x=>x.id===activeId); if(!o) return;
+          o.modelRenderMode = e.target.value;
+          applyModelRenderMode(o, o.modelRenderMode);
+        });
+      }
+
+      
+
+      // ✅ Textura modelo 3D
+      const texInp = document.getElementById('modelTexInput');
+      if (texInp && !texInp.dataset._bound) {
+        texInp.dataset._bound = '1';
+        texInp.addEventListener('change', async (ev) => {
+          const file = ev.target.files && ev.target.files[0];
+          if (!file) return;
+          const o = objects.find(x=>x.id===activeId); if(!o) return;
+          if (o.kind !== 'model') { ev.target.value=''; return; }
+
+          try {
+            const url = URL.createObjectURL(file);
+            const tex = await new THREE.TextureLoader().loadAsync(url);
+            tex.flipY = false; // GLTF suele requerir flipY=false para maps
+            tex.colorSpace = THREE.SRGBColorSpace;
+            applyModelTexture(o, tex);
+          } catch (err) {
+            console.error(err);
+            alert("No se pudo cargar la textura.");
+          } finally {
+            ev.target.value = '';
+          }
+        });
+      }
+
+      // ✅ Oclusión: escucha cambios del checkbox (nota: activar depth-sensing requiere iniciar sesión con depth)
+      const occ = document.getElementById('checkOcclusion');
+      if (occ && !occ.dataset._bound) {
+        occ.dataset._bound = '1';
+        occ.addEventListener('change', () => {
+          // si ya hay sesión XR y se intenta activar sin binding, avisamos
+          if (renderer?.xr?.isPresenting && occ.checked && !xrGlBinding) {
+            alert("Para activar oclusión debes iniciar MR con oclusión activada (depth-sensing se solicita al crear la sesión). Puedes desactivarla/activarla al vuelo solo si la sesión fue creada con depth-sensing.");
+          }
+        });
+      }
+
+// ✅ Transform UI buttons
+      window.applyTransformFromUI = applyTransformFromUI;
+      window.syncTransformToUI = syncTransformToUI;
+      window.resetTransformUI = resetTransformUI;
+
+      // file input (ahora soporta fbx/obj/mtl)
+      document.getElementById('fileInput').addEventListener('change', async (e) => {
+        const files = [...e.target.files];
+
+        // mapa de blobs por nombre para obj+mtl
+        const byName = new Map(files.map(f => [f.name.toLowerCase(), f]));
+
+        for (const f of files) {
+          const lower = f.name.toLowerCase();
+          const url = URL.createObjectURL(f);
+
+          if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
+            const __layer = await addModel(url, f.name);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const ab = await fileToArrayBuffer(f);
+              const ext = (f.name.split('.').pop()||'').toLowerCase();
+              // incluir archivos asociados (para .gltf: .bin e imágenes seleccionadas)
+              let filesPack = null;
+              if(ext === 'gltf'){
+                filesPack = {};
+                for (const af of files){
+                  const al = af.name.toLowerCase();
+                  if(al === lower) continue;
+                  if(al.endsWith('.bin') || al.endsWith('.png') || al.endsWith('.jpg') || al.endsWith('.jpeg') || al.endsWith('.webp')){
+                    const abx = await fileToArrayBuffer(af);
+                    filesPack[af.name] = { kind:'binary', ext:(af.name.split('.').pop()||'').toLowerCase(), mime:(af.type||'application/octet-stream'), dataB64: abToB64(abx) };
+                  }
+                }
+              }
+              _l.embeddedSource = { kind:'binary', ext, mime:(f.type||'application/octet-stream'), dataB64: abToB64(ab), files: filesPack };
+            }
+          } else if (lower.endsWith('.fbx')) {
+            const __layer = await addFBX(url, f.name);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const ab = await fileToArrayBuffer(f);
+              _l.embeddedSource = { kind:'binary', ext:'fbx', mime:(f.type||'application/octet-stream'), dataB64: abToB64(ab), files:null };
+            }
+          } else if (lower.endsWith('.obj')) {
+            // si existe .mtl con mismo nombre base, intentamos
+            const base = lower.replace('.obj','');
+            const mtlFile = byName.get(base + '.mtl');
+            const mtlUrl = mtlFile ? URL.createObjectURL(mtlFile) : null;
+            const __layer = await addOBJ(url, mtlUrl, f.name);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const abObj = await fileToArrayBuffer(f);
+              const filesPack = {};
+              if(mtlFile){
+                const abM = await fileToArrayBuffer(mtlFile);
+                filesPack[mtlFile.name] = { kind:'binary', ext:'mtl', mime:(mtlFile.type||'text/plain'), dataB64: abToB64(abM) };
+              }
+              // incluir posibles texturas seleccionadas
+              for (const af of files){
+                const al = af.name.toLowerCase();
+                if(al.endsWith('.png') || al.endsWith('.jpg') || al.endsWith('.jpeg') || al.endsWith('.webp')){
+                  const abx = await fileToArrayBuffer(af);
+                  filesPack[af.name] = { kind:'binary', ext:(af.name.split('.').pop()||'').toLowerCase(), mime:(af.type||'application/octet-stream'), dataB64: abToB64(abx) };
+                }
+              }
+              _l.embeddedSource = { kind:'binary', ext:'obj', mime:(f.type||'application/octet-stream'), dataB64: abToB64(abObj), files: filesPack };
+            }
+          } else if (lower.endsWith('.gif')) {
+            // ✅ Local GIF: sin fetch(blob) problemático; usamos FileReader -> ArrayBuffer
+            const __layer = await addGifFromFile(f);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const ab = await fileToArrayBuffer(f);
+              _l.embeddedSource = { kind:'binary', ext:'gif', mime:'image/gif', dataB64: abToB64(ab), files:null };
+            }
+          } else if (/\.(mp3|wav)$/i.test(lower) || f.type.startsWith('audio/')) {
+            const __layer = await addAudio(url, f.name);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const du = await fileToDataURL(f);
+              _l.embeddedSource = { kind:'dataurl', ext:(f.name.split('.').pop()||'').toLowerCase(), mime:(f.type||'audio/*'), dataURL: du };
+            }
+          } else if (f.type.includes('video')) {
+            const __layer = await addMedia(url, 'video', f.name);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const du = await fileToDataURL(f);
+              _l.embeddedSource = { kind:'dataurl', ext:(f.name.split('.').pop()||'').toLowerCase(), mime:(f.type||'video/*'), dataURL: du };
+            }
+          } else if (/\.(png|jpg|jpeg|webp)$/i.test(lower)) {
+            const __layer = await addMedia(url, 'image', f.name);
+            const _l = __layer || objects[objects.length-1];
+            if(_l){
+              const du = await fileToDataURL(f);
+              _l.embeddedSource = { kind:'dataurl', ext:(f.name.split('.').pop()||'').toLowerCase(), mime:(f.type||'image/*'), dataURL: du };
+            }
+          } else if (lower.endsWith('.mtl')) {
+            // se consume con el OBJ, lo saltamos
+          } else {
+            // fallback: intenta como imagen
+            await addMedia(url, 'image', f.name);
+          }
+        }
+
+        e.target.value = '';
+      });
+
+      // unidades + grid
+      window.updateUnits = () => { currentUnit = document.getElementById('unitSystem').value; updateGrid(); };
+
+      window.updateUnitOptions = () => {
+        const sel = document.getElementById('unitSystem');
+        const imp = document.getElementById('sysImperial')?.checked;
+        if (!sel) return;
+        sel.innerHTML = '';
+
+        const opts = imp
+          ? [{v:'in', t:'Pulgadas (in)'},{v:'ft', t:'Pies (ft)'},{v:'mi', t:'Millas (mi)'}]
+          : [{v:'m', t:'Metros (m)'},{v:'cm', t:'Centímetros (cm)'},{v:'mm', t:'Milímetros (mm)'}];
+
+        opts.forEach(o=>{
+          const op = document.createElement('option');
+          op.value = o.v; op.textContent = o.t;
+          sel.appendChild(op);
+        });
+
+        // conserva unidad si aún existe, si no usa la primera
+        const want = currentUnit;
+        const exists = opts.some(o=>o.v===want);
+        sel.value = exists ? want : opts[0].v;
+        currentUnit = sel.value;
+        updateGrid();
+      };
+
+      // inicializa unidades una vez
+      updateUnitOptions();
+
+      window.updateGrid = updateGrid;
+
+      // Drive placeholders
+      window.handleAuthClick = () => {
+        if (!CLIENT_ID || !API_KEY) { alert("Falta CLIENT_ID / API_KEY"); return; }
+        gapi.load('client:auth2', () => {
+          gapi.client.init({
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+            scope: SCOPES
+          }).then(() => gapi.auth2.getAuthInstance().signIn())
+            .then(() => {
+              document.getElementById('authPanel').style.display='none';
+              document.getElementById('driveActions').style.display='flex';
+            });
+        });
+      };
+      window.saveSceneToDrive = () => { alert("TODO: implementar guardado."); };
+      window.loadSceneFromDrive = () => { alert("TODO: implementar carga."); };
+
+
+// =========================
+// Guardar / Abrir JSON (estado de escena)
+// =========================
+function _vec3(v){ return { x: v.x, y: v.y, z: v.z }; }
+function _euler(e){ return { x: e.x, y: e.y, z: e.z, order: e.order }; }
+
+function buildNodePath(root, node) {
+  // path estable "Type:Name:Index" desde root->node (Index entre siblings iguales)
+  const parts = [];
+  let cur = node;
+  while (cur && cur !== root) {
+    const nm = (cur.name && cur.name.trim()) ? cur.name.trim() : cur.type;
+    const p = cur.parent;
+    if (!p) break;
+    const siblings = p.children.filter(c => {
+      const cn = (c.name && c.name.trim()) ? c.name.trim() : c.type;
+      return cn === nm && c.type === cur.type;
+    });
+    const idx = Math.max(0, siblings.indexOf(cur));
+    parts.push(`${cur.type}:${nm}:${idx}`);
+    cur = p;
+  }
+  return parts.reverse().join('/');
+}
+
+function findNodeByPath(root, path) {
+  if (!path) return null;
+  const parts = path.split('/').filter(Boolean);
+  let cur = root;
+  for (const part of parts) {
+    const [type, name, idxStr] = part.split(':');
+    const idx = parseInt(idxStr || '0', 10) || 0;
+    const matches = cur.children.filter(c => {
+      const cn = (c.name && c.name.trim()) ? c.name.trim() : c.type;
+      return c.type === type && cn === name;
+    });
+    cur = matches[idx] || null;
+    if (!cur) return null;
+  }
+  return cur;
+}
+
+
+// ======= Proyecto: helpers Base64/DataURL (para guardar/abrir sin CORS) =======
+function abToB64(buf){
+  const bytes = new Uint8Array(buf);
+  let bin = '';
+  for(let i=0;i<bytes.length;i+=0x8000){
+    bin += String.fromCharCode(...bytes.subarray(i,i+0x8000));
+  }
+  return btoa(bin);
+}
+function b64ToAb(b64){
+  const bin = atob(b64 || ''); const len = bin.length; const bytes = new Uint8Array(len);
+  for(let i=0;i<len;i++) bytes[i] = bin.charCodeAt(i);
+  return bytes.buffer;
+}
+async function fileToDataURL(file){
+  return await new Promise((res, rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+async function fileToArrayBuffer(file){
+  return await file.arrayBuffer();
+}
+function makeBlobURLFromB64(b64, mime='application/octet-stream'){
+  const ab = b64ToAb(b64);
+  return URL.createObjectURL(new Blob([ab], {type:mime}));
+}
+
+function serializeLayer(o) {
+  const base = {
+    id: o.id,
+    name: o.name,
+    kind: o.kind,
+    projection: o.projection,
+    visible: !!o.visible,
+    locked: !!o.locked,
+    billboard: !!o.billboard,
+    sourceUrl: o.sourceUrl || null,
+    sourceType: (o.sourceUrl && String(o.sourceUrl).startsWith('blob:')) ? 'local' : 'url',
+    embeddedSource: o.embeddedSource || null,
+    transform: o.root3D ? {
+      position: _vec3(o.root3D.position),
+      rotation: _euler(o.root3D.rotation),
+      scale: _vec3(o.root3D.scale)
+    } : null
+  };
+
+  if (isMediaLayer(o) && o.mat?.uniforms) {
+    const u = o.mat.uniforms;
+    base.shader = {
+      brightness: u.uBrightness?.value ?? 0,
+      contrast: u.uContrast?.value ?? 1,
+      saturation: u.uSaturation?.value ?? 1,
+      gamma: u.uGamma?.value ?? 1,
+      opacity: u.uOpacity?.value ?? 1,
+      emissive: u.uEmissive?.value ?? 0,
+      chromaOn: !!u.chromaOn?.value,
+      chromaInvert: !!u.chromaInvert?.value,
+      k1sim: u.sim1?.value ?? 0.4,
+      k1smooth: u.smooth1?.value ?? 0.08,
+      despill: u.despill?.value ?? 0.5,
+      keyRGB: u.k1?.value ? { r: u.k1.value.r, g: u.k1.value.g, b: u.k1.value.b } : { r:0, g:1, b:0 }
+    };
+  }
+
+  if (o.kind === 'video' && o.video) {
+    base.video = {
+      loop: !!o.video.loop,
+      muted: !!o.video.muted,
+      volume: o.video.volume ?? 0.8,
+      trimEnabled: !!o.videoTrimEnabled,
+      trimStart: o.videoTrimStart ?? 0,
+      trimEnd: o.videoTrimEnd ?? 0
+    };
+  }
+
+  if (o.kind === 'audio' && o.audioEl) {
+    base.audio = {
+      loop: !!o.audioEl.loop,
+      volume: o.audioEl.volume ?? 0.9
+    };
+  }
+
+  if (o.kind === 'model' && o.model) {
+    base.model = {
+      renderMode: o.modelRenderMode || 'original',
+      // visibilidad de componentes (luces/grupos/meshes)
+      components: (() => {
+        const out = [];
+        o.model.traverse(n => {
+          const eligible = (n.isMesh || n.isLight || n.type === 'Group' || n.type === 'Object3D');
+          if (!eligible || n === o.model) return;
+          out.push({ path: buildNodePath(o.model, n), visible: !!n.visible });
+        });
+        return out;
+      })(),
+      // textura aplicada manualmente (solo URL)
+      textureUrl: (o.modelTextureSource && o.modelTextureSource.type === 'url') ? o.modelTextureSource.url : null
+    };
+  }
+
+  return base;
+}
+
+function serializeSceneState() {
+  return {
+    format: "MR-STUDIO_SCENE_STATE",
+    version: 1,
+    savedAt: new Date().toISOString(),
+    globals: {
+      unit: currentUnit,
+      imperial: !!document.getElementById('sysImperial')?.checked,
+      showGrid: !!document.getElementById('showGrid')?.checked,
+      showDims: !!document.getElementById('showDims')?.checked,
+      showCoords: !!document.getElementById('showCoords')?.checked,
+      occlusionRequested: !!document.getElementById('checkOcclusion')?.checked
+    },
+    layers: objects.map(serializeLayer)
+  };
+}
+
+function downloadTextFile(filename, text) {
+  const blob = new Blob([text], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(a.href);
+    a.remove();
+  }, 0);
+}
+
+function exportSceneJSON() {
+  const state = serializeSceneState();
+  const stamp = new Date().toISOString().replaceAll(':','-').replaceAll('.','-');
+  const suggested = `mr-studio-scene_${stamp}.json`;
+  const name = prompt("Nombre del archivo JSON a guardar:", suggested);
+  if (!name) return;
+  const filename = name.toLowerCase().endsWith('.json') ? name : (name + '.json');
+  downloadTextFile(filename, JSON.stringify(state, null, 2));
+}
+
+function clearAllLayers() {
+  // borra sin tocar otras cosas del motor
+  while (objects.length > 0) {
+    activeId = objects[0].id;
+    deleteActive();
+  }
+}
+
+async function addYouTubeFromState(url) {
+  const id = parseYouTubeId(url);
+  if (!id) return null;
+
+  const iframe = document.createElement('iframe');
+  iframe.width = '960';
+  iframe.height = '540';
+  iframe.style.border = '0';
+  iframe.allow = 'autoplay; encrypted-media; picture-in-picture';
+  iframe.allowFullscreen = true;
+  iframe.src = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1`;
+
+  const holder = document.createElement('div');
+  holder.style.width = '960px';
+  holder.style.height = '540px';
+  holder.style.borderRadius = '18px';
+  holder.style.overflow = 'hidden';
+  holder.style.boxShadow = '0 0 30px rgba(255,170,0,0.25)';
+  holder.style.border = '2px solid rgba(255,170,0,0.35)';
+  holder.appendChild(iframe);
+
+  const cssObj = new CSS3DObject(holder);
+
+  const root = new THREE.Group();
+  root.position.set(0, 1.6, -2);
+
+  const helper = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.0, 0.5625),
+    new THREE.MeshBasicMaterial({ transparent:true, opacity:0.0 })
+  );
+  helper.userData.layerId = null;
+  root.add(helper);
+
+  cssObj.scale.set(1/960, 1/960, 1/960);
+  cssObj.position.copy(root.position);
+  cssObj.quaternion.copy(root.quaternion);
+
+  scene.add(root);
+  scene.add(cssObj);
+
+  const layer = {
+    id: uid(),
+    name: `YouTube ${id}`,
+    kind: 'youtube',
+    projection: 'plane',
+    root3D: root,
+    pickMesh: helper,
+    cssObj,
+    billboard: false,
+    visible: true,
+    locked: false,
+    originalAspect: 16/9,
+    sourceUrl: url
+  };
+  helper.userData.layerId = layer.id;
+
+  objects.push(layer);
+  applyLayerOrderToRender();
+  return layer;
+}
+
+function applyTransformState(layer, t) {
+  if (!layer?.root3D || !t) return;
+  layer.root3D.position.set(t.position?.x ?? 0, t.position?.y ?? 1.6, t.position?.z ?? -2);
+  layer.root3D.rotation.set(t.rotation?.x ?? 0, t.rotation?.y ?? 0, t.rotation?.z ?? 0, t.rotation?.order ?? 'XYZ');
+  if (t.scale) layer.root3D.scale.set(t.scale.x ?? 1, t.scale.y ?? 1, t.scale.z ?? 1);
+
+  if (layer.kind === 'youtube' && layer.cssObj) {
+    layer.cssObj.position.copy(layer.root3D.position);
+    layer.cssObj.quaternion.copy(layer.root3D.quaternion);
+  }
+}
+
+function applyShaderState(layer, sh) {
+  if (!layer || !isMediaLayer(layer) || !layer.mat?.uniforms || !sh) return;
+  const u = layer.mat.uniforms;
+  if (u.uBrightness) u.uBrightness.value = sh.brightness ?? 0;
+  if (u.uContrast) u.uContrast.value = sh.contrast ?? 1;
+  if (u.uSaturation) u.uSaturation.value = sh.saturation ?? 1;
+  if (u.uGamma) u.uGamma.value = sh.gamma ?? 1;
+  if (u.uOpacity) u.uOpacity.value = sh.opacity ?? 1;
+  if (u.uEmissive) u.uEmissive.value = sh.emissive ?? 0;
+
+  if (u.chromaOn) u.chromaOn.value = !!sh.chromaOn;
+  if (u.chromaInvert) u.chromaInvert.value = !!sh.chromaInvert;
+  if (u.sim1) u.sim1.value = sh.k1sim ?? 0.4;
+  if (u.smooth1) u.smooth1.value = sh.k1smooth ?? 0.08;
+  if (u.despill) u.despill.value = sh.despill ?? 0.5;
+  if (u.k1?.value && sh.keyRGB) u.k1.value.setRGB(sh.keyRGB.r ?? 0, sh.keyRGB.g ?? 1, sh.keyRGB.b ?? 0);
+}
+
+function applyModelState(layer, ms) {
+  if (!layer || layer.kind !== 'model' || !layer.model || !ms) return;
+  layer.modelRenderMode = ms.renderMode || 'original';
+  applyModelRenderMode(layer, layer.modelRenderMode);
+
+  if (Array.isArray(ms.components)) {
+    ms.components.forEach(c => {
+      const n = findNodeByPath(layer.model, c.path);
+      if (n) n.visible = !!c.visible;
+    });
+  }
+
+  // textura desde URL (si existe)
+  if (ms.textureUrl) {
+    const url = String(ms.textureUrl);
+    new THREE.TextureLoader().load(url, (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      applyModelTexture(layer, tex);
+      layer.modelTextureSource = { type: 'url', url };
+    });
+  }
+}
+
+async function loadSceneFromState(state) {
+  if (!state || state.format !== "MR-STUDIO_SCENE_STATE") {
+    alert("JSON no compatible.");
+    return;
+  }
+
+  // globals
+  const g = state.globals || {};
+  const imp = !!g.imperial;
+  const sys = document.getElementById('sysImperial');
+  if (sys) sys.checked = imp;
+  updateUnitOptions();
+  if (g.unit) {
+    currentUnit = g.unit;
+    const sel = document.getElementById('unitSystem');
+    if (sel) sel.value = g.unit;
+    updateGrid();
+  }
+  const sg = document.getElementById('showGrid'); if (sg) sg.checked = !!g.showGrid;
+  const sd = document.getElementById('showDims'); if (sd) sd.checked = !!g.showDims;
+  const sc = document.getElementById('showCoords'); if (sc) sc.checked = !!g.showCoords;
+  if (typeof updateEngineeringVisuals === 'function') updateEngineeringVisuals();
+
+  // oclusión: solo podemos "pedir" si hay sesión; si no, queda guardado en checkbox
+  const occ = document.getElementById('checkOcclusion');
+  if (occ) occ.checked = !!g.occlusionRequested;
+
+  // layers
+  const pendingLocal = [];
+  for (const L of (state.layers || [])) {
+    let layer = null;
+
+
+    // embedded assets (sin CORS / portable entre equipos)
+    if (L.embeddedSource && !layer) {
+      const src = L.embeddedSource;
+      try {
+        if ((L.kind === 'image' || L.kind === 'video') && src.kind === 'dataurl' && src.dataURL) {
+          layer = await addMedia(src.dataURL, L.kind, L.name || 'Media', true);
+        } else if (L.kind === 'audio' && src.kind === 'dataurl' && src.dataURL) {
+          layer = await addAudio(src.dataURL, L.name || 'Audio', true);
+        } else if (L.kind === 'gif' && src.kind === 'binary' && src.dataB64) {
+          const ab = b64ToAb(src.dataB64);
+          const file = new File([ab], (L.name || 'anim.gif'), {type: src.mime || 'image/gif'});
+          layer = await addGifFromFile(file);
+        } else if (L.kind === 'model' && src.kind === 'binary' && src.dataB64) {
+          const ext = (src.ext || '').toLowerCase();
+          const mainUrl = makeBlobURLFromB64(src.dataB64, src.mime || 'application/octet-stream');
+          if (ext === 'fbx') {
+            layer = await addFBX(mainUrl, L.name || 'Model FBX', true);
+          } else if (ext === 'obj') {
+            let mtlUrl = null;
+            if (src.files) {
+              const mtlEntry = Object.entries(src.files).find(([k,v]) => (k.toLowerCase().endswith('.mtl')) );
+              if (mtlEntry) {
+                const m = mtlEntry[1];
+                if (m && m.dataB64) mtlUrl = makeBlobURLFromB64(m.dataB64, m.mime || 'text/plain');
+              }
+            }
+            layer = await addOBJ(mainUrl, mtlUrl, L.name || 'Model OBJ', true);
+          } else {
+            // glb/gltf (si gltf dependía de archivos externos sin empaquetar, puede requerir abrir como ZIP/proyecto)
+            layer = await addModel(mainUrl, L.name || 'Model 3D', true);
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // assets locales (blob:) no se pueden restaurar
+    if (L.sourceType === 'local' && !L.embeddedSource) {
+      pendingLocal.push(L.name || L.sourceUrl || '(local)');
+      continue;
+    }
+
+    if (!layer) {
+    if (L.kind === 'youtube') {
+      layer = await addYouTubeFromState(L.sourceUrl);
+    } else if (L.kind === 'audio') {
+      layer = await addAudio(L.sourceUrl, L.name || 'Audio', true);
+    } else {
+      // image/video/gif/model
+      if (L.kind === 'model') {
+        layer = await addAssetFromUrl(L.sourceUrl, L.name || 'Model');
+      } else {
+        layer = await addMedia(L.sourceUrl, L.kind, L.name || 'Media', true);
+      }
+    }
+
+    }
+
+    if (!layer) continue;
+
+    // apply base properties
+    layer.name = L.name || layer.name;
+    layer.visible = (L.visible !== false);
+    layer.locked = !!L.locked;
+    layer.billboard = !!L.billboard;
+
+    // projection (si aplica)
+    if (L.projection && layer.kind !== 'youtube' && layer.kind !== 'model') {
+      applyProjection(layer, L.projection);
+    }
+
+    applyTransformState(layer, L.transform);
+    applyShaderState(layer, L.shader);
+    applyModelState(layer, L.model);
+
+    // refresca picking + UI list
+    if (layer.pickMesh) layer.pickMesh.visible = true;
+  }
+
+  applyLayerOrderToRender();
+  updateLayers();
+
+  if (pendingLocal.length) {
+    alert("JSON cargado. Algunos assets eran locales (no restaurables automáticamente):\n\n- " + pendingLocal.join("\n- "));
+  }
+}
+
+async function importSceneJSONFromFile(file) {
+  if (!file) return;
+  const txt = await file.text();
+  let state = null;
+  try { state = JSON.parse(txt); } catch { alert("JSON inválido."); return; }
+
+  const replace = !!document.getElementById('jsonReplace')?.checked;
+  if (replace) clearAllLayers();
+
+  await loadSceneFromState(state);
+}
+
+
+
+      // JSON save/load UI
+      const jsonIn = document.getElementById('jsonInput');
+      if (jsonIn) {
+        jsonIn.addEventListener('change', async (e) => {
+          const f = e.target.files && e.target.files[0];
+          e.target.value = '';
+          await importSceneJSONFromFile(f);
+        });
+      }
+      window.exportSceneJSON = exportSceneJSON;
+
+      // public APIs
+      window.loadFromWeb = async () => {
+        const url = document.getElementById('webUrl').value.trim();
+        if (!url) return;
+
+        if (isFileUrl(url)) {
+          showCorsHint("No se puede cargar file:// por URL web. Usa 'Abrir local'.");
+          return;
+        }
+
+        if (isYouTubeUrl(url)) {
+          document.getElementById('ytUrl').value = url;
+          await addYouTube();
+          return;
+        }
+        await addAssetFromUrl(url, "Web Asset");
+      };
+
+      window.addYouTube = addYouTube;
+      window.updateProjection = () => {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+        applyProjection(o, document.getElementById('projSelect').value);
+      };
+
+      window.mediaAction = (action) => {
+        const o = objects.find(x=>x.id===activeId); if(!o) return;
+
+        if (o.kind === 'video' && o.video) {
+          if (action === 'play') tryPlayVideo(o.video);
+          if (action === 'pause') o.video.pause();
+          if (action === 'mute') o.video.muted = !o.video.muted;
+        } else if (o.kind === 'audio' && o.audioEl) {
+          if (action === 'play') { try { audioListener?.context?.resume(); } catch{}; o.audioEl.play().catch(()=>{}); }
+          if (action === 'pause') o.audioEl.pause();
+          if (action === 'mute') o.audioEl.muted = !o.audioEl.muted;
+        } else if (o.kind === 'gif' && o.gifData) {
+          if (action === 'play') o.gifData.playing = true;
+          if (action === 'pause') o.gifData.playing = false;
+          if (action === 'mute') o.gifData.playing = !o.gifData.playing;
+        }
+      };
+
+      // ✅ Video UI controls
+      window.videoUIAction = (act) => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o || o.kind !== 'video' || !o.video) return;
+        if (act === 'play') tryPlayVideo(o.video);
+        if (act === 'pause') o.video.pause();
+        if (act === 'mute') o.video.muted = !o.video.muted;
+      };
+      window.applyVideoTrim = applyVideoTrim;
+      window.clearVideoTrim = clearVideoTrim;
+
+      document.getElementById('vidLoop').addEventListener('change', () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o || o.kind !== 'video' || !o.video) return;
+        o.video.loop = document.getElementById('vidLoop').checked;
+      });
+
+      document.getElementById('vidTrim').addEventListener('change', () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o || o.kind !== 'video' || !o.video) return;
+        o.videoTrimEnabled = document.getElementById('vidTrim').checked;
+      });
+
+      window.clearModelTexture = clearModelTexture;
+      window.createCalibrator = createCalibrator;
+      window.applyScaleFromCalibrator = applyScaleFromCalibrator;
+
+      window.deleteActive = deleteActive;
+      window.centerActive = centerActive;
+      window.toggleUIPanel = toggleUIPanel;
+    }
+
+    function toggleUIPanel() {
+      const ui = document.getElementById('ui');
+      const btn = document.getElementById('toggleUI');
+      ui.classList.toggle('minimized');
+      btn.style.display = ui.classList.contains('minimized') ? 'flex' : 'none';
+    }
+
+    // ✅ Local GIF loader (sin fetch, evita bloqueos raros)
+    async function addGifFromFile(file) {
+      toggleLoader(true, "CARGANDO GIF...");
+      try {
+        await ensureOmggifLoaded();
+
+        const buf = await file.arrayBuffer();
+        const r = makeGifReader(new Uint8Array(buf));
+
+        const cvs = document.createElement('canvas');
+        cvs.width = r.width; cvs.height = r.height;
+        const ctx = cvs.getContext('2d');
+        const dat = ctx.createImageData(r.width, r.height);
+
+        const tex = new THREE.CanvasTexture(cvs);
+        tex.colorSpace = THREE.SRGBColorSpace;
+
+        const gifData = { r, ctx, dat, tex, f:0, nextTime:0, playing:true };
+
+        const aspect = r.width / Math.max(1, r.height);
+
+        const root = new THREE.Group();
+        root.position.set(0, 1.6, -2);
+
+        const mat = new THREE.ShaderMaterial({
+          uniforms: {
+            map: { value: tex },
+            uBrightness: { value: 0 },
+            uContrast: { value: 1 },
+            uSaturation: { value: 1 },
+            uGamma: { value: 1 },
+            uOpacity: { value: 1 },
+            uEmissive: { value: 0 },
+            chromaOn: { value: false },
+            chromaInvert: { value: false },
+            k1: { value: new THREE.Color(0,1,0) },
+            sim1: { value: 0.4 },
+            smooth1: { value: 0.08 },
+            despill: { value: 0.5 }
+          },
+          vertexShader: vShader,
+          fragmentShader: fShader,
+          transparent: true,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+
+        const planeGeo = new THREE.PlaneGeometry(aspect, 1);
+        const mesh = new THREE.Mesh(planeGeo, mat);
+        root.add(mesh);
+        scene.add(root);
+
+        const layer = {
+          id: uid(),
+          name: file.name,
+          kind: 'gif',
+          projection: 'plane',
+          root3D: root,
+          pickMesh: mesh,
+          mesh,
+          mat,
+          tex,
+          video: null,
+          gifData,
+          billboard: false,
+          visible: true,
+          locked: false,
+          originalAspect: aspect,
+          sourceUrl: 'localfile'
+        };
+        mesh.userData.layerId = layer.id;
+
+        objects.push(layer);
+        applyLayerOrderToRender();
+        selectObject(layer.id);
+        updateLayers();
+        return layer;
+      } catch (e) {
+        console.error(e);
+        alert("GIF: no se pudo cargar. Verifica que omggif esté disponible o usa servidor local.");
+      } finally {
+        toggleLoader(false);
+      }
+    }
+
+    // =========================
+    // Selection + layer list + drag reorder
+    // =========================
+    function setLayerVisible(o, v) {
+      o.visible = v;
+      if (o.root3D) o.root3D.visible = v;
+
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.element.style.display = v ? 'block' : 'none';
+      }
+    }
+
+    function selectObject(id) {
+      activeId = id;
+      const o = objects.find(x=>x.id===id);
+      if (!o) return;
+
+      transformCtrl.detach();
+      if (o.root3D && !o.locked) transformCtrl.attach(o.root3D);
+
+      document.getElementById('editorUI').style.display = 'block';
+
+      document.getElementById('layerVisible').checked = !!o.visible;
+      document.getElementById('layerLocked').checked = !!o.locked;
+      document.getElementById('checkBillboard').checked = !!o.billboard;
+
+      document.getElementById('projSelect').value = o.projection || 'plane';
+
+      const media = isMediaLayer(o);
+      setEditorEnabled(media);
+
+      // sync transform sliders
+      syncTransformToUI();
+
+      // video panel
+      const videoPanel = document.getElementById('videoPanel');
+      if (o.kind === 'video' && o.video) {
+        videoPanel.style.display = 'block';
+        initVideoUIForLayer(o);
+      } else {
+        videoPanel.style.display = 'none';
+        stopVideoUIRAF();
+      }
+
+      if (media && o.mat?.uniforms) {
+        const u = o.mat.uniforms;
+        setRange('brightness', u.uBrightness.value);
+        setRange('contrast', u.uContrast.value);
+        setRange('saturation', u.uSaturation.value);
+        setRange('gamma', u.uGamma.value);
+        setRange('opacity', u.uOpacity.value);
+        setRange('emissive', u.uEmissive.value);
+
+        document.getElementById('chromaToggle').checked = u.chromaOn.value;
+        document.getElementById('chromaInvert').checked = u.chromaInvert.value;
+        setRange('k1sim', u.sim1.value);
+        setRange('k1smooth', u.smooth1.value);
+        setRange('despill', u.despill.value);
+
+        document.getElementById('keyR').value = u.k1.value.r;
+        document.getElementById('keyG').value = u.k1.value.g;
+        document.getElementById('keyB').value = u.k1.value.b;
+
+        document.getElementById('chromaPanel').style.display = u.chromaOn.value ? 'block' : 'none';
+      } else {
+        document.getElementById('chromaPanel').style.display = 'none';
+      }
+
+      updateLayers();
+    
+
+// ✅ 3D tools panel
+if (o.kind === 'model') {
+  setModelToolsVisible(true);
+  // default mode select
+  const mm = document.getElementById('modelRenderMode');
+  if (mm) mm.value = o.modelRenderMode || 'original';
+  buildModelComponentsUI(o);
+  applyModelRenderMode(o, o.modelRenderMode || 'original');
+} else {
+  setModelToolsVisible(false);
+}
+
+    }
+
+    function setEditorEnabled(enabled) {
+      const ids = ['brightness','contrast','saturation','gamma','opacity','emissive','chromaToggle','chromaInvert','k1sim','k1smooth','despill','keyR','keyG','keyB'];
+      ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !enabled;
+      });
+    }
+
+    function setRange(id, v) {
+      const el = document.getElementById(id);
+      const val = (Number.isFinite(v) ? v : 0);
+      if (el) el.value = val;
+      const lbl = document.getElementById('v_' + id);
+      if (lbl) lbl.textContent = val.toFixed(3);
+    }
+
+    // ✅ Drag reorder
+    let dragId = null;
+
+    function updateLayers() {
+      const list = document.getElementById('layerList');
+      list.innerHTML = '';
+
+      for (const o of objects) {
+        const row = document.createElement('div');
+        row.className = `layer-item ${o.id === activeId ? 'active' : ''}`;
+        row.draggable = true;
+        row.dataset.layerId = o.id;
+
+        row.addEventListener('dragstart', (ev) => {
+          dragId = o.id;
+          row.classList.add('dragging');
+          ev.dataTransfer.effectAllowed = 'move';
+        });
+        row.addEventListener('dragend', () => {
+          dragId = null;
+          row.classList.remove('dragging');
+          [...list.children].forEach(n => n.classList.remove('drop-target'));
+        });
+        row.addEventListener('dragover', (ev) => {
+          ev.preventDefault();
+          row.classList.add('drop-target');
+          ev.dataTransfer.dropEffect = 'move';
+        });
+        row.addEventListener('dragleave', () => row.classList.remove('drop-target'));
+        row.addEventListener('drop', (ev) => {
+          ev.preventDefault();
+          row.classList.remove('drop-target');
+          if (!dragId || dragId === o.id) return;
+
+          const from = objects.findIndex(x => x.id === dragId);
+          const to = objects.findIndex(x => x.id === o.id);
+          if (from < 0 || to < 0) return;
+
+          const [m] = objects.splice(from, 1);
+          objects.splice(to, 0, m);
+
+          applyLayerOrderToRender();
+          updateLayers();
+        });
+
+        const ico = document.createElement('div');
+        ico.textContent = iconFor(o);
+
+        const name = document.createElement('div');
+        name.textContent = (o.name || 'Layer').slice(0, 26);
+
+        const tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.textContent = (o.kind === 'model') ? '3D' : (o.kind === 'youtube' ? 'YT' : (o.projection || 'plane'));
+
+        const mini = document.createElement('div');
+        mini.className = 'mini';
+
+        const vis = document.createElement('input');
+        vis.type = 'checkbox';
+        vis.checked = !!o.visible;
+        vis.title = 'Visible';
+        vis.onclick = (ev) => ev.stopPropagation();
+        vis.onchange = () => { setLayerVisible(o, vis.checked); updateLayers(); };
+
+        const lock = document.createElement('input');
+        lock.type = 'checkbox';
+        lock.checked = !!o.locked;
+        lock.title = 'Lock';
+        lock.onclick = (ev) => ev.stopPropagation();
+        lock.onchange = () => { o.locked = lock.checked; if (o.locked && o.id===activeId) transformCtrl.detach(); updateLayers(); };
+
+        mini.appendChild(vis);
+        mini.appendChild(lock);
+
+        row.appendChild(ico);
+        row.appendChild(name);
+        row.appendChild(tag);
+        row.appendChild(mini);
+
+        row.onclick = () => selectObject(o.id);
+        list.appendChild(row);
+      }
+
+      if (objects.length === 0) {
+        activeId = null;
+        transformCtrl.detach();
+        document.getElementById('editorUI').style.display = 'none';
+        if (engGroup) engGroup.visible = false;
+        stopVideoUIRAF();
+      }
+    }
+
+    // =========================
+    // Transform UI
+    // =========================
+    function degToRad(d){ return d * Math.PI / 180; }
+    function radToDeg(r){ return r * 180 / Math.PI; }
+
+    function setVal(id, v, digits=3) {
+      const el = document.getElementById(id);
+      if (el) el.value = v;
+      const lbl = document.getElementById('v_' + id);
+      if (lbl) lbl.textContent = Number(v).toFixed(digits);
+    }
+
+    function syncTransformToUI() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D) return;
+      const P = o.root3D.position;
+      const R = o.root3D.rotation;
+      const S = o.root3D.scale;
+
+      setVal('tPosX', P.x, 3);
+      setVal('tPosY', P.y, 3);
+      setVal('tPosZ', P.z, 3);
+
+      setVal('tRotX', radToDeg(R.x), 1);
+      setVal('tRotY', radToDeg(R.y), 1);
+      setVal('tRotZ', radToDeg(R.z), 1);
+
+      setVal('tScale', S.x, 3);
+    }
+
+    function applyTransformFromUI(isLive=false) {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D || o.locked) return;
+
+      const px = parseFloat(document.getElementById('tPosX').value);
+      const py = parseFloat(document.getElementById('tPosY').value);
+      const pz = parseFloat(document.getElementById('tPosZ').value);
+
+      const rx = degToRad(parseFloat(document.getElementById('tRotX').value));
+      const ry = degToRad(parseFloat(document.getElementById('tRotY').value));
+      const rz = degToRad(parseFloat(document.getElementById('tRotZ').value));
+
+      const s = parseFloat(document.getElementById('tScale').value);
+
+      o.root3D.position.set(px, py, pz);
+      o.root3D.rotation.set(rx, ry, rz);
+      o.root3D.scale.setScalar(Math.max(0.01, s));
+
+      // sync youtube css
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.position.copy(o.root3D.position);
+        o.cssObj.quaternion.copy(o.root3D.quaternion);
+      }
+      if (!isLive) syncTransformToUI();
+    }
+
+    // ✅ Transform en tiempo real: aplica cambios del slider sin botón "Aplicar"
+    let _liveTransformRAF = 0;
+    function scheduleLiveTransformApply() {
+      if (_liveTransformRAF) return;
+      _liveTransformRAF = requestAnimationFrame(() => {
+        _liveTransformRAF = 0;
+        applyTransformFromUI(true);
+      });
+    }
+
+    function resetTransformUI() {
+      setVal('tPosX', 0, 3);
+      setVal('tPosY', 1.6, 3);
+      setVal('tPosZ', -2, 3);
+      setVal('tRotX', 0, 1);
+      setVal('tRotY', 0, 1);
+      setVal('tRotZ', 0, 1);
+      setVal('tScale', 1, 3);
+      applyTransformFromUI();
+    }
+
+    // =========================
+    // Update params (shader)
+    // =========================
+    function updateActiveParam(id, v) {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !isMediaLayer(o) || !o.mat?.uniforms) return;
+
+      const u = o.mat.uniforms;
+      if (id === 'brightness') u.uBrightness.value = v;
+      else if (id === 'contrast') u.uContrast.value = v;
+      else if (id === 'saturation') u.uSaturation.value = v;
+      else if (id === 'gamma') u.uGamma.value = v;
+      else if (id === 'opacity') u.uOpacity.value = v;
+      else if (id === 'emissive') u.uEmissive.value = v;
+      else if (id === 'k1sim') u.sim1.value = v;
+      else if (id === 'k1smooth') u.smooth1.value = v;
+      else if (id === 'despill') u.despill.value = v;
+    }
+
+    function updateActiveKeyRGB() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !isMediaLayer(o) || !o.mat?.uniforms) return;
+
+      const r = parseFloat(document.getElementById('keyR').value);
+      const g = parseFloat(document.getElementById('keyG').value);
+      const b = parseFloat(document.getElementById('keyB').value);
+      o.mat.uniforms.k1.value.setRGB(r,g,b);
+    }
+
+    function updateActiveChroma() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !isMediaLayer(o) || !o.mat?.uniforms) return;
+
+      o.mat.uniforms.chromaOn.value = document.getElementById('chromaToggle').checked;
+      o.mat.uniforms.chromaInvert.value = document.getElementById('chromaInvert').checked;
+      document.getElementById('chromaPanel').style.display = o.mat.uniforms.chromaOn.value ? 'block' : 'none';
+      updateActiveKeyRGB();
+    }
+
+    // =========================
+    // Video UI (audio + seek + trim)
+    // =========================
+    function fmtTime(s) {
+      s = Math.max(0, s || 0);
+      const m = Math.floor(s/60);
+      const r = Math.floor(s%60);
+      return `${m}:${String(r).padStart(2,'0')}`;
+    }
+
+    async function tryPlayVideo(video) {
+      try {
+        // si el usuario tocó play, habilitamos audio si el volumen>0
+        const vol = parseFloat(document.getElementById('vidVol')?.value ?? video.volume ?? 0.8);
+        if (vol > 0) video.muted = false;
+        video.volume = isFinite(vol) ? vol : video.volume;
+        await video.play();
+      } catch {}
+    }
+
+    function initVideoUIForLayer(layer) {
+      const v = layer.video;
+      if (!v) return;
+
+      // loop toggle
+      const loop = document.getElementById('vidLoop');
+      loop.checked = !!v.loop;
+
+      // vol
+      const vol = document.getElementById('vidVol');
+      if (vol) {
+        vol.value = String(v.volume ?? 0.8);
+        document.getElementById('v_vidVol').textContent = Number(vol.value).toFixed(2);
+      }
+
+      // trim toggles
+      document.getElementById('vidTrim').checked = !!layer.videoTrimEnabled;
+      document.getElementById('vidStart').value = String(layer.videoTrimStart ?? 0);
+
+      // end: si hay duración
+      const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : 0;
+      document.getElementById('vidEnd').value = String(layer.videoTrimEnd ?? (dur ? dur.toFixed(1) : 0));
+
+      startVideoUIRAF();
+    }
+
+    function startVideoUIRAF() {
+      stopVideoUIRAF();
+      const tick = () => {
+        const o = objects.find(x=>x.id===activeId);
+        if (!o || o.kind !== 'video' || !o.video) return;
+
+        const v = o.video;
+        const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : 0;
+
+        // enforce trim
+        if (o.videoTrimEnabled && dur > 0) {
+          const s = Math.max(0, o.videoTrimStart || 0);
+          const e = Math.min(dur, (o.videoTrimEnd && o.videoTrimEnd > 0) ? o.videoTrimEnd : dur);
+
+          if (v.currentTime < s - 0.05) v.currentTime = s;
+
+          if (v.currentTime > e - 0.02) {
+            if (v.loop || document.getElementById('vidLoop').checked) {
+              v.currentTime = s;
+              // si estaba pausado, lo dejamos pausado
+              if (!v.paused) v.play().catch(()=>{});
+            } else {
+              v.pause();
+              v.currentTime = e;
+            }
+          }
+        }
+
+        // update seek UI
+        const seek = document.getElementById('vidSeek');
+        if (seek && dur > 0 && !suppressSeekUI) {
+          const p = v.currentTime / dur;
+          seek.value = String(Math.min(1, Math.max(0, p)));
+          document.getElementById('v_vidSeek').textContent = `${Math.round(p*100)}%`;
+        }
+
+        const timeEl = document.getElementById('vidTime');
+        if (timeEl) timeEl.textContent = `${fmtTime(v.currentTime)} / ${fmtTime(dur)}`;
+
+        uiVideoRAF = requestAnimationFrame(tick);
+      };
+      uiVideoRAF = requestAnimationFrame(tick);
+    }
+
+    function stopVideoUIRAF() {
+      if (uiVideoRAF) cancelAnimationFrame(uiVideoRAF);
+      uiVideoRAF = null;
+    }
+
+    function onVideoVolume(val) {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || o.kind !== 'video' || !o.video) return;
+      const v = o.video;
+
+      v.volume = Math.max(0, Math.min(1, val));
+      document.getElementById('v_vidVol').textContent = v.volume.toFixed(2);
+
+      if (v.volume > 0) v.muted = false;
+    }
+
+    function onVideoSeek(p) {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || o.kind !== 'video' || !o.video) return;
+      const v = o.video;
+      const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : 0;
+      if (!dur) return;
+
+      suppressSeekUI = true;
+      const t = Math.min(dur, Math.max(0, p * dur));
+      v.currentTime = t;
+      document.getElementById('v_vidSeek').textContent = `${Math.round(p*100)}%`;
+
+      setTimeout(() => suppressSeekUI = false, 50);
+    }
+
+    function applyVideoTrim() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || o.kind !== 'video' || !o.video) return;
+
+      const v = o.video;
+      const dur = (isFinite(v.duration) && v.duration > 0) ? v.duration : 0;
+
+      let s = parseFloat(document.getElementById('vidStart').value || '0');
+      let e = parseFloat(document.getElementById('vidEnd').value || '0');
+
+      if (!isFinite(s)) s = 0;
+      if (!isFinite(e)) e = 0;
+
+      if (dur > 0) {
+        s = Math.max(0, Math.min(dur, s));
+        e = Math.max(0, Math.min(dur, e));
+        if (e > 0 && e <= s) e = Math.min(dur, s + 0.1);
+      }
+
+      o.videoTrimEnabled = true;
+      o.videoTrimStart = s;
+      o.videoTrimEnd = e;
+
+      document.getElementById('vidTrim').checked = true;
+
+      if (dur > 0) v.currentTime = s;
+    }
+
+    function clearVideoTrim() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || o.kind !== 'video' || !o.video) return;
+
+      o.videoTrimEnabled = false;
+      o.videoTrimStart = 0;
+      o.videoTrimEnd = 0;
+      document.getElementById('vidTrim').checked = false;
+    }
+
+    // =========================
+    // Actions
+    // =========================
+    function centerActive() {
+      const o = objects.find(x=>x.id===activeId);
+      if (!o || !o.root3D) return;
+      o.root3D.position.set(0, 1.6, -2);
+      if (o.kind === 'youtube' && o.cssObj) {
+        o.cssObj.position.copy(o.root3D.position);
+      }
+      if (!isLive) syncTransformToUI();
+    }
+
+    function deleteActive() {
+      const idx = objects.findIndex(x=>x.id===activeId);
+      if (idx < 0) return;
+
+      const o = objects[idx];
+
+      if (o.kind === 'youtube' && o.cssObj) {
+        if (o.cssObj.element?.parentNode) o.cssObj.element.parentNode.removeChild(o.cssObj.element);
+        scene.remove(o.cssObj);
+      }
+
+      if (o.root3D) scene.remove(o.root3D);
+
+      if (o.video) { try { o.video.pause(); } catch{} }
+      if (o.tex && o.tex.dispose) o.tex.dispose();
+      if (o.mesh?.geometry) o.mesh.geometry.dispose();
+      if (o.mat && o.mat.dispose) o.mat.dispose();
+
+      objects.splice(idx, 1);
+      activeId = null;
+      transformCtrl.detach();
+      if (engGroup) engGroup.visible = false;
+
+      applyLayerOrderToRender();
+      updateLayers();
+      stopVideoUIRAF();
+    }
+
+    // =========================
+    // Render loop
+    // =========================
+    function animate(time, frame) {
+      orbit.update();
+      handleStableControls();
+      updateEngineeringVisuals();
+
+      // Medición + Dibujo XR (actualización)
+      if (animate._lastT === undefined) animate._lastT = time;
+      const dt = Math.max(0, (time - animate._lastT) / 1000);
+      animate._lastT = time;
+      _updateXRMeasureAndDraw(dt);
+
+
+      for (const o of objects) {
+        if (!o.visible) continue;
+
+        if (o.billboard && o.root3D) {
+          o.root3D.lookAt(camera.position.x, o.root3D.position.y, camera.position.z);
+        }
+
+        if (o.kind === 'gif' && o.gifData && o.gifData.playing) {
+          const g = o.gifData;
+          if (performance.now() > g.nextTime) {
+            g.r.decodeAndBlitFrameRGBA(g.f, g.dat.data);
+            g.ctx.putImageData(g.dat, 0, 0);
+            g.tex.needsUpdate = true;
+
+            const d = g.r.frameInfo(g.f).delay * 10;
+            g.nextTime = performance.now() + (d || 100);
+            g.f = (g.f + 1) % g.r.numFrames();
+          }
+        }
+
+        if (o.kind === 'youtube' && o.cssObj && o.root3D) {
+          o.cssObj.position.copy(o.root3D.position);
+          o.cssObj.quaternion.copy(o.root3D.quaternion);
+          o.cssObj.scale.copy(o.root3D.scale).multiplyScalar(1/960);
+        }
+      }
+
+      if (frame) {
+        const occ = document.getElementById('checkOcclusion').checked;
+
+        // Si la sesión tiene depth-sensing (xrGlBinding), pero el usuario desactiva oclusión,
+        // limpiamos el depth buffer para que no quede "pegada" la última profundidad escrita.
+        if (xrGlBinding && !occ) {
+          const gl = renderer.getContext();
+          gl.clear(gl.DEPTH_BUFFER_BIT);
+        }
+
+        if (xrGlBinding && occ) {
+          const pose = frame.getViewerPose(xrRefSpace);
+          if (pose) {
+            const gl = renderer.getContext();
+            gl.colorMask(false,false,false,false);
+
+            let wroteAny = false;
+            for (const view of pose.views) {
+              const dInfo = xrGlBinding.getDepthInformation(view);
+              if (dInfo) {
+                wroteAny = true;
+                gl.bindTexture(gl.TEXTURE_2D, depthTex);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE_ALPHA, dInfo.width, dInfo.height, 0, gl.LUMINANCE_ALPHA, gl.UNSIGNED_BYTE, dInfo.data);
+
+                gl.useProgram(depthProgram);
+                gl.uniform1f(gl.getUniformLocation(depthProgram,'uRawToMeters'), dInfo.rawValueToMeters);
+                gl.uniformMatrix4fv(gl.getUniformLocation(depthProgram,'uProj'), false, view.projectionMatrix);
+
+                gl.bindVertexArray(depthVao);
+                gl.drawArrays(gl.TRIANGLES, 0, 6);
+              }
+            }
+
+            // si no hubo depthInfo, evitamos oclusión residual
+            if (!wroteAny) gl.clear(gl.DEPTH_BUFFER_BIT);
+
+            gl.colorMask(true,true,true,true);
+          }
+        }
+      }
+
+      renderer.render(scene, camera);
+      cssRenderer.render(scene, camera);
+    }
+
+    // =========================
+    // Boot
+    // =========================
+    init();
+  </script>
+</body>
+</html>
